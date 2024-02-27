@@ -5,9 +5,121 @@
         <title>Events.io</title>
         <style type="text/css">
 
+        *
+        {
+            margin: 0px;
+            padding:0px;
+            font-family:"Book Antiqua";
+        }
+
+        #menu-bar
+        {
+            width:100%;
+            background-color:black;
+        }
+        
+        #logo-tab
+        {
+            width:3.5%;
+            min-height:48px;
+            background-color:lightgray;
+            float:left;
+            text-align:center;
+            line-height:48px;
+        }
+
+        #events-tab
+        {
+            width:8.6%;
+            min-height:48px;
+            background-color:gray;
+            float:left;
+            text-align:center;
+            line-height:48px;
+        }
+
+        #create-tab
+        {
+            width:9.6%;
+            min-height:48px;
+            background-color:lightgray;
+            float:left;
+            text-align:center;
+            line-height:48px;
+        }
+
+        #rso-tab
+        {
+            width:10.9%;
+            min-height:48px;
+            background-color:gray;
+            float:left; 
+            text-align:center;
+            line-height:48px;
+        }
+
+        #to-be-added
+        {
+            width:10.1%;
+            min-height:48px;
+            background-color:lightgray;
+            float:left;
+            text-align:center;
+            line-height:48px;
+        }
+
+        #login-tab
+        {
+            width:9.6%;
+            min-height:48px;
+            background-color:lightgray;
+            float:right;
+            text-align:center;
+            line-height:48px;
+        }
+
+        #signup-tab
+        {
+            width:9.6%;
+            min-height:48px;
+            background-color:gray;
+            float:right;
+            text-align:center;
+            line-height:48px;
+        }
+
+        .clearfix::after{
+            content:"";
+            display:block;
+            clear:both;
+        }
+
+
         </style>
     </head>
     <body>
-        <h1>menu bar</h1>   
+        <div id="menu-bar" class="clearfix">
+            <div id="logo-tab">
+                Logo
+            </div>
+            <div id="events-tab">
+                Events
+            </div>
+            <div id="create-tab">
+                Create
+            </div>
+            <div id="rso-tab">
+                RSO's
+            </div>
+            <div id="to-be-added">
+                To be added
+            </div>
+            <div id="login-tab">
+                Login
+            </div>
+            <div id="signup-tab">
+                Sign Up
+            </div>
+        </div>   
     </body>
 </html>
