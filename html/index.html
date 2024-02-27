@@ -9,13 +9,15 @@
         {
             margin: 0px;
             padding:0px;
-            font-family:"Book Antiqua";
+            font-family:"Franklin Gothic Medium";
         }
+
 
         #menu-bar
         {
             width:100%;
-            background-color:black;
+            margin-bottom:1px;
+            font-weight:300;
         }
         
         #logo-tab
@@ -70,17 +72,18 @@
 
         #login-tab
         {
-            width:9.6%;
+            width:7%;
             min-height:48px;
             background-color:lightgray;
             float:right;
             text-align:center;
             line-height:48px;
+            margin-left:4.2px;
         }
 
-        #signup-tab
+        #join-tab
         {
-            width:9.6%;
+            width:5.52%;
             min-height:48px;
             background-color:gray;
             float:right;
@@ -88,10 +91,24 @@
             line-height:48px;
         }
 
+        /* for adding the height back to menubar i think */
         .clearfix::after{
             content:"";
             display:block;
             clear:both;
+        }
+
+        #front-title
+        {
+            width:100%;
+            min-height:658px; /*700px*/
+            background-color:gray;
+            text-align:center;
+            padding-top:3%;
+            font-weight:bold;
+            font-size: 28px;
+            letter-spacing: 1px;
+            background-image: ;
         }
 
 
@@ -115,11 +132,16 @@
                 To be added
             </div>
             <div id="login-tab">
-                Login
+                LOGIN
             </div>
-            <div id="signup-tab">
-                Sign Up
+            <div id="join-tab">
+                JOIN
             </div>
-        </div>   
+        </div>  
+        
+        <div id="front-title">
+            EVENT.io
+        </div>
+        
     </body>
 </html>
