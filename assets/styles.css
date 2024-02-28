@@ -1,0 +1,119 @@
+*
+{
+    margin: 0px;
+    padding: 0px;
+    font-weight: 100;
+    font-family: "Franklin Gothic Medium";
+    background-color: #200d06;
+    color: #8b7e71;
+}
+
+#menu-bar
+{
+    width: 100%;
+    margin-bottom: 1px;
+    background-color: #200d06;
+}
+
+#logo-tab
+{
+    width: 3.5%;
+    min-height: 48px;
+    background-color: #dba54b;
+    float: left;
+    color: #9a6e25;
+    text-align: center;
+    line-height: 48px;
+    border: 0.5px solid #200d06;
+}
+
+#events-tab
+{
+    width: 8.6%;
+    min-height: 48px;
+    background-color: #cdbc9e;
+    float: left;
+    text-align: center;
+    line-height: 48px;
+    border: 0.5px solid #200d06;
+}
+
+#create-tab
+{
+    width: 9.6%;
+    min-height: 48px;
+    background-color: #cdbc9e;
+    float: left;
+    text-align: center;
+    line-height: 48px;
+    border: 0.5px solid #200d06;
+}
+
+#rso-tab
+{
+    width: 10.9%;
+    min-height: 48px;
+    background-color: #cdbc9e;
+    float: left;
+    text-align: center;
+    line-height: 48px;
+    border: 0.5px solid #200d06;
+}
+
+#to-be-added
+{
+    width: 10.1%;
+    min-height: 48px;
+    background-color: #cdbc9e;
+    float: left;
+    text-align: center;
+    line-height: 48px;
+    border: 0.5px solid #200d06;
+}
+
+#login-tab
+{
+    width: 7%;
+    min-height: 48px;
+    background-color: #dba54b;
+    color: #9a6e25;
+    float: right;
+    text-align: center;
+    line-height: 48px;
+    margin-left: 4.2px;
+    border: 0.5px solid #200d06;
+}
+
+#join-tab
+{
+    width: 5.52%;
+    min-height: 48px;
+    background-color: #cdbc9e;
+    float: right;
+    text-align: center;
+    line-height: 48px;
+    border: 0.5px solid #200d06;
+}
+
+.clearfix::after
+{
+    content: "";
+    display: block;
+    clear: both;
+}
+
+#front-title
+{
+    width: 100%;
+    min-height: 402px;
+    background-color: gray;
+    text-align: center;
+    text-shadow: #FC0 1px 0 10px;
+    color: #200d06;
+    padding-top: 16.7%;
+    font-weight: bold;
+    font-size: 50px;
+    letter-spacing: 1px;
+    background-image: url("img_sakura.jpg");
+    background-size: 100%;
+}
