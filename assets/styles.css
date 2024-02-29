@@ -16,7 +16,28 @@
     background-color: #200d06;
 }
 
-#logo-tab
+.button
+{
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    transition-duration: 0.4s;
+    cursor: pointer;
+}
+  
+.yellow-button:hover
+{
+    background-color: #9a6e25;
+    color: #dba54b;
+}
+
+.tan-button:hover
+{
+    background-color: #8b7e71;
+    color: #cdbc9e;
+}
+
+.logo-tab
 {
     width: 3.5%;
     min-height: 48px;
@@ -28,7 +49,7 @@
     border: 0.5px solid #200d06;
 }
 
-#events-tab
+.events-tab
 {
     width: 8.6%;
     min-height: 48px;
@@ -39,7 +60,7 @@
     border: 0.5px solid #200d06;
 }
 
-#create-tab
+.create-tab
 {
     width: 9.6%;
     min-height: 48px;
@@ -50,7 +71,7 @@
     border: 0.5px solid #200d06;
 }
 
-#rso-tab
+.rso-tab
 {
     width: 10.9%;
     min-height: 48px;
@@ -61,7 +82,7 @@
     border: 0.5px solid #200d06;
 }
 
-#to-be-added
+.to-be-added
 {
     width: 10.1%;
     min-height: 48px;
@@ -72,7 +93,7 @@
     border: 0.5px solid #200d06;
 }
 
-#login-tab
+.login-tab
 {
     width: 7%;
     min-height: 48px;
@@ -85,7 +106,7 @@
     border: 0.5px solid #200d06;
 }
 
-#join-tab
+.join-tab
 {
     width: 5.52%;
     min-height: 48px;
