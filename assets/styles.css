@@ -47,6 +47,7 @@
     text-align: center;
     line-height: 48px;
     border: 0.5px solid #200d06;
+    
 }
 
 .events-tab
@@ -127,15 +128,32 @@
 #front-title
 {
     width: 100%;
-    min-height: 402px;
-    background-color: gray;
+    min-height: 617px;
+    /*background-color: gray;*/
     text-align: center;
-    text-shadow: #FC0 1px 0 10px;
+    /*text-shadow: #FC0 1px 0 10px;*/
     color: #200d06;
-    padding-top: 16.7%;
+    padding-top: 14%; /*16.7%*/
     font-weight: bold;
     font-size: 50px;
     letter-spacing: 1px;
     background-image: url("img_sakura.jpg");
     background-size: 100%;
+    
+}
+
+
+#front-title::after 
+{
+    content: "";
+    position: absolute;
+    top: 18.5%;
+    left: 25%;
+    width: 50%;
+    height: 50%;
+    background-image: url('eventio-with-logo.png'); /* Your transparent PNG */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 50%; /* Adjust size as needed */
+    mix-blend-mode: multiply; /*Blend mode to show background through transparent areas */
 }
