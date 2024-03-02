@@ -1,161 +1,147 @@
 /* all the css stuff for index.html*/
-*
-{
-    margin: 0px;
-    padding: 0px;
-    font-weight: 100;
-    font-family: "Franklin Gothic Medium";
-    background-color: #200d06;
-    color: #8b7e71;
+* {
+  margin: 0px;
+  padding: 0px;
+  font-weight: 100;
+  font-family: "Franklin Gothic Medium";
+  /* background-color: #200d06; */
+  color: #8b7e71;
+}
+body {
+  background-color: #200d06;
 }
 
-.flexbox-container1
-{
-    display:flex;
-    flex-basis: 0;
-    flex-grow: 1;
+.flexbox-container1 {
+  display: flex;
+  flex-basis: 0;
+  flex-grow: 1;
 }
 
-.flexbox-container2
-{
-    display: flex;
-    flex-basis: 1;
-    flex-grow: 1;
+.flexbox-container2 {
+  display: flex;
+  flex-basis: 1;
+  flex-grow: 1;
 }
 
-#menu-bar
-{
-    width: 100%;
-    margin-bottom: 1px;
-    background-color: #200d06;
+#menu-bar {
+  width: 100%;
+  margin-bottom: 1px;
+  background-color: #200d06;
 }
 
-.button
-{
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    transition-duration: 0.4s;
-    cursor: pointer;
-}
-  
-.yellow-button:hover
-{
-    background-color: #9a6e25;
-    color: #dba54b;
+.button {
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  transition-duration: 0.4s;
+  cursor: pointer;
 }
 
-.tan-button:hover
-{
-    background-color: #8b7e71;
-    color: #cdbc9e;
+.yellow-button:hover {
+  background-color: #9a6e25;
+  color: #dba54b;
 }
 
-.logo-tab
-{
-    width: 3.5%;
-    min-height: 48px;
-    background-color: #dba54b;
-    /*float: left;*/
-    color: #9a6e25;
-    text-align: center;
-    line-height: 48px;
-    border: 0.5px solid #200d06;
-    flex-shrink: 0;
-    
+.tan-button:hover {
+  background-color: #8b7e71;
+  color: #cdbc9e;
 }
 
-.events-tab
-{
-    width: 8.6%;
-    min-height: 48px;
-    background-color: #cdbc9e;
-    /*float: left;*/
-    text-align: center;
-    line-height: 48px;
-    border: 0.5px solid #200d06;
+.logo-tab {
+  width: 3.5%;
+  min-height: 48px;
+  background-color: #dba54b;
+  /*float: left;*/
+  color: #9a6e25;
+  text-align: center;
+  line-height: 48px;
+  border: 0.5px solid #200d06;
+  flex-shrink: 0;
 }
 
-.create-tab
-{
-    width: 9.6%;
-    min-height: 48px;
-    background-color: #cdbc9e;
-    /*float: left;*/
-    text-align: center;
-    line-height: 48px;
-    border: 0.5px solid #200d06;
+.events-tab {
+  width: 8.6%;
+  min-height: 48px;
+  background-color: #cdbc9e;
+  /*float: left;*/
+  text-align: center;
+  line-height: 48px;
+  border: 0.5px solid #200d06;
 }
 
-.rso-tab
-{
-    width: 10.9%;
-    min-height: 48px;
-    background-color: #cdbc9e;
-    /*float: left;*/
-    text-align: center;
-    line-height: 48px;
-    border: 0.5px solid #200d06;
+.create-tab {
+  width: 9.6%;
+  min-height: 48px;
+  background-color: #cdbc9e;
+  /*float: left;*/
+  text-align: center;
+  line-height: 48px;
+  border: 0.5px solid #200d06;
 }
 
-.to-be-added
-{
-    width: 10.1%;
-    min-height: 48px;
-    background-color: #cdbc9e;
-    /*float: left;*/
-    text-align: center;
-    line-height: 48px;
-    border: 0.5px solid #200d06;
+.rso-tab {
+  width: 10.9%;
+  min-height: 48px;
+  background-color: #cdbc9e;
+  /*float: left;*/
+  text-align: center;
+  line-height: 48px;
+  border: 0.5px solid #200d06;
 }
 
-.login-tab
-{
-    width: 7%;
-    min-height: 48px;
-    background-color: #dba54b;
-    color: #9a6e25;
-    float: right;
-    text-align: center;
-    line-height: 48px;
-    margin-left: 4.2px;
-    border: 0.5px solid #200d06;
+.to-be-added {
+  width: 10.1%;
+  min-height: 48px;
+  background-color: #cdbc9e;
+  /*float: left;*/
+  text-align: center;
+  line-height: 48px;
+  border: 0.5px solid #200d06;
 }
 
-.join-tab
-{
-    width: 5.52%;
-    min-height: 48px;
-    background-color: #cdbc9e;
-    float: right;
-    text-align: center;
-    line-height: 48px;
-    border: 0.5px solid #200d06;
+.login-tab {
+  width: 7%;
+  min-height: 48px;
+  background-color: #dba54b;
+  color: #9a6e25;
+  float: right;
+  text-align: center;
+  line-height: 48px;
+  margin-left: 4.2px;
+  border: 0.5px solid #200d06;
 }
 
-.clearfix::after
-{
-    content: "";
-    display: block;
-    clear: both;
+.join-tab {
+  width: 5.52%;
+  min-height: 48px;
+  background-color: #cdbc9e;
+  float: right;
+  text-align: center;
+  line-height: 48px;
+  border: 0.5px solid #200d06;
 }
 
-#front-title
-{
-    width: 100%;
-    min-height: 100%;
-    /*background-color: gray;*/
-    text-align: center;
-    /*text-shadow: #FC0 1px 0 10px;*/
-    color: #200d06;
-    padding-top: 14%;
-    font-weight: bold;
-    font-size: 50px;
-    letter-spacing: 1px;
-    background-image: url("event-hall.jpg");
-    background-size: 100%;
-    position: absolute;
-    background-repeat: no-repeat;
+.clearfix::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+#front-title {
+  width: 100%;
+  min-height: 100%;
+  /*background-color: gray;*/
+  text-align: center;
+  /*text-shadow: #FC0 1px 0 10px;*/
+  color: #200d06;
+  padding-top: 14%;
+  font-weight: bold;
+  font-size: 50px;
+  letter-spacing: 1px;
+  background-image: url("event-hall.jpg");
+  background-size: 100%;
+  position: absolute;
+  background-repeat: no-repeat;
 }
 
 /*
@@ -174,3 +160,90 @@
     mix-blend-mode: multiply; mixed mode might be cool
 }
 */
+/* FORMS */
+
+.form-div {
+  display: none;
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 40%; /* Adjust height as needed */
+  width: 40%; /* Adjust width as needed */
+  z-index: 999; /* Ensure the form box appears above other content */
+  /* background-color: #ffffff; White background */
+}
+
+form {
+  background-image: url("login.png");
+  background-size: cover; /* Adjust the background size to cover the entire element */
+  background-position: center; /* Center the background image */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 95%;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+form h3 {
+  text-decoration: underline;
+  color: rgb(152, 200, 230);
+  font-size: 400%;
+  background-color: whitesmoke;
+  padding-bottom: 3%;
+  text-decoration-thickness: 14%;
+  text-decoration-style: dotted;
+  font-weight: bolder;
+}
+form label {
+  margin-bottom: 2%;
+  background-color: lightblue;
+  color: black;
+  font-size: 150%;
+}
+form input {
+  height: 1.3em;
+  width: 50%;
+  font-size: 160%;
+  color: rgb(15, 14, 14);
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+  width: 150%;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+  background-color: #eaeaea; /* Change the background color */
+  border: 1px solid #ccc; /* Add or adjust the border color */
+}
+
+.login-form input[type="text"]:focus,
+.login-form input[type="password"]:focus {
+  outline: none; /* Remove the default focus outline */
+  border-color: #4caf50; /* Change the border color on focus */
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Add a box shadow on focus */
+}
+
+form input[type="submit"] {
+  width: 80%;
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+form input[type="submit"]:hover {
+  background-color: #45a049;
+}
