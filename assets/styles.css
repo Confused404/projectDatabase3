@@ -200,13 +200,17 @@ form h3 {
   color: rgb(152, 200, 230);
   font-size: 400%;
   background-color: whitesmoke;
-  padding-bottom: 3%;
+  padding-bottom: 1%;
+  padding-left: 1%;
+  padding-right: 1%;
   text-decoration-thickness: 14%;
   text-decoration-style: dotted;
   font-weight: bolder;
+  margin-bottom: 2%;
 }
 form label {
-  margin-bottom: 2%;
+  margin-bottom: 0%;
+  margin-top:5%;
   background-color: lightblue;
   color: black;
   font-size: 150%;
