@@ -49,21 +49,23 @@ body {
 
 .logo-tab {
   width: 3.5%;
-  min-height: 48px;
+  min-height: 49px;
   background-color: #dba54b;
-  /*float: left;*/
+  float: left;
   color: #9a6e25;
   text-align: center;
-  line-height: 48px;
+  line-height: 52px;
   border: 0.5px solid #200d06;
   flex-shrink: 0;
+  background-image: url("eventio-logo-only.png");
+  background-size: contain;
 }
 
 .events-tab {
   width: 8.6%;
   min-height: 48px;
   background-color: #cdbc9e;
-  /*float: left;*/
+  float: left;
   text-align: center;
   line-height: 48px;
   border: 0.5px solid #200d06;
@@ -73,7 +75,7 @@ body {
   width: 9.6%;
   min-height: 48px;
   background-color: #cdbc9e;
-  /*float: left;*/
+  float: left;
   text-align: center;
   line-height: 48px;
   border: 0.5px solid #200d06;
@@ -83,7 +85,7 @@ body {
   width: 10.9%;
   min-height: 48px;
   background-color: #cdbc9e;
-  /*float: left;*/
+  float: left;
   text-align: center;
   line-height: 48px;
   border: 0.5px solid #200d06;
