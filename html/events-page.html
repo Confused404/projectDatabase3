@@ -19,11 +19,32 @@
                 <button class="button tan-button create-tab">CREATE</button>
                 <button class="button tan-button rso-tab">RSO'S</button>
                 <button class="button tan-button to-be-added">TO BE ADDED</button>
-                <button class="button yellow-button login-tab" id="login-button">
+                <button class="button yellow-button login-tab user" id="login">
                     LOGIN
                 </button>
-                <button class="button tan-button join-tab">JOIN</button>
+                <button class="button tan-button join-tab user" id="signup">JOIN</button>
             </div>
         </div>
+        <div class="form-div">
+            <form action="signup" method="POST">
+              <h3>SIGN UP</h3>
+              <label for="username">Username</label><br />
+              <input type="text" class="username" name="username" /><br />
+              <label for="password">Password</label><br />
+              <input type="password" class="password" name="password" /><br /><br />
+              <input type="submit" value="SIGN UP" />
+            </form>
+          </div>
+          <div class="form-div">
+            <form action="login" method="POST">
+              <h3>LOGIN</h3>
+              <label for="username">Username</label><br />
+              <input type="text" class="username" name="username" /><br />
+              <label for="password">Password</label><br />
+              <input type="password" class="password" name="password" /><br /><br />
+              <input type="submit" value="LOGIN" />
+            </form>
+          </div>
+          <script src="../assets/main.js"></script>
     </body>
 </html>
