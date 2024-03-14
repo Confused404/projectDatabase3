@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const xml2js = require('xml2js');
 
 const server = http.createServer((req, res) => {
   let filePath = '';
@@ -53,7 +54,7 @@ server.listen(PORT, () => {
 const url = 'https://events.ucf.edu/2024/3/4/feed.xml';
 
 // Fetch the XML file using Fetch API
-fetch(url)
+fetch('https://events.ucf.edu/feed.xml')
   .then(response => {
     // Check if the response is successful (status code in the range 200-299)
     if (response.ok) {
@@ -65,10 +66,18 @@ fetch(url)
     }
   })
   .then(xmlData => {
-    // Process the fetched XML data here
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlData, 'text/xml'); //how to get parse stuff done?
-    // You can parse and manipulate the XML data here
+    xml2js.parseString(xmlData, (err, result) => {
+      if (err) {
+        throw err;
+      }
+      const events = result.events.event;
+  
+      for(const event of events) {
+        const id = event.event_id;
+        console.log("event id: " + id);
+      }
+    });
+
   })
   .catch(error => {
     // Handle any errors that occurred during fetching
