@@ -71,7 +71,7 @@ fetch('https://events.ucf.edu/feed.xml')
       if (err) {
         throw err;
       }
-      let db = new sqlite3.Database('sqlite.db', (err) => {
+      let db = new sqlite3.Database('./assets/sqlite.db', (err) => {
         if (err) {
           console.error(err.message);
         }
@@ -83,7 +83,7 @@ fetch('https://events.ucf.edu/feed.xml')
             const id = event.event_id;
 
             let sql = `INSERT INTO events (evnt_id) VALUES (?)`;
-            let values = [id];
+            let values = id;
             // Execute the insert statement
             db.run(sql, values, function(err) {
                 if (err) {
