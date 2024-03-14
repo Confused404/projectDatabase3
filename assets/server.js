@@ -2,6 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const xml2js = require('xml2js');
+const sqlite3 = require('sqlite3').verbose();
 
 const server = http.createServer((req, res) => {
   let filePath = '';
