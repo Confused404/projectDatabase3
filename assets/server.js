@@ -36,11 +36,11 @@ const server = http.createServer((req, res) => {
     if (err) {
       console.log(filePath);
       // If file not found, send a 404 Not Found response
-      res.writeHead(404, {'Content-Type': 'text/html'});
+      res.writeHead(404, { 'Content-Type': 'text/html' });
       res.end('404 Not Found');
     } else {
       // Send the file as response with appropriate content type
-      res.writeHead(200, {'Content-Type': contentType});
+      res.writeHead(200, { 'Content-Type': contentType });
       res.end(data);
     }
   });
@@ -49,8 +49,8 @@ const server = http.createServer((req, res) => {
 const PORT = 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  
 });
+
 // URL of the XML file you want to fetch
 const url = 'https://events.ucf.edu/2024/3/4/feed.xml';
 
@@ -71,16 +71,33 @@ fetch('https://events.ucf.edu/feed.xml')
       if (err) {
         throw err;
       }
-      const events = result.events.event;
-  
-      for(const event of events) {
-        const id = event.event_id;
-        console.log("event id: " + id);
-      }
-    });
+      let db = new sqlite3.Database('sqlite.db', (err) => {
+        if (err) {
+          console.error(err.message);
+        }
+        else {
+          console.log('Connected to the SQLite database.');
+          const events = result.events.event;
 
+          for (const event of events) {
+            const id = event.event_id;
+
+            let sql = `INSERT INTO events (evnt_id) VALUES (?)`;
+            let values = [id];
+            // Execute the insert statement
+            db.run(sql, values, function(err) {
+                if (err) {
+                    return console.error(err.message);
+                }
+                console.log(`Rows inserted ${this.changes}`);
+            });
+          }
+        }
+      });
+    });
   })
   .catch(error => {
     // Handle any errors that occurred during fetching
     console.error('Error fetching the XML file:', error);
   });
+
