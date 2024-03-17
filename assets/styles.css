@@ -178,10 +178,11 @@ body {
 }
 
 .radio-text {
-  display:flex;
-  justify-content: space-between;
-  margin-right: 50px;
-  margin-left: 50px;
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:10px;
+  text-align: center;
+  margin-bottom: 0%;
 }
 
 .radio-group {
@@ -193,8 +194,6 @@ body {
   margin-right: 50px;
   margin-left: 50px;
 }
-
-
 
 form {
   background-image: url("login.png");
@@ -218,7 +217,7 @@ form {
 form h3 {
   text-decoration: underline;
   color: rgb(152, 200, 230);
-  font-size: 400%;
+  font-size: 200%;
   background-color: whitesmoke;
   padding-bottom: 1%;
   padding-left: 1%;
@@ -226,11 +225,11 @@ form h3 {
   text-decoration-thickness: 14%;
   text-decoration-style: dotted;
   font-weight: bolder;
-  margin-bottom: 2%;
+  margin-bottom: 1%;
 }
 form label {
   margin-bottom: 0%;
-  margin-top:5%;
+  margin-top:1%;
   background-color: lightblue;
   color: black;
   font-size: 150%;
@@ -238,7 +237,7 @@ form label {
 form input {
   height: 1.3em;
   width: 50%;
-  font-size: 160%;
+  font-size: 100%;
   color: rgb(15, 14, 14);
 }
 

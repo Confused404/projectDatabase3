@@ -1,3 +1,5 @@
+
+
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -6,11 +8,17 @@ const sqlite3 = require('sqlite3').verbose();
 const fetch = require('node-fetch');
 
 const app = express();
-const PORT = 3000;
+const PORT = 8080;
 
 // Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, '..' , 'index.html')));
+app.use(express.static(path.join(__dirname, 'assets')));
 
+app.get('/test', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
+  res.sendFile(path.join(__dirname, 'styles.css'));
+  res.sendFile(path.join(__dirname, 'main.js'));
+});
 // URL of the XML file you want to fetch
 const url = 'https://events.ucf.edu/2024/3/4/feed.xml';
 
