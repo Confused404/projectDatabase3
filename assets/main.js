@@ -66,3 +66,14 @@ let radioButtons = document.querySelector('form[action="signup"]').querySelector
   });
 });
 
+/*
+fetch('http://127.0.0.1:8080/getData')
+  .then(response => response.json())
+  .then(data => {
+    data.forEach(record => {
+      const p = document.createElement('p');
+      p.textContent = record.yourColumnName; // replace 'yourColumnName' with the name of a column in your table
+      document.body.appendChild(p);
+    });
+  });
+*/

@@ -90,3 +90,11 @@ fetch("https://events.ucf.edu/feed.xml")
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+/*
+app.get('/getData', async (req, res) => {
+  const result = await parseBooleans.query('select * From events');
+  res.json(result.rows);
+});
+
+*/
