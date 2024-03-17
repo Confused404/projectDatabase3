@@ -35,7 +35,7 @@ CREATE TABLE rso_events (
     FOREIGN KEY(evnt_id) REFERENCES events(evnt_id)
 );
 
-CREATE TABLE owns (
+CREATE TABLE owns ( 
     usr_id INT,
     evnt_id INT,
     PRIMARY KEY (usr_id, evnt_id),

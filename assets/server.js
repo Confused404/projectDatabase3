@@ -79,19 +79,36 @@ fetch('https://events.ucf.edu/feed.xml')
           console.log('Connected to the SQLite database.');
           const events = result.events.event;
 
-          for (const event of events) {
-            const id = event.event_id;
 
-            let sql = `INSERT INTO events (evnt_id) VALUES (?)`;
-            let values = id;
+          for (const event of events) {
+            const event_id = event.event_id;
+            const event_time = event.start_date;
+            const event_desc = event.description;
+            const loc_name = event.location;
+
+            let value1 = event_id;
+            let value2 = event_time;
+            let value3 = String(event_desc).replace(/'/g, "''");
+            let value4 = loc_name;
+            
+            
+            let sql = `
+              INSERT INTO events (evnt_id, evnt_time, evnt_desc) VALUES ('${value1}', '${value2}', '${value3}')
+              INSERT INTO at (loc_name, evnt_id) VALUES ('${value4}', '${value1}')
+              `;
+              //INSERT INTO loaction_table (loc_name, addy, longitude, latitude) VALUES ()
+              //what should we do for the usr_ids of the ucf events?
+
+
             // Execute the insert statement
-            db.run(sql, values, function(err) {
+            db.exec(sql, function(err) {
                 if (err) {
-                    return console.error(err.message);
+                    console.error(err);
                 }
-                console.log(`Rows inserted ${this.changes}`);
+                console.log(`Rows inserted succysess`);
             });
           }
+          db.close();
         }
       });
     });
