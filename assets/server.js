@@ -62,7 +62,7 @@ fetch("https://events.ucf.edu/feed.xml")
               if (err) {
                 console.error(err);
               }
-              console.log(`Rows inserted events`);
+              console.log(`Rows inserted into: events`);
             });
 
             sql = `
@@ -73,7 +73,7 @@ fetch("https://events.ucf.edu/feed.xml")
               if (err) {
                 console.error(err);
               }
-              console.log(`Rows inserted into at`);
+              console.log(`Rows inserted into: at`);
             });
           }
           db.close();
@@ -91,10 +91,20 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-/*
-app.get('/getData', async (req, res) => {
-  const result = await parseBooleans.query('select * From events');
-  res.json(result.rows);
-});
 
-*/
+app.get('/getData', (req, res) => {
+  let db = new sqlite3.Database("./assets/sqlite.db", sqlite3.OPEN_READONLY, (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+  });
+
+  db.all('SELECT * FROM events', [], (err, rows) => {
+    if (err) {
+      throw err;
+    }
+    res.json(rows);
+  });
+
+  db.close();
+});
