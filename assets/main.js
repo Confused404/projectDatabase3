@@ -1,3 +1,4 @@
+let log = console.log;
 let buttons = document.querySelectorAll(".user");
 
 // Add event listener to each button
@@ -20,3 +21,48 @@ buttons.forEach(function (button) {
     }
   });
 });
+
+// Check radio button
+let radioButtons = document.querySelector('form[action="signup"]').querySelectorAll('input[type="radio"')
+ radioButtons.forEach(function (radioButton){
+  radioButton.addEventListener("change", function(event) {
+  let univeristyFields = document.getElementById("universityFields");
+  log(this);
+  if(this.id === "university"){
+    log("in university");
+    univeristyFields.style.display = 'block';
+  }
+  else{
+    univeristyFields.style.display = 'none';
+  }
+  event.preventDefault();
+})
+ })
+ 
+
+ // check sign up form submit
+
+ document.querySelector('form[action="signup"]').addEventListener('submit', function(event){
+    event.preventDefault();
+    let formData = new FormData(this);
+    // Send form data to the server
+    fetch('assets/server.js/signup', { 
+      method: 'POST',
+      body: formData
+  })
+  .then(response => {
+    if (response.ok) {
+      return response.json();
+    }
+    throw new Error('Network response was not ok.');
+  })
+  .then(data => {
+    console.log('Signup successful:', data);
+    // Optionally, you can redirect the user to another page or show a success message here
+  })
+  .catch(error => {
+    console.error('Error during signup:', error);
+    // Optionally, you can show an error message to the user here
+  });
+});
+

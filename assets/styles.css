@@ -164,17 +164,37 @@ body {
 */
 /* FORMS */
 
+
 .form-div {
   display: none;
   position: fixed;
-  top: 30%;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  height: 40%; /* Adjust height as needed */
-  width: 40%; /* Adjust width as needed */
+  
+  width: 45%; /* Adjust width as needed */
   z-index: 999; /* Ensure the form box appears above other content */
   /* background-color: #ffffff; White background */
 }
+
+.radio-text {
+  display:flex;
+  justify-content: space-between;
+  margin-right: 50px;
+  margin-left: 50px;
+}
+
+.radio-group {
+  display:flex;
+  justify-content: space-between;
+}
+
+.radio-group input[type="radio"] {
+  margin-right: 50px;
+  margin-left: 50px;
+}
+
+
 
 form {
   background-image: url("login.png");
@@ -252,4 +272,10 @@ form input[type="submit"] {
 
 form input[type="submit"]:hover {
   background-color: #45a049;
+}
+
+/* SIGNUP */
+
+#universityFields{
+  display: none;
 }

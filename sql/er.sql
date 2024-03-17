@@ -12,7 +12,7 @@ CREATE TABLE comments (
 );
 
 CREATE TABLE at (
-    loc_name VARCHAR(30),
+    loc_name VARCHAR(8000),
     evnt_id INT,
     PRIMARY KEY(loc_name, evnt_id),
     FOREIGN KEY(loc_name) REFERENCES location_table(loc_name),
@@ -20,8 +20,8 @@ CREATE TABLE at (
 );
 
 CREATE TABLE location_table (
-    loc_name VARCHAR(30),
-    addy VARCHAR(30),
+    loc_name VARCHAR(8000),
+    addy VARCHAR(8000),
     longitude VARCHAR(40),
     latitude VARCHAR(40),
     PRIMARY KEY(loc_name)
@@ -99,7 +99,7 @@ CREATE TABLE join_table (
 CREATE TABLE universities (
     usr_id INT,
     univ_name VARCHAR(40),
-    loc_name VARCHAR(50),
+    loc_name VARCHAR(8000),
     univ_desc VARCHAR(8000),
     num_students INT,
     PRIMARY KEY (usr_id),
