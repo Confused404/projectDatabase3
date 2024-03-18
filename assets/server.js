@@ -4,14 +4,16 @@ const path = require("path");
 const xml2js = require("xml2js");
 const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
+const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = 8080;
+const PORT = 3000;
 
 // Serve static files from the 'public' directory
 console.log(path.join(__dirname, ".."));
 app.use(express.static(path.join(__dirname, "..")));
-
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 // URL of the XML file you want to fetch
 const url = "https://events.ucf.edu/2024/3/4/feed.xml";
 
@@ -94,6 +96,7 @@ app.listen(PORT, () => {
 });
 
 
+// returns data from events table in DB
 app.get('/getData', (req, res) => {
   let db = new sqlite3.Database("./assets/sqlite.db", sqlite3.OPEN_READONLY, (err) => {
     if (err) {
@@ -109,4 +112,52 @@ app.get('/getData', (req, res) => {
   });
 
   db.close();
+});
+
+// Setup route to receive signup information
+app.post('/signup', (req, res) => {
+  // Extract form data from request body
+  console.log(req.body)
+
+  const formData = req.body;
+  // Process the form data (you can save it to a database, send emails, etc.)
+  // For demonstration purposes, let's just send back the received data
+
+  let db = new sqlite3.Database("./assets/sqlite.db", sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    
+    let value1 = formData.username;
+    let value2 = formdata.password;
+    let value3 = formdata.email;
+    let sql;
+    
+    // Prepare an SQL statement
+    if(formdata.role === 'user') {
+      sql = `
+      INSERT INTO users (user_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
+      `;
+    }
+    else if(formdata.role === 'rso') {
+      sql = `
+      INSERT INTO admins (user_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
+      `;
+    }
+    else{
+      //if its a university
+      sql = `
+      INSERT INTO super_admins (user_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
+      `
+    }
+    // Execute the insert statement
+    db.run(sql, function(err) {
+      if (err) {
+        console.error(err);
+      }
+      console.log("account added to db");
+    });
+    
+    db.close();
+  });
 });

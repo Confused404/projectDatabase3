@@ -41,57 +41,68 @@ let radioButtons = document.querySelector('form[action="signup"]').querySelector
  
 
  // check sign up form submit
-
- document.querySelector('form[action="signup"]').addEventListener('submit', function(event){
-    event.preventDefault();
-    let formData = new FormData(this);
-    // Send form data to the server
-    fetch('assets/server.js/signup', { 
-      method: 'POST',
-      body: formData
-  })
-  .then(response => {
-    if (response.ok) {
-      return response.json();
+ document.addEventListener('DOMContentLoaded', function() {
+   const signupForm = document.querySelector('form[action="signup"]')
+  signupForm.addEventListener('submit', function(event){
+    const inputs = signupForm.querySelectorAll('input');
+    console.log("testing singup")
+    console.log(signupForm.role)
+    let role = signupForm.role.value
+    let allInputsValid = true;
+    if(role == ''){
+        allInputsValid = false;
     }
-    throw new Error('Network response was not ok.');
-  })
-  .then(data => {
-    console.log('Signup successful:', data);
-    // Optionally, you can redirect the user to another page or show a success message here
-  })
-  .catch(error => {
-    console.error('Error during signup:', error);
-    // Optionally, you can show an error message to the user here
-  });
-});
-
-
-fetch('http://127.0.0.1:8080/getData')
-  .then(response => response.json())
-  .then(data => {
-    // 'data' is an array of objects representing your database records
-    // You can use this data to update your HTML
-    // For example, you could create a new <p> element for each record:
-    data.forEach(record => {
-      const div = document.createElement('div'); //creates a div for one record
-      div.className = 'record';
-
-      const title = document.createElement('h1');
-      title.textContent = record.evnt_title; //get the name of the column from the record
-      div.appendChild(title); //add to div
-
-      const time = document.createElement('h2');
-      time.textContent = record.evnt_time;
-      div.appendChild(time);
-
-      //location should go here
-
-      const desc = document.createElement('p');
-      desc.innerHTML = record.evnt_desc;
-      div.appendChild(desc);
-      
-      //add div to the body
-      document.body.appendChild(div);
+    // Check if all inputs have a value
+    inputs.forEach(input => {
+        if (!input.value.trim()) {
+            // If an input is empty, set allInputsValid to false
+            if(input.parentElement.id == 'universityFields' && role != 'university'){
+             
+              return;
+            }
+            allInputsValid = false;
+        }
     });
-  });
+    event.preventDefault();
+    
+    if(allInputsValid){
+      let formData = new FormData(this);
+      let formInfo = {}
+      // console.log(formData);
+      for (const pair of formData.entries()) {
+        let key = pair[0]
+        let value = pair[1]
+        formInfo[key] = value
+      }
+      console.log(formInfo)
+      // Send form data to the server
+      const urlEncodedFormData = new URLSearchParams(formInfo).toString();
+      fetch('http://127.0.0.1:3000/signup', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+      },
+        body: urlEncodedFormData
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error('Network response was not ok.');
+    })
+    .then(data => {
+      console.log('Signup successful:', data);
+      // Optionally, you can redirect the user to another page or show a success message here
+    })
+    .catch(error => {
+      console.error('Error during signup:', error);
+      // Optionally, you can show an error message to the user here
+    });
+      }
+    else{
+      alert("please fill in all required inputs")
+      return
+  }
+    
+});
+ })
