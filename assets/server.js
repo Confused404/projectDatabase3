@@ -44,14 +44,16 @@ fetch("https://events.ucf.edu/feed.xml")
             const event_time = event.start_date;
             const event_desc = event.description;
             const loc_name = event.location;
+            const event_title = event.title;
 
             let value1 = event_id;
-            let value2 = event_time;
+            let value2 = String(event_time).replace(/-0400/g, "");
             let value3 = String(event_desc).replace(/'/g, "''");
             let value4 = String(loc_name).replace(/'/g, "''");
+            let value5 = String(event_title).replace(/'/g, "''");
 
             let sql = `
-              INSERT INTO events (evnt_id, evnt_time, evnt_desc) VALUES ('${value1}', '${value2}', '${value3}')
+              INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES ('${value1}', '${value5}', '${value2}', '${value3}')
             `;
 
             //INSERT INTO loaction_table (loc_name, addy, longitude, latitude) VALUES ()

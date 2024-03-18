@@ -74,8 +74,24 @@ fetch('http://127.0.0.1:8080/getData')
     // You can use this data to update your HTML
     // For example, you could create a new <p> element for each record:
     data.forEach(record => {
-      const p = document.createElement('h3');
-      p.textContent = record.evnt_id; // replace 'yourColumnName' with the name of a column in your table
-      document.body.appendChild(p);
+      const div = document.createElement('div'); //creates a div for one record
+      div.className = 'record';
+
+      const title = document.createElement('h1');
+      title.textContent = record.evnt_title; //get the name of the column from the record
+      div.appendChild(title); //add to div
+
+      const time = document.createElement('h2');
+      time.textContent = record.evnt_time;
+      div.appendChild(time);
+
+      //location should go here
+
+      const desc = document.createElement('p');
+      desc.innerHTML = record.evnt_desc;
+      div.appendChild(desc);
+      
+      //add div to the body
+      document.body.appendChild(div);
     });
   });
