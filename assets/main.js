@@ -23,86 +23,139 @@ buttons.forEach(function (button) {
 });
 
 // Check radio button
-let radioButtons = document.querySelector('form[action="signup"]').querySelectorAll('input[type="radio"')
- radioButtons.forEach(function (radioButton){
-  radioButton.addEventListener("change", function(event) {
-  let univeristyFields = document.getElementById("universityFields");
-  log(this);
-  if(this.id === "university"){
-    log("in university");
-    univeristyFields.style.display = 'block';
-  }
-  else{
-    univeristyFields.style.display = 'none';
-  }
-  event.preventDefault();
-})
- })
- 
+let radioButtons = document
+  .querySelector('form[action="signup"]')
+  .querySelectorAll('input[type="radio"');
+radioButtons.forEach(function (radioButton) {
+  radioButton.addEventListener("change", function (event) {
+    let univeristyFields = document.getElementById("universityFields");
+    log(this);
+    if (this.id === "university") {
+      log("in university");
+      univeristyFields.style.display = "block";
+    } else {
+      univeristyFields.style.display = "none";
+    }
+    event.preventDefault();
+  });
+});
 
- // check sign up form submit
- document.addEventListener('DOMContentLoaded', function() {
-   const signupForm = document.querySelector('form[action="signup"]')
-  signupForm.addEventListener('submit', function(event){
-    const inputs = signupForm.querySelectorAll('input');
-    console.log("testing singup")
-    console.log(signupForm.role)
-    let role = signupForm.role.value
+// check sign up form submit
+document.addEventListener("DOMContentLoaded", function () {
+  const signupForm = document.querySelector('form[action="signup"]');
+  signupForm.addEventListener("submit", function (event) {
+    const inputs = signupForm.querySelectorAll("input");
+    console.log("testing singup");
+    console.log(signupForm.role);
+    let role = signupForm.role.value;
     let allInputsValid = true;
-    if(role == ''){
-        allInputsValid = false;
+    if (role == "") {
+      allInputsValid = false;
     }
     // Check if all inputs have a value
-    inputs.forEach(input => {
-        if (!input.value.trim()) {
-            // If an input is empty, set allInputsValid to false
-            if(input.parentElement.id == 'universityFields' && role != 'university'){
-             
-              return;
-            }
-            allInputsValid = false;
+    inputs.forEach((input) => {
+      if (!input.value.trim()) {
+        // If an input is empty, set allInputsValid to false
+        if (
+          input.parentElement.id == "universityFields" &&
+          role != "university"
+        ) {
+          return;
         }
+        allInputsValid = false;
+      }
     });
     event.preventDefault();
-    
-    if(allInputsValid){
+
+    if (allInputsValid) {
       let formData = new FormData(this);
-      let formInfo = {}
+      let formInfo = {};
       // console.log(formData);
       for (const pair of formData.entries()) {
-        let key = pair[0]
-        let value = pair[1]
-        formInfo[key] = value
+        let key = pair[0];
+        let value = pair[1];
+        formInfo[key] = value;
       }
-      console.log(formInfo)
+      console.log(formInfo);
       // Send form data to the server
       const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-      fetch('http://127.0.0.1:3000/signup', { 
-        method: 'POST',
+      fetch("http://127.0.0.1:3000/signup", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-      },
-        body: urlEncodedFormData
-    })
-    .then(response => {
-      if (response.ok) {
-        return response.json();
-      }
-      throw new Error('Network response was not ok.');
-    })
-    .then(data => {
-      console.log('Signup successful:', data);
-      // Optionally, you can redirect the user to another page or show a success message here
-    })
-    .catch(error => {
-      console.error('Error during signup:', error);
-      // Optionally, you can show an error message to the user here
-    });
-      }
-    else{
-      alert("please fill in all required inputs")
-      return
-  }
-    
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: urlEncodedFormData,
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error("Network response was not ok.");
+        })
+        .then((data) => {
+          console.log("Signup successful:", data);
+          // Optionally, you can redirect the user to another page or show a success message here
+        })
+        .catch((error) => {
+          console.error("Error during signup:", error);
+          // Optionally, you can show an error message to the user here
+        });
+    } else {
+      alert("please fill in all required inputs");
+      return;
+    }
+  });
 });
- })
+
+// Login form validation
+document.addEventListener("DOMContentLoaded", function () {
+  const loginForm = document.querySelector('form[action="login"]');
+
+  loginForm.addEventListener("submit", function (event) {
+    const inputs = loginForm.querySelectorAll("input");
+
+    let allInputsValid = true;
+    inputs.forEach((input) => {
+      if (!input.value.trim()) {
+        allInputsValid = false;
+      }
+    });
+    if (allInputsValid) {
+      let formData = new FormData(this);
+      let formInfo = {};
+      // console.log(formData);
+      for (const pair of formData.entries()) {
+        let key = pair[0];
+        let value = pair[1];
+        formInfo[key] = value;
+      }
+      console.log(formInfo);
+      // Send form data to the server
+      const urlEncodedFormData = new URLSearchParams(formInfo).toString();
+      fetch("http://127.0.0.1:3000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: urlEncodedFormData,
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error("Network response was not ok.");
+        })
+        .then((data) => {
+          console.log("Signup successful:", data);
+          // Optionally, you can redirect the user to another page or show a success message here
+        })
+        .catch((error) => {
+          console.error("Error during signup:", error);
+          // Optionally, you can show an error message to the user here
+        });
+    } else {
+      alert("please fill in all required inputs");
+      return;
+    }
+  });
+});
