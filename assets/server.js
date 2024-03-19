@@ -198,23 +198,22 @@ app.post("/login", (req, res) => {
       }
     }
   );
-  let tablesToCheck = ["superadmin, admin, user"];
-  tablesToCheck.forEach((table) => {
-    db.get(
-      `SELECT * FROM ${table} WHERE usr_id = ? AND password = ?`,
-      [loginInfo.username, loginInfo.password],
-      (error, row) => {
-        if (error) {
-          console.log(`Error querying ${table}:`, error);
-          return; // Added return statement to exit the callback function on error
-        }
-
-        if (row) {
-          console.log(`This data exists in ${table}`);
-        } else {
-          console.log(`This data does not exist in ${table}`);
-        }
-      }
-    );
+  let tablesToCheck = ["super_admins", "admins", "users"];
+  let queries = tablesToCheck.map(table => 
+    `SELECT * FROM ${table} WHERE usr_id = '${loginInfo.username}' AND password = '${loginInfo.password}'`
+  );
+  let sql = queries.join(" UNION ");
+  
+  db.all(sql, [], (error, rows) => {
+    if (error) {
+      console.log(`Error querying ${tablesToCheck.join(", ")}:`, error);
+      return;
+    }
+  
+    if (rows.length > 0) {
+      console.log(`This data exists`);
+    } else {
+      console.log(`This data does not exist`);
+    }
   });
 });
