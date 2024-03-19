@@ -120,6 +120,7 @@ app.post('/signup', (req, res) => {
   console.log(req.body)
 
   const formData = req.body;
+  console.log("form data for username: " + formData.username);
   // Process the form data (you can save it to a database, send emails, etc.)
   // For demonstration purposes, let's just send back the received data
 
@@ -129,25 +130,41 @@ app.post('/signup', (req, res) => {
     }
     
     let value1 = formData.username;
-    let value2 = formdata.password;
-    let value3 = formdata.email;
+    let value2 = formData.password;
+    let value3 = String(formData.school_email);
+    let value4 = formData.university_name;
+    let value5 = formData.loc_name;
+    let value6 = String(formData.university_desc).replace(/'/g, "''");
+    let value7 = formData.num_students;
     let sql;
     
     // Prepare an SQL statement
-    if(formdata.role === 'user') {
+    if(formData.role === 'user') {
       sql = `
-      INSERT INTO users (user_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
+        INSERT INTO users (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
       `;
     }
-    else if(formdata.role === 'rso') {
+    else if(formData.role === 'rso') {
       sql = `
-      INSERT INTO admins (user_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
+        INSERT INTO admins (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
       `;
     }
     else{
       //if its a university
+
       sql = `
-      INSERT INTO super_admins (user_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
+        INSERT INTO universities (usr_id, univ_name, loc_name, univ_desc, num_students) VALUES ('${value1}', '${value4}', '${value5}', '${value6}', '${value7}')
+      `;
+
+      db.run(sql, function(err) {
+        if (err) {
+          console.error(err);
+        }
+        console.log("University added to db");
+      });
+
+      sql = `
+        INSERT INTO super_admins (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
       `
     }
     // Execute the insert statement
