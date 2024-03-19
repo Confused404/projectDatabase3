@@ -1,5 +1,6 @@
 CREATE TABLE events (
     evnt_id INT,
+  	evnt_title VARCHAR(50),
     evnt_time VARCHAR(30),
     evnt_desc VARCHAR(8000),
     PRIMARY KEY(evnt_id)
@@ -35,7 +36,7 @@ CREATE TABLE rso_events (
     FOREIGN KEY(evnt_id) REFERENCES events(evnt_id)
 );
 
-CREATE TABLE owns ( 
+CREATE TABLE owns (
     usr_id INT,
     evnt_id INT,
     PRIMARY KEY (usr_id, evnt_id),
@@ -75,17 +76,23 @@ CREATE TABLE rsos (
 
 CREATE TABLE users (
     usr_id INT,
+  	password VARCHAR(50),
+  	email VARCHAR(50),
     PRIMARY KEY(usr_id)
 );
 
 CREATE TABLE admins (
     usr_id INT,
+  	password VARCHAR(50),
+  	email VARCHAR(50),
     PRIMARY KEY(usr_id),
     FOREIGN KEY(usr_id) REFERENCES users(usr_id)
 );
 
 CREATE TABLE super_admins (
     usr_id INT,
+  	password VARCHAR(50),
+  	email VARCHAR(50),
     PRIMARY KEY(usr_id),
     FOREIGN KEY(usr_id) REFERENCES users(usr_id)
 );
@@ -106,3 +113,4 @@ CREATE TABLE universities (
     FOREIGN KEY (usr_id) REFERENCES super_admins (usr_id),
     FOREIGN KEY (loc_name) REFERENCES location_table (loc_name)
 );
+
