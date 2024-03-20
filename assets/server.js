@@ -125,8 +125,24 @@ app.post("/signup", (req, res) => {
   const formData = req.body;
   console.log("form data for username: " + formData.username);
   // Process the form data (you can save it to a database, send emails, etc.)
-  // For demonstration purposes, let's just send back the received data
 
+  // check if signup info not already taken!
+  let validLogin = false;
+  authenticateUser(userInfo, (err, isValid) => {
+    if (err) {
+      res.status(500).send(err);
+    } else if (!isValid) {
+      res.status(401).send("Invalid login");
+      return;
+    } else {
+      validLogin = true;
+      res.status(200).send("Valid Login");
+    }
+  });
+  if (!validLogin) {
+    console.log("Account already created! MAKE A NEW ONE!");
+    return;
+  }
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
     sqlite3.OPEN_READWRITE,
@@ -187,33 +203,78 @@ app.post("/signup", (req, res) => {
 app.post("/login", (req, res) => {
   // Extract form data from request body
   console.log(req.body);
-  let loginInfo = req.body;
+  let userInfo = req.body;
 
+  authenticateUser(userInfo, (err, isValid) => {
+    if (err) {
+      res.status(500).send(err);
+    } else if (!isValid) {
+      res.status(401).send("Invalid login");
+    } else {
+      res.status(200).send("Valid Login");
+    }
+  });
+});
+
+// Reusable function to authenticate user
+const authenticateUser = (userInfo, callback) => {
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
     sqlite3.OPEN_READWRITE,
     (err) => {
       if (err) {
         console.error(err.message);
+        callback("Internal server error");
+        return;
       }
+
+      // Define tables to check
+      const tablesToCheck = ["super_admins", "admins", "users"];
+
+      // Function to perform a single database query
+      const performQuery = (table) => {
+        return new Promise((resolve, reject) => {
+          db.get(
+            `SELECT * FROM ${table} WHERE usr_id = ? AND password = ?`,
+            [userInfo.username, userInfo.password],
+            (error, row) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(row);
+              }
+            }
+          );
+        });
+      };
+
+      // Array of promises for each table query
+      const tableQueries = tablesToCheck.map((table) =>
+        performQuery(db, table, userInfo)
+      );
+
+      // Execute all promises concurrently
+      Promise.all(tableQueries)
+        .then((results) => {
+          // Check if any row is found (invalid login)
+          const isInvalidLogin = results.some((row) => row !== null);
+          if (isInvalidLogin) {
+            console.log("Invalid login");
+            callback(null, false);
+          } else {
+            // If the user is not found in any table, it's a valid login or signup
+            console.log("Valid login/signup");
+            callback(null, true);
+          }
+        })
+        .catch((error) => {
+          console.error("Error querying tables:", error);
+          callback("Internal server error");
+        })
+        .finally(() => {
+          // Close the database connection after all queries are completed
+          db.close();
+        });
     }
   );
-  let tablesToCheck = ["super_admins", "admins", "users"];
-  let queries = tablesToCheck.map(table => 
-    `SELECT * FROM ${table} WHERE usr_id = '${loginInfo.username}' AND password = '${loginInfo.password}'`
-  );
-  let sql = queries.join(" UNION ");
-  
-  db.all(sql, [], (error, rows) => {
-    if (error) {
-      console.log(`Error querying ${tablesToCheck.join(", ")}:`, error);
-      return;
-    }
-  
-    if (rows.length > 0) {
-      console.log(`This data exists`);
-    } else {
-      console.log(`This data does not exist`);
-    }
-  });
-});
+};
