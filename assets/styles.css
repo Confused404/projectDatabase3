@@ -256,6 +256,11 @@ form input {
   color: rgb(15, 14, 14);
 }
 
+#event_desc {
+  width: 80%;
+  height: 5em;
+}
+
 .login-form input[type="text"],
 .login-form input[type="password"] {
   width: 150%;

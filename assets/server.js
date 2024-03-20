@@ -120,86 +120,85 @@ app.get("/getData", (req, res) => {
 // Setup route to receive signup information
 app.post("/signup", (req, res) => {
   // Extract form data from request body
-  console.log(req.body);
+  //console.log(req.body);
 
-  const formData = req.body;
-  console.log("form data for username: " + formData.username);
+  const userInfo = req.body;
+  //console.log("form data for username: " + userInfo.username);
   // Process the form data (you can save it to a database, send emails, etc.)
 
   // check if signup info not already taken!
-  let validLogin = false;
+  let validSignup = false;
   authenticateUser(userInfo, (err, isValid) => {
     if (err) {
       res.status(500).send(err);
     } else if (!isValid) {
-      res.status(401).send("Invalid login");
+      console.log("inside !isvalid else");
+      res.status(401).send("Invalid signup");
       return;
     } else {
-      validLogin = true;
-      res.status(200).send("Valid Login");
-    }
-  });
-  if (!validLogin) {
-    console.log("Account already created! MAKE A NEW ONE!");
-    return;
-  }
-  let db = new sqlite3.Database(
-    "./assets/sqlite.db",
-    sqlite3.OPEN_READWRITE,
-    (err) => {
-      if (err) {
-        console.error(err.message);
-      }
-
-      let value1 = formData.username;
-      let value2 = formData.password;
-      let value3 = String(formData.school_email);
-      let value4 = formData.university_name;
-      let value5 = formData.loc_name;
-      let value6 = String(formData.university_desc).replace(/'/g, "''");
-      let value7 = formData.num_students;
-      let sql;
-
-      // Prepare an SQL statement
-      if (formData.role === "user") {
-        sql = `
-        INSERT INTO users (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
-      `;
-      } else if (formData.role === "rso") {
-        sql = `
-        INSERT INTO admins (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
-      `;
-      } else {
-        //if its a university
-
-        sql = `
-        INSERT INTO universities (usr_id, univ_name, loc_name, univ_desc, num_students) VALUES ('${value1}', '${value4}', '${value5}', '${value6}', '${value7}')
-      `;
-
-        db.run(sql, function (err) {
+      console.log("inside else statement");
+      validSignup = true;
+      res.status(200).send("Valid signup");
+      console.log("valid signup check: " + validSignup);
+      
+      let db = new sqlite3.Database(
+        "./assets/sqlite.db",
+        sqlite3.OPEN_READWRITE,
+        (err) => {
           if (err) {
-            console.error(err);
+            console.error(err.message);
           }
-          console.log("University added to db");
-        });
-
-        sql = `
-        INSERT INTO super_admins (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
-      `;
-      }
-      // Execute the insert statement
-      db.run(sql, function (err) {
-        if (err) {
-          console.error(err);
+        
+          let value1 = userInfo.username;
+          let value2 = userInfo.password;
+          let value3 = String(userInfo.school_email);
+          let value4 = userInfo.university_name;
+          let value5 = userInfo.loc_name;
+          let value6 = String(userInfo.university_desc).replace(/'/g, "''");
+          let value7 = userInfo.num_students;
+          let sql;
+        
+          // Prepare an SQL statement
+          if (userInfo.role === "user") {
+            sql = `
+            INSERT INTO users (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
+          `;
+          } else if (userInfo.role === "rso") {
+            sql = `
+            INSERT INTO admins (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
+          `;
+          } else {
+            //if its a university
+          
+            sql = `
+            INSERT INTO universities (usr_id, univ_name, loc_name, univ_desc, num_students) VALUES ('${value1}', '${value4}', '${value5}', '${value6}', '${value7}')
+          `;
+          
+            db.run(sql, function (err) {
+              if (err) {
+                console.error(err);
+              }
+              console.log("University added to db");
+            });
+          
+            sql = `
+            INSERT INTO super_admins (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
+          `;
+          }
+          // Execute the insert statement
+          db.run(sql, function (err) {
+            if (err) {
+              console.error(err);
+            }
+            console.log("account added to db");
+          });
+        
+          db.close();
         }
-        console.log("account added to db");
-      });
-
-      db.close();
-    }
-  );
+      );
+    };
+  });
 });
-
 app.post("/login", (req, res) => {
   // Extract form data from request body
   console.log(req.body);
@@ -209,15 +208,16 @@ app.post("/login", (req, res) => {
     if (err) {
       res.status(500).send(err);
     } else if (!isValid) {
-      res.status(401).send("Invalid login");
+      res.status(401).send("Valid login");
     } else {
-      res.status(200).send("Valid Login");
+      res.status(200).send("Invalid Login");
     }
   });
 });
 
 // Reusable function to authenticate user
 const authenticateUser = (userInfo, callback) => {
+  console.log(userInfo);
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
     sqlite3.OPEN_READWRITE,
@@ -250,20 +250,24 @@ const authenticateUser = (userInfo, callback) => {
 
       // Array of promises for each table query
       const tableQueries = tablesToCheck.map((table) =>
-        performQuery(db, table, userInfo)
+        performQuery(table)
       );
 
       // Execute all promises concurrently
       Promise.all(tableQueries)
         .then((results) => {
           // Check if any row is found (invalid login)
-          const isInvalidLogin = results.some((row) => row !== null);
-          if (isInvalidLogin) {
-            console.log("Invalid login");
+          results.forEach((result) => console.log(results));
+          console.log(results.length);
+          const whateverthefuck = results.some((row) => row !== undefined);
+
+          console.log(whateverthefuck);
+          if (whateverthefuck) {
             callback(null, false);
+            //signup is checking for a true to be true
           } else {
             // If the user is not found in any table, it's a valid login or signup
-            console.log("Valid login/signup");
+            //signup is checking for a false ot be true
             callback(null, true);
           }
         })
