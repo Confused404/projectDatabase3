@@ -35,6 +35,7 @@ body {
   display: inline-block;
   transition-duration: 0.4s;
   cursor: pointer;
+  
 }
 
 .yellow-button:hover {
@@ -59,6 +60,8 @@ body {
   flex-shrink: 0;
   background-image: url("eventio-logo-only.png");
   background-size: contain;
+  background-repeat: no-repeat;
+  padding-bottom: 3.5%; /* Add this line */
 }
 
 .events-tab {
@@ -216,6 +219,17 @@ form {
   justify-content: center;
   align-items: center;
 }
+
+#RSO_creation_box {
+  position:absolute;
+  top: 88%;
+}
+
+#Event_creation_box {
+  top: 35%;
+  position: absolute;
+}
+
 form h3 {
   text-decoration: underline;
   color: rgb(152, 200, 230);
@@ -259,6 +273,7 @@ form input {
 #event_desc {
   width: 80%;
   height: 5em;
+  margin-bottom: 1%;
 }
 
 .login-form input[type="text"],

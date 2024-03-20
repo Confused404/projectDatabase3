@@ -159,3 +159,105 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
+////
+////
+//Not sure if this will work kinda scared..
+// Event creation form validation and submission
+document.addEventListener("DOMContentLoaded", function () {
+  const eventCreationForm = document.querySelector('form[action="create-Event"]');
+
+  eventCreationForm.addEventListener("submit", function (event) {
+    const inputs = eventCreationForm.querySelectorAll("input");
+
+    let allInputsValid = true;
+    inputs.forEach((input) => {
+      if (!input.value.trim()) {
+        allInputsValid = false;
+      }
+    });
+    if (allInputsValid) {
+      let formData = new FormData(this);
+      let formInfo = {};
+      for (const pair of formData.entries()) {
+        let key = pair[0];
+        let value = pair[1];
+        formInfo[key] = value;
+      }
+      console.log(formInfo);
+      // Send form data to the server
+      const urlEncodedFormData = new URLSearchParams(formInfo).toString();
+      fetch("http://127.0.0.1:3000/create-Event", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: urlEncodedFormData,
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error("Network response was not ok.");
+        })
+        .then((data) => {
+          console.log("Event creation successful:", data);
+        })
+        .catch((error) => {
+          console.error("Error during event creation:", error);
+        });
+    } else {
+      alert("please fill in all required inputs");
+      return;
+    }
+  });
+});
+
+// RSO creation form validation and submission
+document.addEventListener("DOMContentLoaded", function () {
+  const rsoCreationForm = document.querySelector('form[action="create-RSO"]');
+
+  rsoCreationForm.addEventListener("submit", function (event) {
+    const inputs = rsoCreationForm.querySelectorAll("input");
+
+    let allInputsValid = true;
+    inputs.forEach((input) => {
+      if (!input.value.trim()) {
+        allInputsValid = false;
+      }
+    });
+    if (allInputsValid) {
+      let formData = new FormData(this);
+      let formInfo = {};
+      for (const pair of formData.entries()) {
+        let key = pair[0];
+        let value = pair[1];
+        formInfo[key] = value;
+      }
+      console.log(formInfo);
+      // Send form data to the server
+      const urlEncodedFormData = new URLSearchParams(formInfo).toString();
+      fetch("http://127.0.0.1:3000/create-RSO", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: urlEncodedFormData,
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error("Network response was not ok.");
+        })
+        .then((data) => {
+          console.log("RSO creation successful:", data);
+        })
+        .catch((error) => {
+          console.error("Error during RSO creation:", error);
+        });
+    } else {
+      alert("please fill in all required inputs");
+      return;
+    }
+  });
+});
