@@ -74,7 +74,16 @@
         </form>
       </div>
       <div class="flexbox-container2">
-        
+        <form action="create-Event" method="POST">
+            <h3>Create Event</h3>
+            <label for="event_title">Name of Event:</label>
+            <input type="text" class="event_title" name="event_title" /><br />
+            <label for="event_time">Time of Event:</label>
+            <input type="text" class="event_time" name="event_time" /><br />
+            <label for="event_desc">Description:</label>
+            <textarea id="event_desc" name="event_desc"></textarea><br>
+            
+        </form>
       </div>
       <script src="assets/main.js"></script>
 </body>
