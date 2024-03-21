@@ -11,7 +11,7 @@ fetch(`${serverAddress}/getData`)
       eventDiv.className = "record";
 
       const eventTitle = document.createElement("h1");
-      eventTitle.textContent = record.evnt_eventTitle;
+      eventTitle.textContent = record.evnt_title;
       eventDiv.appendChild(eventTitle);
 
       const eventTime = document.createElement("h2");
@@ -21,7 +21,7 @@ fetch(`${serverAddress}/getData`)
       //location should go here
 
       const eventDesc = document.createElement("p");
-      eventDesc.innerHTML = record.evnt_eventDesc;
+      eventDesc.innerHTML = record.evnt_desc;
       eventDiv.appendChild(eventDesc);
 
       // do something to get the comments
@@ -33,8 +33,8 @@ fetch(`${serverAddress}/getData`)
       const commentArea = document.createElement("textarea");
       commentArea.textContent = "Comment on this event!";
       insertCommenteventDiv.appendChild(commentArea);
-      const sumbitCommentButton = document.createElement("button");
-      sumbitCommentButton.textContent = "Submit";
+      const submitCommentButton = document.createElement("button");
+      submitCommentButton.textContent = "Submit";
 
       const ratingDiv = document.createElement("ratingDiv");
       ratingDiv.className = "rating_div";
@@ -53,7 +53,7 @@ fetch(`${serverAddress}/getData`)
       ratingInput.value = "3";
       ratingDiv.appendChild(ratingInput);
 
-      ratingDiv.sumbitCommentButton.addEventListener("click", function (event) {
+      ratingDiv.submitCommentButton.addEventListener("click", function (event) {
         const commentText = commentArea.value;
         const ratingNum = ratingInput.value;
 
@@ -82,7 +82,7 @@ fetch(`${serverAddress}/getData`)
             // Optionally, you can show an error message to the user here
           });
       });
-      insertCommentDiv.appendChild(sumbitCommentButton);
+      insertCommentDiv.appendChild(submitCommentButton);
       const editCommentButton = document.createElement("button");
       editCommentButton.textContent = "Edit Comment";
       editCommentButton.addEventListener("click", function (event) {
