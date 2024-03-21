@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(formInfo);
       // Send form data to the server
       const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-      fetch("http://127.0.0.1:3000/signup", {
+      fetch("localhost:3000/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(formInfo);
       // Send form data to the server
       const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-      fetch("http://127.0.0.1:3000/login", {
+      fetch("localhost:3000/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -164,7 +164,9 @@ document.addEventListener("DOMContentLoaded", function () {
 //Not sure if this will work kinda scared..
 // Event creation form validation and submission
 document.addEventListener("DOMContentLoaded", function () {
-  const eventCreationForm = document.querySelector('form[action="create-Event"]');
+  const eventCreationForm = document.querySelector(
+    'form[action="create-Event"]'
+  );
 
   eventCreationForm.addEventListener("submit", function (event) {
     const inputs = eventCreationForm.querySelectorAll("input");
@@ -236,7 +238,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(formInfo);
       // Send form data to the server
       const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-      fetch("http://127.0.0.1:3000/create-RSO", {
+      fetch("localhost:3000:3000/create-RSO", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
