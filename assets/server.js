@@ -140,7 +140,7 @@ app.post("/signup", (req, res) => {
       validSignup = true;
       res.status(200).send("Valid signup");
       console.log("valid signup check: " + validSignup);
-
+      
       let db = new sqlite3.Database(
         "./assets/sqlite.db",
         sqlite3.OPEN_READWRITE,
@@ -148,7 +148,7 @@ app.post("/signup", (req, res) => {
           if (err) {
             console.error(err.message);
           }
-
+        
           let value1 = userInfo.username;
           let value2 = userInfo.password;
           let value3 = String(userInfo.school_email);
@@ -157,7 +157,7 @@ app.post("/signup", (req, res) => {
           let value6 = String(userInfo.university_desc).replace(/'/g, "''");
           let value7 = userInfo.num_students;
           let sql;
-
+        
           // Prepare an SQL statement
           if (userInfo.role === "user") {
             sql = `
@@ -169,18 +169,18 @@ app.post("/signup", (req, res) => {
           `;
           } else {
             //if its a university
-
+          
             sql = `
             INSERT INTO universities (usr_id, univ_name, loc_name, univ_desc, num_students) VALUES ('${value1}', '${value4}', '${value5}', '${value6}', '${value7}')
           `;
-
+          
             db.run(sql, function (err) {
               if (err) {
                 console.error(err);
               }
               console.log("University added to db");
             });
-
+          
             sql = `
             INSERT INTO super_admins (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
           `;
@@ -192,11 +192,11 @@ app.post("/signup", (req, res) => {
             }
             console.log("account added to db");
           });
-
+        
           db.close();
         }
       );
-    }
+    };
   });
 });
 app.post("/login", (req, res) => {
@@ -249,7 +249,9 @@ const authenticateUser = (userInfo, callback) => {
       };
 
       // Array of promises for each table query
-      const tableQueries = tablesToCheck.map((table) => performQuery(table));
+      const tableQueries = tablesToCheck.map((table) =>
+        performQuery(table)
+      );
 
       // Execute all promises concurrently
       Promise.all(tableQueries)
@@ -280,3 +282,45 @@ const authenticateUser = (userInfo, callback) => {
     }
   );
 };
+
+const uuid = require('uuid');
+
+app.post("/html/create-Event", (req, res) => {
+  // Access form data from req.body
+  const { event_title, event_time, event_desc } = req.body;
+
+  // Validate form data
+  if (event_title === '' || event_time === '' || event_desc === '') {
+    res.status(400).send('All fields are required');
+    return;
+  }
+
+  // Generate a UUID for event_id
+  const event_id = uuid.v4();
+
+  // Open a new database connection
+  let db = new sqlite3.Database("./assets/sqlite.db", sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+  });
+
+  // Insert the new event
+  let sql = `
+    INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
+  `;
+
+  db.run(sql, [event_id, event_title, event_time, event_desc], function(err) {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error inserting event into database');
+      return;
+    }
+
+    console.log(`New event inserted into database`);
+    res.status(200).send('Event successfully created');
+  });
+
+  // Close the database connection
+  db.close();
+});

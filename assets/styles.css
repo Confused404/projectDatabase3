@@ -276,6 +276,12 @@ form input {
   margin-bottom: 1%;
 }
 
+#RSO_members {
+  width: 80%;
+  height: 5em;
+  margin-bottom: 1%;
+}
+
 .login-form input[type="text"],
 .login-form input[type="password"] {
   width: 150%;
