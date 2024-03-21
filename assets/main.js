@@ -1,5 +1,6 @@
 let log = console.log;
 let buttons = document.querySelectorAll(".user");
+const serverAddress = "http://localhost:3000/";
 
 // Add event listener to each button
 buttons.forEach(function (button) {
@@ -79,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(formInfo);
       // Send form data to the server
       const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-      fetch("localhost:3000/signup", {
+      fetch(`${serverAddress}/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -132,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(formInfo);
       // Send form data to the server
       const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-      fetch("localhost:3000/login", {
+      fetch(`${serverAddress}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -188,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(formInfo);
       // Send form data to the server
       const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-      fetch("http://127.0.0.1:3000/create-Event", {
+      fetch(`${serverAddress}/create-Event`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -238,7 +239,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(formInfo);
       // Send form data to the server
       const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-      fetch("localhost:3000:3000/create-RSO", {
+      fetch(`${serverAddress}/create-RSO`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
