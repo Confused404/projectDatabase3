@@ -218,6 +218,7 @@ app.post("/login", (req, res) => {
     if (err) {
       res.status(500).send(err);
     } else if (!isValid) {
+      req.session.userId = userInfo.username;
       res.status(401).send("Valid login");
     } else {
       res.status(200).send("Invalid Login");
@@ -315,24 +316,37 @@ app.post("/html/create-Event", (req, res) => {
     }
   );
 
-  // Insert the new event
-  let sql = `
-    INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
-  `;
-
-  db.run(sql, [event_id, event_title, event_time, event_desc], function (err) {
+  db.get(`SELECT * FROM admins WHERE usr_id = ?`, [req.session.userId], (err, row) => {
     if (err) {
       console.error(err);
-      res.status(500).send("Error inserting event into database");
+      res.status(500).send("Error querying database");
       return;
     }
 
-    console.log(`New event inserted into database`);
-    res.status(200).send("Event successfully created");
-  });
+    if (!row) {
+      res.status(403).send("Only admins can create events");
+      return;
+    }
 
-  // Close the database connection
-  db.close();
+    // Insert the new event
+    let sql = `
+      INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
+    `;
+    
+    db.run(sql, [event_id, event_title, event_time, event_desc], function (err) {
+      if (err) {
+        console.error(err);
+        res.status(500).send("Error inserting event into database");
+        return;
+      }
+    
+      console.log(`New event inserted into database`);
+      res.status(200).send("Event successfully created");
+    });
+
+    // Close the database connection
+    db.close();
+  });
 });
 
 app.post("/html/create-RSO", (req, res) => {
