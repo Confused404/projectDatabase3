@@ -6,6 +6,7 @@ const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 const bodyParser = require("body-parser");
 const uuid = require("uuid");
+const session = require('express-session');
 
 const app = express();
 const PORT = 3000;
@@ -15,6 +16,14 @@ console.log(path.join(__dirname, ".."));
 app.use(express.static(path.join(__dirname, "..")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+app.use(session({
+  secret: 'cant hack us nahnahnahnahnah',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true }
+}));
+
 // URL of the XML file you want to fetch
 const url = "https://events.ucf.edu/2024/3/4/feed.xml";
 
@@ -209,6 +218,7 @@ app.post("/login", (req, res) => {
     if (err) {
       res.status(500).send(err);
     } else if (!isValid) {
+      req.session.userId = userInfo.username;
       res.status(401).send("Valid login");
     } else {
       res.status(200).send("Invalid Login");
@@ -306,24 +316,37 @@ app.post("/html/create-Event", (req, res) => {
     }
   );
 
-  // Insert the new event
-  let sql = `
-    INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
-  `;
-
-  db.run(sql, [event_id, event_title, event_time, event_desc], function (err) {
+  db.get(`SELECT * FROM admins WHERE usr_id = ?`, [req.session.userId], (err, row) => {
     if (err) {
       console.error(err);
-      res.status(500).send("Error inserting event into database");
+      res.status(500).send("Error querying database");
       return;
     }
 
-    console.log(`New event inserted into database`);
-    res.status(200).send("Event successfully created");
-  });
+    if (!row) {
+      res.status(403).send("Only admins can create events");
+      return;
+    }
 
-  // Close the database connection
-  db.close();
+    // Insert the new event
+    let sql = `
+      INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
+    `;
+    
+    db.run(sql, [event_id, event_title, event_time, event_desc], function (err) {
+      if (err) {
+        console.error(err);
+        res.status(500).send("Error inserting event into database");
+        return;
+      }
+    
+      console.log(`New event inserted into database`);
+      res.status(200).send("Event successfully created");
+    });
+
+    // Close the database connection
+    db.close();
+  });
 });
 
 app.post("/html/create-RSO", (req, res) => {
