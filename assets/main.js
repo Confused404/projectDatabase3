@@ -1,6 +1,6 @@
 let log = console.log;
 let buttons = document.querySelectorAll(".user");
-const serverAddress = "http://localhost:3000/";
+const serverAddress = "http://localhost:3000";
 
 // Add event listener to each button
 buttons.forEach(function (button) {

@@ -1,4 +1,6 @@
-fetch("http://127.0.0.1:3000/getData")
+const serverAddress = "http://localhost:3000/";
+
+fetch(`${serverAddress}/getData`)
   .then((response) => response.json())
   .then((data) => {
     // 'data' is an array of objects representing your database records
