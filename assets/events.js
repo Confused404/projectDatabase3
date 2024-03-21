@@ -24,6 +24,32 @@ fetch(`${eventServerAddress}/getData`)
       eventDesc.innerHTML = record.evnt_desc;
       eventDiv.appendChild(eventDesc);
 
+      // get eventId by querying event_title;
+
+      // Define the fetch options
+      const options = {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain",
+        },
+        body: eventTitle,
+      };
+      fetch(`${eventServerAddress}/get_event_id`, options)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.text();
+        })
+        .then((data) => {
+          console.log("Response:", data);
+        })
+        .catch((error) => {
+          console.error(
+            "There was a problem with your fetch operation:",
+            error
+          );
+        });
       // do something to get the comments
       const commentDiv = document.createElement("eventDiv");
       commentDiv.className = "comments";
@@ -31,8 +57,8 @@ fetch(`${eventServerAddress}/getData`)
       const insertCommentDiv = document.createElement("div");
       insertCommentDiv.className = "insert_comments";
       const commentArea = document.createElement("textarea");
-      commentArea.textContent = "Comment on this event!";
-      insertCommenteventDiv.appendChild(commentArea);
+      commentArea.placeholder = "Comment on this event!";
+      insertCommentDiv.appendChild(commentArea);
       const submitCommentButton = document.createElement("button");
       submitCommentButton.textContent = "Submit";
 
@@ -42,7 +68,7 @@ fetch(`${eventServerAddress}/getData`)
       for (let i = 1; i <= 5; i++) {
         const ratingNum = document.createElement("span");
         ratingNum.className = "rating";
-        ratingNum.textContent = "${i}";
+        ratingNum.textContent = `${i} `;
         ratingDiv.appendChild(ratingNum);
       }
       const ratingInput = document.createElement("input");
@@ -53,14 +79,14 @@ fetch(`${eventServerAddress}/getData`)
       ratingInput.value = "3";
       ratingDiv.appendChild(ratingInput);
 
-      ratingDiv.submitCommentButton.addEventListener("click", function (event) {
+      submitCommentButton.addEventListener("click", function (event) {
         const commentText = commentArea.value;
         const ratingNum = ratingInput.value;
 
         let commentInfo = {};
         commentInfo["commentText"] = commentText;
         commentInfo["ratingNum"] = ratingNum;
-        fetch("localhost:3000/insert_comment", {
+        fetch(`${eventServerAddress}/insert_comment`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

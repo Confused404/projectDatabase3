@@ -328,7 +328,7 @@ app.post("/html/create-Event", (req, res) => {
 
 app.post("/html/create-RSO", (req, res) => {
   // Access form data from req.body
-  const { RSO_title, RSO_members} = req.body;
+  const { RSO_title, RSO_members } = req.body;
 
   // Validate form data
   if (RSO_title === "" || RSO_members === "") {
@@ -370,8 +370,8 @@ app.post("/html/create-RSO", (req, res) => {
   db.close();
 });
 
-app.post("/insert_comment", (req, res) => {
-  console.log(req.body);
+app.post("/get_event_id", (req, res) => {
+  const eventTitle = req.body;
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
     sqlite3.OPEN_READWRITE,
@@ -383,7 +383,66 @@ app.post("/insert_comment", (req, res) => {
       }
     }
   );
-
+  const sql = "SELECT evnt_id FROM evnts WHERE evnt_title = ?";
+  db.get(sql, [eventTitle], (err, row) => {
+    if (err) {
+      throw err;
+    }
+    if (row) {
+      console.log("eventId:", row.eventId);
+    } else {
+      console.log("No event found with the specified title.");
+    }
+  });
   db.close();
 });
 
+// place comment in db
+app.post("/insert_comment", (req, res) => {
+  let db = new sqlite3.Database(
+    "./assets/sqlite.db",
+    sqlite3.OPEN_READWRITE,
+    (err) => {
+      if (err) {
+        console.error(err.message);
+        callback("Internal server error");
+        return;
+      }
+    }
+  );
+  const commentInfo = req.body;
+
+  const commentText = commentInfo.commentText;
+  const ratingNum = commentInfo.ratingNum;
+
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+  let hour = now.getHours();
+  const minute = now.getMinutes();
+  const formattedMonth = month < 10 ? `0${month}` : month;
+  const formattedDay = day < 10 ? `0${day}` : day;
+  let timeIndication = "AM";
+  if (hour > 12) {
+    hour -= 12;
+    timeIndication = "PM";
+  }
+  const formattedHour = hour < 10 ? `0${hour}` : hour;
+  const formattedMinute = minute < 10 ? `0${minute}` : minute;
+
+  const sql = `INSERT INTO comments (comnt_text, rating, time_stamp) VALUES (?, ?, ?)`;
+  const timestamp = `${formattedMonth}-${formattedDay} ${formattedHour}:${formattedMinute} ${timeIndication}`;
+  const params = [commentText, ratingNum, timestamp];
+
+  db.run(sql, params, function (err) {
+    if (err) {
+      console.error("Error inserting data:", err.message);
+      return;
+    }
+    console.log(`Rows inserted: ${this.changes}`);
+  });
+  db.close();
+});
+
+// get the comments from all the events
+app.post("/get_comments", (req, res) => {});
