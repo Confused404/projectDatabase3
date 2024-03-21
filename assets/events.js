@@ -24,7 +24,7 @@ fetch("http://127.0.0.1:3000/getData")
 
       // do something to get the comments
       const commentDiv = document.createElement("eventDiv");
-      commentseventDiv.className = "comments";
+      commentDiv.className = "comments";
 
       const insertCommentDiv = document.createElement("div");
       insertCommentDiv.className = "insert_comments";
@@ -33,14 +33,37 @@ fetch("http://127.0.0.1:3000/getData")
       insertCommenteventDiv.appendChild(commentArea);
       const sumbitCommentButton = document.createElement("button");
       sumbitCommentButton.textContent = "Submit";
-      sumbitCommentButton.addEventListener("click", function (event) {
+
+      const ratingDiv = document.createElement("ratingDiv");
+      ratingDiv.className = "rating_div";
+
+      for (let i = 1; i <= 5; i++) {
+        const ratingNum = document.createElement("span");
+        ratingNum.className = "rating";
+        ratingNum.textContent = "${i}";
+        ratingDiv.appendChild(ratingNum);
+      }
+      const ratingInput = document.createElement("input");
+      ratingInput.type = "range";
+      ratingInput.min = "1";
+      ratingInput.max = "5";
+      ratingInput.step = "1";
+      ratingInput.value = "3";
+      ratingDiv.appendChild(ratingInput);
+
+      ratingDiv.sumbitCommentButton.addEventListener("click", function (event) {
         const commentText = commentArea.value;
+        const ratingNum = ratingInput.value;
+
+        let commentInfo = {};
+        commentInfo["commentText"] = commentText;
+        commentInfo["ratingNum"] = ratingNum;
         fetch("localhost:3000/insert_comment", {
           method: "POST",
           headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Type": "application/json",
           },
-          body: commentText,
+          body: JSON.stringify(commentInfo),
         })
           .then((response) => {
             if (response.ok) {
@@ -64,7 +87,7 @@ fetch("http://127.0.0.1:3000/getData")
         console.log("edit button clicked");
       });
       insertCommentDiv.appendChild(editCommentButton);
-
+      insertCommentDiv.appendChild(ratingDiv);
       eventDiv.appendChild(insertCommentDiv);
       //add eventDiv to the body
       document.body.appendChild(eventDiv);
