@@ -1,6 +1,6 @@
-const serverAddress = "http://localhost:3000/";
+const eventServerAddress = "http://localhost:3000";
 
-fetch(`${serverAddress}/getData`)
+fetch(`${eventServerAddress}/getData`)
   .then((response) => response.json())
   .then((data) => {
     // 'data' is an array of objects representing your database records

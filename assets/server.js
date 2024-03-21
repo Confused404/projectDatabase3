@@ -326,6 +326,50 @@ app.post("/html/create-Event", (req, res) => {
   db.close();
 });
 
+app.post("/html/create-RSO", (req, res) => {
+  // Access form data from req.body
+  const { RSO_title, RSO_members} = req.body;
+
+  // Validate form data
+  if (RSO_title === "" || RSO_members === "") {
+    res.status(400).send("All fields are required");
+    return;
+  }
+
+  // Generate a UUID for RSO_id
+  const RSO_id = uuid.v4();
+
+  // Open a new database connection
+  let db = new sqlite3.Database(
+    "./assets/sqlite.db",
+    sqlite3.OPEN_READWRITE,
+    (err) => {
+      if (err) {
+        console.error(err.message);
+      }
+    }
+  );
+
+  // Insert the new RSO
+  let sql = `
+    INSERT INTO rsos (RSO_id, RSO_title, RSO_members) VALUES (?, ?, ?)
+  `;
+
+  db.run(sql, [RSO_id, RSO_title, RSO_members], function (err) {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error inserting RSO into database");
+      return;
+    }
+
+    console.log(`New RSO inserted into database`);
+    res.status(200).send("RSO successfully created");
+  });
+
+  // Close the database connection
+  db.close();
+});
+
 app.post("/insert_comment", (req, res) => {
   console.log(req.body);
   let db = new sqlite3.Database(
@@ -342,3 +386,4 @@ app.post("/insert_comment", (req, res) => {
 
   db.close();
 });
+
