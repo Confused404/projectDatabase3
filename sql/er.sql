@@ -7,9 +7,12 @@ CREATE TABLE events (
 );
 
 CREATE TABLE comments (
+  	evnt_id INT,
     comnt_text VARCHAR(8000),
     rating     INT,
-    time_stamp VARCHAR(30)
+    time_stamp VARCHAR(30),
+  	PRIMARY KEY(evnt_id),
+  	FOREIGN KEY(evnt_id) REFERENCES events(evnt_id)
 );
 
 CREATE TABLE at (
@@ -70,6 +73,9 @@ CREATE TABLE public_events (
 
 CREATE TABLE rsos (
     usr_id INT,
+  	rso_id INT,
+  	rso_title VARCHAR(50),
+  	rso_members VARCHAR(8000),
     FOREIGN KEY(usr_id) REFERENCES users(usr_id),
     PRIMARY KEY(usr_id)
 );

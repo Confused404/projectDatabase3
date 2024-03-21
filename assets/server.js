@@ -6,6 +6,7 @@ const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 const bodyParser = require("body-parser");
 const uuid = require("uuid");
+const session = require('express-session');
 
 const app = express();
 const PORT = 3000;
@@ -15,6 +16,14 @@ console.log(path.join(__dirname, ".."));
 app.use(express.static(path.join(__dirname, "..")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+app.use(session({
+  secret: 'cant hack us nahnahnahnahnah',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true }
+}));
+
 // URL of the XML file you want to fetch
 const url = "https://events.ucf.edu/2024/3/4/feed.xml";
 
