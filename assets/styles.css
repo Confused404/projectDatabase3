@@ -319,3 +319,7 @@ form input[type="submit"]:hover {
 #universityFields{
   display: none;
 }
+
+#userFields{
+  display: none;
+}
