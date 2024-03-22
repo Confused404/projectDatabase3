@@ -30,10 +30,11 @@ fetch(`${eventServerAddress}/getData`)
       const options = {
         method: "POST",
         headers: {
-          "Content-Type": "text/plain",
+          "Content-Type": "application/json",
         },
-        body: eventTitle,
+        body: JSON.stringify({ eventTitle: eventTitle.textContent }),
       };
+      let eventId;
       fetch(`${eventServerAddress}/get_event_id`, options)
         .then((response) => {
           if (!response.ok) {
@@ -42,7 +43,58 @@ fetch(`${eventServerAddress}/getData`)
           return response.text();
         })
         .then((data) => {
-          console.log("Response:", data);
+          eventId = data;
+          // do something to get the comments
+          const commentDiv = document.createElement("div");
+          commentDiv.className = "comments";
+          const commentAreaTitle = document.createElement("h2");
+          commentAreaTitle.textContent = "Comments Section";
+          commentDiv.appendChild(commentAreaTitle);
+          const getCommentsOptions = {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ evnt_id: eventId }),
+          };
+          fetch(`${eventServerAddress}/get_comments`, getCommentsOptions)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.text();
+            })
+            .then((data) => {
+              console.log(data);
+
+              const commentInfo = JSON.parse(data);
+              for (let i = 0; i < commentInfo.length; i++) {
+                const comnt_text = commentInfo[i].comnt_text;
+                const rating = commentInfo[i].rating;
+                const timestamp = commentInfo[i].time_stamp;
+                const commentHeading = document.createElement("h3");
+                const commentTextElement = document.createElement("p");
+                const ratingElement = document.createElement("p");
+                const timestampElement = document.createElement("p");
+                commentHeading.textContent = "User Comment";
+                commentTextElement.textContent = comnt_text;
+                console.log(commentTextElement);
+                ratingElement.textContent = `Rating: ${rating}`;
+                timestampElement.textContent = `Timestamp: ${timestamp}`;
+
+                commentDiv.appendChild(commentHeading);
+                commentDiv.appendChild(commentTextElement);
+                commentDiv.appendChild(ratingElement);
+                commentDiv.appendChild(timestampElement);
+              }
+              eventDiv.appendChild(commentDiv);
+            })
+            .catch((error) => {
+              console.error(
+                "There was a problem with your fetch operation:",
+                error
+              );
+            });
         })
         .catch((error) => {
           console.error(
@@ -50,9 +102,6 @@ fetch(`${eventServerAddress}/getData`)
             error
           );
         });
-      // do something to get the comments
-      const commentDiv = document.createElement("eventDiv");
-      commentDiv.className = "comments";
 
       const insertCommentDiv = document.createElement("div");
       insertCommentDiv.className = "insert_comments";
@@ -83,15 +132,16 @@ fetch(`${eventServerAddress}/getData`)
         const commentText = commentArea.value;
         const ratingNum = ratingInput.value;
 
-        let commentInfo = {};
-        commentInfo["commentText"] = commentText;
-        commentInfo["ratingNum"] = ratingNum;
+        let newCommentInfo = {};
+        newCommentInfo["commentText"] = commentText;
+        newCommentInfo["ratingNum"] = ratingNum;
+        newCommentInfo["evnt_id"] = eventId;
         fetch(`${eventServerAddress}/insert_comment`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(commentInfo),
+          body: JSON.stringify(newCommentInfo),
         })
           .then((response) => {
             if (response.ok) {
@@ -116,6 +166,7 @@ fetch(`${eventServerAddress}/getData`)
       });
       insertCommentDiv.appendChild(editCommentButton);
       insertCommentDiv.appendChild(ratingDiv);
+
       eventDiv.appendChild(insertCommentDiv);
       //add eventDiv to the body
       document.body.appendChild(eventDiv);

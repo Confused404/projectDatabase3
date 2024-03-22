@@ -6,7 +6,7 @@ const sqlite3 = require("sqlite3").verbose();
 const fetch = require("node-fetch");
 const bodyParser = require("body-parser");
 const uuid = require("uuid");
-const session = require('express-session');
+const session = require("express-session");
 
 const app = express();
 const PORT = 3000;
@@ -17,12 +17,14 @@ app.use(express.static(path.join(__dirname, "..")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.use(session({
-  secret: 'cant hack us nahnahnahnahnah',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: true }
-}));
+app.use(
+  session({
+    secret: "cant hack us nahnahnahnahnah",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: true },
+  })
+);
 
 // URL of the XML file you want to fetch
 const url = "https://events.ucf.edu/2024/3/4/feed.xml";
@@ -316,37 +318,45 @@ app.post("/html/create-Event", (req, res) => {
     }
   );
 
-  db.get(`SELECT * FROM admins WHERE usr_id = ?`, [req.session.userId], (err, row) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error querying database");
-      return;
-    }
-
-    if (!row) {
-      res.status(403).send("Only admins can create events");
-      return;
-    }
-
-    // Insert the new event
-    let sql = `
-      INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
-    `;
-    
-    db.run(sql, [event_id, event_title, event_time, event_desc], function (err) {
+  db.get(
+    `SELECT * FROM admins WHERE usr_id = ?`,
+    [req.session.userId],
+    (err, row) => {
       if (err) {
         console.error(err);
-        res.status(500).send("Error inserting event into database");
+        res.status(500).send("Error querying database");
         return;
       }
-    
-      console.log(`New event inserted into database`);
-      res.status(200).send("Event successfully created");
-    });
 
-    // Close the database connection
-    db.close();
-  });
+      if (!row) {
+        res.status(403).send("Only admins can create events");
+        return;
+      }
+
+      // Insert the new event
+      let sql = `
+      INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
+    `;
+
+      db.run(
+        sql,
+        [event_id, event_title, event_time, event_desc],
+        function (err) {
+          if (err) {
+            console.error(err);
+            res.status(500).send("Error inserting event into database");
+            return;
+          }
+
+          console.log(`New event inserted into database`);
+          res.status(200).send("Event successfully created");
+        }
+      );
+
+      // Close the database connection
+      db.close();
+    }
+  );
 });
 
 app.post("/html/create-RSO", (req, res) => {
@@ -394,7 +404,8 @@ app.post("/html/create-RSO", (req, res) => {
 });
 
 app.post("/get_event_id", (req, res) => {
-  const eventTitle = req.body;
+  const reqBody = req.body;
+  const eventTitle = reqBody.eventTitle;
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
     sqlite3.OPEN_READWRITE,
@@ -406,15 +417,19 @@ app.post("/get_event_id", (req, res) => {
       }
     }
   );
-  const sql = "SELECT evnt_id FROM evnts WHERE evnt_title = ?";
+
+  const sql = "SELECT evnt_id FROM events WHERE evnt_title = ?";
   db.get(sql, [eventTitle], (err, row) => {
     if (err) {
       throw err;
     }
     if (row) {
-      console.log("eventId:", row.eventId);
+      // console.log("server side eventId:", row);
+      const eventId = row.evnt_id;
+      res.status(200).send(eventId.toString());
     } else {
       console.log("No event found with the specified title.");
+      res.status(404);
     }
   });
   db.close();
@@ -437,6 +452,7 @@ app.post("/insert_comment", (req, res) => {
 
   const commentText = commentInfo.commentText;
   const ratingNum = commentInfo.ratingNum;
+  const evnt_id = commentInfo.evnt_id;
 
   const now = new Date();
   const month = now.getMonth() + 1;
@@ -453,9 +469,9 @@ app.post("/insert_comment", (req, res) => {
   const formattedHour = hour < 10 ? `0${hour}` : hour;
   const formattedMinute = minute < 10 ? `0${minute}` : minute;
 
-  const sql = `INSERT INTO comments (comnt_text, rating, time_stamp) VALUES (?, ?, ?)`;
+  const sql = `INSERT INTO comments (evnt_id, comnt_text, rating, time_stamp) VALUES (?, ?, ?, ?)`;
   const timestamp = `${formattedMonth}-${formattedDay} ${formattedHour}:${formattedMinute} ${timeIndication}`;
-  const params = [commentText, ratingNum, timestamp];
+  const params = [evnt_id, commentText, ratingNum, timestamp];
 
   db.run(sql, params, function (err) {
     if (err) {
@@ -468,4 +484,31 @@ app.post("/insert_comment", (req, res) => {
 });
 
 // get the comments from all the events
-app.post("/get_comments", (req, res) => {});
+app.post("/get_comments", (req, res) => {
+  const reqBody = req.body;
+  console.log("get_comments reqBody: " + reqBody);
+  const evnt_id = reqBody.evnt_id;
+  let db = new sqlite3.Database(
+    "./assets/sqlite.db",
+    sqlite3.OPEN_READWRITE,
+    (err) => {
+      if (err) {
+        console.error(err.message);
+        callback("Internal server error");
+        return;
+      }
+    }
+  );
+
+  const sql = "SELECT * FROM comments WHERE evnt_id = ?";
+  db.all(sql, [evnt_id], (err, rows) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send("Internal server error");
+      return;
+    }
+    console.log(rows);
+    res.status(200).json(rows);
+  });
+  db.close();
+});
