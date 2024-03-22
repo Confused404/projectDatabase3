@@ -1,6 +1,6 @@
 let log = console.log;
 let buttons = document.querySelectorAll(".user");
-const serverAddress = "http://localhost:3000";
+const serverAddress = "http://127.0.0.1:3000";
 
 // Add event listener to each button
 buttons.forEach(function (button) {
@@ -30,12 +30,15 @@ let radioButtons = document
 radioButtons.forEach(function (radioButton) {
   radioButton.addEventListener("change", function (event) {
     let univeristyFields = document.getElementById("universityFields");
-    log(this);
+    let userFields = document.getElementById("userFields");
     if (this.id === "university") {
       log("in university");
       univeristyFields.style.display = "block";
-    } else {
+    }else if (this.id === "user"){
+      userFields.style.display = "block";
+    }else {
       univeristyFields.style.display = "none";
+      userFields.style.display = "none";
     }
     event.preventDefault();
   });
@@ -57,10 +60,10 @@ document.addEventListener("DOMContentLoaded", function () {
     inputs.forEach((input) => {
       if (!input.value.trim()) {
         // If an input is empty, set allInputsValid to false
-        if (
-          input.parentElement.id == "universityFields" &&
-          role != "university"
-        ) {
+        if (input.parentElement.id == "universityFields" && role != "university") {
+          return;
+        }
+        else if (input.parentElement.id == "userFields" && role != "user") {
           return;
         }
         allInputsValid = false;
@@ -124,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (allInputsValid) {
       let formData = new FormData(this);
       let formInfo = {};
-      // console.log(formData);
+      //console.log(formData);
       for (const pair of formData.entries()) {
         let key = pair[0];
         let value = pair[1];
@@ -160,9 +163,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
-////
-////
-//Not sure if this will work kinda scared..
+
+
 // Event creation form validation and submission
 document.addEventListener("DOMContentLoaded", function () {
   const eventCreationForm = document.querySelector(

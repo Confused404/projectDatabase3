@@ -11,7 +11,6 @@ CREATE TABLE comments (
     comnt_text VARCHAR(8000),
     rating     INT,
     time_stamp VARCHAR(30),
-  	PRIMARY KEY(evnt_id),
   	FOREIGN KEY(evnt_id) REFERENCES events(evnt_id)
 );
 
@@ -82,6 +81,7 @@ CREATE TABLE rsos (
 
 CREATE TABLE users (
     usr_id INT,
+  	name VARCHAR(50),
   	password VARCHAR(50),
   	email VARCHAR(50),
     PRIMARY KEY(usr_id)
