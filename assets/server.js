@@ -17,7 +17,6 @@ app.use(express.static(path.join(__dirname, "..")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-<<<<<<< HEAD
 app.use(
   session({
     secret: "cant hack us nahnahnahnahnah",
@@ -26,14 +25,6 @@ app.use(
     cookie: { secure: true },
   })
 );
-=======
-app.use(session({
-  secret: 'cant hack us nahnahnahnahnah',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }
-}));
->>>>>>> dc26794dd37f60946d4f92ec187d2809b08b0888
 
 // URL of the XML file you want to fetch
 const url = "https://events.ucf.edu/2024/3/4/feed.xml";
@@ -239,6 +230,7 @@ app.post("/login", (req, res) => {
     } else if (!isValid) {
       req.session.userId = userInfo.username;
       req.session.email = String(userInfo.school_email);
+      req.session.loggedIn = true; // Set a session variable to indicate the user is logged in
       console.log("valid login");
       res.redirect('/');
     } else {
@@ -336,33 +328,11 @@ app.post("/html/create-Event", (req, res) => {
       }
     }
   );
-<<<<<<< HEAD
 
   db.get(
     `SELECT * FROM admins WHERE usr_id = ?`,
     [req.session.userId],
     (err, row) => {
-=======
-  console.log("req.session.userId: " + req.session.userId);
-  db.get(`SELECT * FROM admins WHERE usr_id = ?`, [req.session.userId], (err, row) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error querying database");
-      return;
-    }
-    console.log("row is:" + row);
-    if (!row) {
-      res.status(403).send("Only admins can create events");
-      return;
-    }
-
-    // Insert the new event
-    let sql = `
-      INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
-    `;
-    
-    db.run(sql, [event_id, event_title, event_time, event_desc], function (err) {
->>>>>>> dc26794dd37f60946d4f92ec187d2809b08b0888
       if (err) {
         console.error(err);
         res.status(500).send("Error querying database");
@@ -506,10 +476,6 @@ app.post("/get_event_id", (req, res) => {
       }
     }
   );
-<<<<<<< HEAD
-
-=======
->>>>>>> dc26794dd37f60946d4f92ec187d2809b08b0888
   const sql = "SELECT evnt_id FROM events WHERE evnt_title = ?";
   db.get(sql, [eventTitle], (err, row) => {
     if (err) {
@@ -603,4 +569,8 @@ app.post("/get_comments", (req, res) => {
     res.status(200).json(rows);
   });
   db.close();
+});
+
+app.get('/check-login', (req, res) => {
+  res.json({ loggedIn: req.session.loggedIn || false });
 });

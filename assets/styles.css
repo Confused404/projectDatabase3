@@ -38,6 +38,23 @@ body {
   
 }
 
+#exit-button {
+  width: 50px;
+  height: 50px;
+  background-image: url("exit-button.png");
+  background-color: #f00;
+  background-size: cover;
+  color: #fff;
+  border: none;
+  text-align: center;
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-top: 5px;
+  margin-right: 5px;
+}
+
 .yellow-button:hover {
   background-color: #9a6e25;
   color: #dba54b;
@@ -323,3 +340,4 @@ form input[type="submit"]:hover {
 #userFields{
   display: none;
 }
+

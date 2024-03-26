@@ -29,6 +29,9 @@
         </div>
         <div class="form-div">
             <form action="signup" method="POST">
+                <a href="events-page.html"> 
+                    <button type="button" class="button exit button" id="exit-button"></button>
+                </a>
                 <h3>SIGN UP</h3>
                 <label for="username">Username</label><br />
                 <input type="text" class="username" name="username" /><br />
@@ -64,9 +67,14 @@
           </div>
           <div class="form-div">
             <form action="login" method="POST">
+              <a href="events-page.html"> 
+                <button type="button" class="button exit button" id="exit-button"></button>
+              </a>  
               <h3>LOGIN</h3>
               <label for="username">Username</label><br />
               <input type="text" class="username" name="username" /><br />
+              <label for="school_email">School Email</label><br />
+              <input type="text" class="school_email" name="school_email" /><br />
               <label for="password">Password</label><br />
               <input type="password" class="password" name="password" /><br /><br />
               <input type="submit" value="LOGIN" />
