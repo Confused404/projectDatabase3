@@ -485,10 +485,6 @@ app.post("/get_event_id", (req, res) => {
       }
     }
   );
-<<<<<<< HEAD
-
-=======
->>>>>>> 74322930b03912dd91f653de0bae637de38a440c
   const sql = "SELECT evnt_id FROM events WHERE evnt_title = ?";
   db.get(sql, [eventTitle], (err, row) => {
     if (err) {
@@ -585,6 +581,6 @@ app.post("/get_comments", (req, res) => {
   db.close();
 });
 
-app.get('/check-login', (req, res) => {
+app.get("/check-login", (req, res) => {
   res.json({ loggedIn: req.session.loggedIn || false });
 });

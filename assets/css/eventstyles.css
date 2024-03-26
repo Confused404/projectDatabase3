@@ -1,3 +1,9 @@
 .comments-section {
-  background-color: blue;
+  background-color: white;
+  color: black;
+  font-size: larger;
+}
+.individual-comment {
+  /* display: flex; */
+  border-bottom: 5px;
 }

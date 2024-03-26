@@ -35,6 +35,8 @@ fetch(`${eventServerAddress}/getData`)
           // Loop through each comment
           comments.forEach((comment) => {
             // Create elements for each comment
+            const individualComment = document.createElement("div");
+            individualComment.className = "individual-comment";
             const commentHeading = document.createElement("h3");
             commentHeading.textContent = "User Comment";
 
@@ -48,10 +50,11 @@ fetch(`${eventServerAddress}/getData`)
             timestampElement.textContent = `Timestamp: ${comment.time_stamp}`;
 
             // Append comment elements to the commentDiv
-            commentDiv.appendChild(commentHeading);
-            commentDiv.appendChild(commentTextElement);
-            commentDiv.appendChild(ratingElement);
-            commentDiv.appendChild(timestampElement);
+            individualComment.appendChild(commentHeading);
+            individualComment.appendChild(commentTextElement);
+            individualComment.appendChild(ratingElement);
+            individualComment.appendChild(timestampElement);
+            commentDiv.appendChild(individualComment);
           });
 
           // Append the commentDiv to the eventDiv
