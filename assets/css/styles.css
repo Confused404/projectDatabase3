@@ -35,7 +35,6 @@ body {
   display: inline-block;
   transition-duration: 0.4s;
   cursor: pointer;
-  
 }
 
 .yellow-button:hover {
@@ -58,7 +57,7 @@ body {
   line-height: 52px;
   border: 0.5px solid #200d06;
   flex-shrink: 0;
-  background-image: url("eventio-logo-only.png");
+  background-image: url("../images/eventio-logo-only.png");
   background-size: contain;
   background-repeat: no-repeat;
   padding-bottom: 3.5%; /* Add this line */
@@ -143,7 +142,7 @@ body {
   font-weight: bold;
   font-size: 50px;
   letter-spacing: 1px;
-  background-image: url("event-hall.jpg");
+  background-image: url("../images/event-hall.jpg");
   background-size: 100%;
   position: absolute;
   background-repeat: no-repeat;
@@ -167,31 +166,29 @@ body {
 */
 /* FORMS */
 
-
 .form-div {
   display: none;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  
+
   width: 45%; /* Adjust width as needed */
   z-index: 999; /* Ensure the form box appears above other content */
   /* background-color: #ffffff; White background */
 }
 
 .radio-text {
-  display:grid;
+  display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap:10px;
+  gap: 10px;
   text-align: center;
   margin-bottom: 2%;
   align-items: center;
-
 }
 
 .radio-group {
-  display:flex;
+  display: flex;
   justify-content: space-between;
 }
 
@@ -201,7 +198,7 @@ body {
 }
 
 form {
-  background-image: url("login.png");
+  background-image: url("../images/login.png");
   background-size: cover; /* Adjust the background size to cover the entire element */
   background-position: center; /* Center the background image */
   position: fixed;
@@ -221,7 +218,7 @@ form {
 }
 
 #RSO_creation_box {
-  position:absolute;
+  position: absolute;
   top: 88%;
 }
 
@@ -258,7 +255,7 @@ form h3 {
 
 form label {
   margin-bottom: 0%;
-  margin-top:1%;
+  margin-top: 1%;
   background-color: lightblue;
   color: black;
   font-size: 150%;
@@ -316,10 +313,10 @@ form input[type="submit"]:hover {
 
 /* SIGNUP */
 
-#universityFields{
+#universityFields {
   display: none;
 }
 
-#userFields{
+#userFields {
   display: none;
 }

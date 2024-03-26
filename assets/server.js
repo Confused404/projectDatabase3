@@ -17,7 +17,6 @@ app.use(express.static(path.join(__dirname, "..")));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-<<<<<<< HEAD
 app.use(
   session({
     secret: "cant hack us nahnahnahnahnah",
@@ -26,14 +25,6 @@ app.use(
     cookie: { secure: true },
   })
 );
-=======
-app.use(session({
-  secret: 'cant hack us nahnahnahnahnah',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }
-}));
->>>>>>> dc26794dd37f60946d4f92ec187d2809b08b0888
 
 // URL of the XML file you want to fetch
 const url = "https://events.ucf.edu/2024/3/4/feed.xml";
@@ -222,7 +213,6 @@ app.post("/signup", (req, res) => {
   });
 });
 
-
 // Parse URL-encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -240,7 +230,7 @@ app.post("/login", (req, res) => {
       req.session.userId = userInfo.username;
       req.session.email = String(userInfo.school_email);
       console.log("valid login");
-      res.redirect('/');
+      res.redirect("/");
     } else {
       res.status(200).send("Invalid Login");
     }
@@ -336,33 +326,11 @@ app.post("/html/create-Event", (req, res) => {
       }
     }
   );
-<<<<<<< HEAD
 
   db.get(
     `SELECT * FROM admins WHERE usr_id = ?`,
     [req.session.userId],
     (err, row) => {
-=======
-  console.log("req.session.userId: " + req.session.userId);
-  db.get(`SELECT * FROM admins WHERE usr_id = ?`, [req.session.userId], (err, row) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error querying database");
-      return;
-    }
-    console.log("row is:" + row);
-    if (!row) {
-      res.status(403).send("Only admins can create events");
-      return;
-    }
-
-    // Insert the new event
-    let sql = `
-      INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
-    `;
-    
-    db.run(sql, [event_id, event_title, event_time, event_desc], function (err) {
->>>>>>> dc26794dd37f60946d4f92ec187d2809b08b0888
       if (err) {
         console.error(err);
         res.status(500).send("Error querying database");
@@ -400,7 +368,6 @@ app.post("/html/create-Event", (req, res) => {
   );
 });
 
-
 app.post("/html/create-RSO", (req, res) => {
   // Access form data from req.body
   const { RSO_title, RSO_members } = req.body;
@@ -426,71 +393,82 @@ app.post("/html/create-RSO", (req, res) => {
   );
 
   console.log("req.session.userId: " + req.session.userId);
-  console.log("req.session.email: " + req.session.email)
-  db.get(`SELECT * FROM admins WHERE usr_id = ?`, [req.session.userId], (err, row) => {
-    if (err) {
-      console.error(err);
-      res.status(500).send("Error querying database");
-      return;
-    }
-    console.log("row is:" + row);
-    if (!row) {
-      res.status(403).send("Only admins can create RSOs");
-      return;
-    }
+  console.log("req.session.email: " + req.session.email);
+  db.get(
+    `SELECT * FROM admins WHERE usr_id = ?`,
+    [req.session.userId],
+    (err, row) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send("Error querying database");
+        return;
+      }
+      console.log("row is:" + row);
+      if (!row) {
+        res.status(403).send("Only admins can create RSOs");
+        return;
+      }
 
-    // Validate RSO_members
-    const members = RSO_members.split(",");
-    if (members.length < 4) {
-      res.status(400).send("At least 4 members are required");
-      return;
-    }
+      // Validate RSO_members
+      const members = RSO_members.split(",");
+      if (members.length < 4) {
+        res.status(400).send("At least 4 members are required");
+        return;
+      }
 
-    // Check if all members exist in the database
-    const adminEmailDomain = req.session.email.split('@')[1];
-    const memberPromises = members.map(member => {
-      return new Promise((resolve, reject) => {
-        db.get(`SELECT * FROM users WHERE name = ? AND email LIKE ?`, [member.trim(), `%@${adminEmailDomain}`], (err, row) => {
-          if (err) {
-            reject(err);
-          } else if (!row) {
-            reject(new Error(`Member ${member} does not exist in the database or does not have the same email domain as the admin`));
-          } else {
-            resolve();
-          }
+      // Check if all members exist in the database
+      const adminEmailDomain = req.session.email.split("@")[1];
+      const memberPromises = members.map((member) => {
+        return new Promise((resolve, reject) => {
+          db.get(
+            `SELECT * FROM users WHERE name = ? AND email LIKE ?`,
+            [member.trim(), `%@${adminEmailDomain}`],
+            (err, row) => {
+              if (err) {
+                reject(err);
+              } else if (!row) {
+                reject(
+                  new Error(
+                    `Member ${member} does not exist in the database or does not have the same email domain as the admin`
+                  )
+                );
+              } else {
+                resolve();
+              }
+            }
+          );
         });
       });
-    });
 
-    Promise.all(memberPromises)
-      .then(() => {
-        // Insert the new RSO
-        let sql = `
+      Promise.all(memberPromises)
+        .then(() => {
+          // Insert the new RSO
+          let sql = `
           INSERT INTO rsos (usr_id, RSO_id, RSO_title, RSO_members) VALUES ('${req.session.userId}', ?, ?, ?)
         `;
 
-        db.run(sql, [RSO_id, RSO_title, RSO_members], function (err) {
-          if (err) {
-            console.error(err);
-            res.status(500).send("Error inserting RSO into database");
-            return;
-          }
+          db.run(sql, [RSO_id, RSO_title, RSO_members], function (err) {
+            if (err) {
+              console.error(err);
+              res.status(500).send("Error inserting RSO into database");
+              return;
+            }
 
-          console.log(`New RSO inserted into database`);
-          res.status(200).send("RSO successfully created");
+            console.log(`New RSO inserted into database`);
+            res.status(200).send("RSO successfully created");
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+          res.status(400).send(err.message);
+        })
+        .finally(() => {
+          // Close the database connection
+          db.close();
         });
-      })
-      .catch(err => {
-        console.error(err);
-        res.status(400).send(err.message);
-      })
-      .finally(() => {
-        // Close the database connection
-        db.close();
-      });
-  });
+    }
+  );
 });
-
 
 app.post("/get_event_id", (req, res) => {
   const reqBody = req.body;
@@ -506,10 +484,7 @@ app.post("/get_event_id", (req, res) => {
       }
     }
   );
-<<<<<<< HEAD
 
-=======
->>>>>>> dc26794dd37f60946d4f92ec187d2809b08b0888
   const sql = "SELECT evnt_id FROM events WHERE evnt_title = ?";
   db.get(sql, [eventTitle], (err, row) => {
     if (err) {
@@ -573,6 +548,7 @@ app.post("/insert_comment", (req, res) => {
     console.log(`Rows inserted: ${this.changes}`);
   });
   db.close();
+  res.status(200).json({ message: "Comment inserted successfully" });
 });
 
 // get the comments from all the events

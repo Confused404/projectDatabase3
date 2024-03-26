@@ -1,15 +1,15 @@
-const eventServerAddress = "http://127.0.0.1:3000";
+const eventServerAddress = "http://localhost:3000";
 
 fetch(`${eventServerAddress}/getData`)
   .then((response) => response.json())
   .then((data) => {
-    // 'data' is an array of objects representing your database records
-    // You can use this data to update your HTML
-    // For example, you could create a new <p> element for each record:
+    // Loop through each event record
     data.forEach((record) => {
-      const eventDiv = document.createElement("eventDiv");
+      // Create a container div for the event
+      const eventDiv = document.createElement("div");
       eventDiv.className = "record";
 
+      // Create elements for event details
       const eventTitle = document.createElement("h1");
       eventTitle.textContent = record.evnt_title;
       eventDiv.appendChild(eventTitle);
@@ -18,100 +18,58 @@ fetch(`${eventServerAddress}/getData`)
       eventTime.textContent = record.evnt_time;
       eventDiv.appendChild(eventTime);
 
-      //location should go here
-
       const eventDesc = document.createElement("p");
       eventDesc.innerHTML = record.evnt_desc;
       eventDiv.appendChild(eventDesc);
 
-      // get eventId by querying event_title;
+      // Create a container div for comments
+      let commentDiv = document.createElement("div");
+      commentDiv.className = "comments-section";
+      const commentAreaTitle = document.createElement("h2");
+      commentAreaTitle.textContent = "Comments Section";
+      commentDiv.appendChild(commentAreaTitle);
 
-      // Define the fetch options
-      const options = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ eventTitle: eventTitle.textContent }),
-      };
-      let eventId;
-      fetch(`${eventServerAddress}/get_event_id`, options)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.text();
-        })
-        .then((data) => {
-          eventId = data;
-          // do something to get the comments
-          const commentDiv = document.createElement("div");
-          commentDiv.className = "comments";
-          const commentAreaTitle = document.createElement("h2");
-          commentAreaTitle.textContent = "Comments Section";
-          commentDiv.appendChild(commentAreaTitle);
-          const getCommentsOptions = {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ evnt_id: eventId }),
-          };
-          fetch(`${eventServerAddress}/get_comments`, getCommentsOptions)
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error("Network response was not ok");
-              }
-              return response.text();
-            })
-            .then((data) => {
-              console.log(data);
+      // Fetch comments for the current event
+      fetchComments(record.evnt_id)
+        .then((comments) => {
+          // Loop through each comment
+          comments.forEach((comment) => {
+            // Create elements for each comment
+            const commentHeading = document.createElement("h3");
+            commentHeading.textContent = "User Comment";
 
-              const commentInfo = JSON.parse(data);
-              for (let i = 0; i < commentInfo.length; i++) {
-                const comnt_text = commentInfo[i].comnt_text;
-                const rating = commentInfo[i].rating;
-                const timestamp = commentInfo[i].time_stamp;
-                const commentHeading = document.createElement("h3");
-                const commentTextElement = document.createElement("p");
-                const ratingElement = document.createElement("p");
-                const timestampElement = document.createElement("p");
-                commentHeading.textContent = "User Comment";
-                commentTextElement.textContent = comnt_text;
-                console.log(commentTextElement);
-                ratingElement.textContent = `Rating: ${rating}`;
-                timestampElement.textContent = `Timestamp: ${timestamp}`;
+            const commentTextElement = document.createElement("p");
+            commentTextElement.textContent = comment.comnt_text;
 
-                commentDiv.appendChild(commentHeading);
-                commentDiv.appendChild(commentTextElement);
-                commentDiv.appendChild(ratingElement);
-                commentDiv.appendChild(timestampElement);
-              }
-              eventDiv.appendChild(commentDiv);
-            })
-            .catch((error) => {
-              console.error(
-                "There was a problem with your fetch operation:",
-                error
-              );
-            });
+            const ratingElement = document.createElement("p");
+            ratingElement.textContent = `Rating: ${comment.rating}`;
+
+            const timestampElement = document.createElement("p");
+            timestampElement.textContent = `Timestamp: ${comment.time_stamp}`;
+
+            // Append comment elements to the commentDiv
+            commentDiv.appendChild(commentHeading);
+            commentDiv.appendChild(commentTextElement);
+            commentDiv.appendChild(ratingElement);
+            commentDiv.appendChild(timestampElement);
+          });
+
+          // Append the commentDiv to the eventDiv
+          eventDiv.appendChild(commentDiv);
         })
         .catch((error) => {
-          console.error(
-            "There was a problem with your fetch operation:",
-            error
-          );
+          console.error("Error fetching comments:", error);
         });
 
+      // Create elements for adding new comments
       const insertCommentDiv = document.createElement("div");
       insertCommentDiv.className = "insert_comments";
+
       const commentArea = document.createElement("textarea");
       commentArea.placeholder = "Comment on this event!";
       insertCommentDiv.appendChild(commentArea);
-      const submitCommentButton = document.createElement("button");
-      submitCommentButton.textContent = "Submit";
-
-      const ratingDiv = document.createElement("ratingDiv");
+      // Create and append the rating bar after comments
+      const ratingDiv = document.createElement("div");
       ratingDiv.className = "rating_div";
 
       for (let i = 1; i <= 5; i++) {
@@ -120,6 +78,7 @@ fetch(`${eventServerAddress}/getData`)
         ratingNum.textContent = `${i} `;
         ratingDiv.appendChild(ratingNum);
       }
+
       const ratingInput = document.createElement("input");
       ratingInput.type = "range";
       ratingInput.min = "1";
@@ -128,47 +87,108 @@ fetch(`${eventServerAddress}/getData`)
       ratingInput.value = "3";
       ratingDiv.appendChild(ratingInput);
 
+      insertCommentDiv.appendChild(ratingDiv);
+      const submitCommentButton = document.createElement("button");
+      submitCommentButton.textContent = "Submit";
       submitCommentButton.addEventListener("click", function (event) {
-        const commentText = commentArea.value;
-        const ratingNum = ratingInput.value;
-
-        let newCommentInfo = {};
-        newCommentInfo["commentText"] = commentText;
-        newCommentInfo["ratingNum"] = ratingNum;
-        newCommentInfo["evnt_id"] = eventId;
-        fetch(`${eventServerAddress}/insert_comment`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newCommentInfo),
-        })
-          .then((response) => {
-            if (response.ok) {
-              return response.json();
-            }
-            throw new Error("Network response was not ok.");
-          })
-          .then((data) => {
-            console.log("Comment succesful", data);
-            // Optionally, you can redirect the user to another page or show a success message here
-          })
-          .catch((error) => {
-            console.error("Error during comment:", error);
-            // Optionally, you can show an error message to the user here
-          });
+        submitComment(
+          record.evnt_id,
+          commentArea.value,
+          commentDiv,
+          ratingInput.value
+        );
       });
       insertCommentDiv.appendChild(submitCommentButton);
+
       const editCommentButton = document.createElement("button");
       editCommentButton.textContent = "Edit Comment";
       editCommentButton.addEventListener("click", function (event) {
         console.log("edit button clicked");
       });
       insertCommentDiv.appendChild(editCommentButton);
-      insertCommentDiv.appendChild(ratingDiv);
 
+      // Append insertCommentDiv to the eventDiv
       eventDiv.appendChild(insertCommentDiv);
-      //add eventDiv to the body
+
+      // Append the eventDiv to the document body
       document.body.appendChild(eventDiv);
     });
+  })
+  .catch((error) => {
+    console.error("Error fetching event data:", error);
   });
+
+// Function to fetch comments for a specific event
+function fetchComments(eventId) {
+  return fetch(`${eventServerAddress}/get_comments`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ evnt_id: eventId }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return response.json();
+    })
+    .catch((error) => {
+      console.error("Error fetching comments:", error);
+    });
+}
+
+// Function to submit a comment for a specific event
+function submitComment(eventId, commentText, commentDiv, ratingVal) {
+  const newCommentInfo = {
+    commentText: commentText,
+    evnt_id: eventId,
+    ratingNum: ratingVal,
+  };
+
+  fetch(`${eventServerAddress}/insert_comment`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(newCommentInfo),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Network response was not ok.");
+      }
+      // After submitting the comment, fetch and update the comments section
+      return fetchComments(eventId);
+    })
+    .then((comments) => {
+      // Clear existing comments
+      commentDiv.innerHTML = "";
+
+      // Loop through each comment and append to the commentDiv
+      comments.forEach((comment) => {
+        const individualComment = document.createElement("div");
+        individualComment.className = "individual-comment";
+        const commentHeading = document.createElement("h3");
+        commentHeading.textContent = "User Comment";
+
+        const commentTextElement = document.createElement("p");
+        commentTextElement.textContent = comment.comnt_text;
+
+        const ratingElement = document.createElement("p");
+        ratingElement.textContent = `Rating: ${comment.rating}`;
+
+        const timestampElement = document.createElement("p");
+        timestampElement.textContent = `Timestamp: ${comment.time_stamp}`;
+
+        individualComment.appendChild(commentHeading);
+        individualComment.appendChild(commentTextElement);
+        individualComment.appendChild(ratingElement);
+        individualComment.appendChild(timestampElement);
+        commentDiv.appendChild(individualComment);
+      });
+    })
+    .catch((error) => {
+      console.error("Error during comment:", error);
+      // Optionally, you can show an error message to the user here
+    });
+}
