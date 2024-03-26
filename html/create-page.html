@@ -44,6 +44,7 @@
           <input type="radio" id="rso" name="role" value="rso" />
           <input type="radio" id="university" name="role" value="university" />
         </div>
+<<<<<<< HEAD
 
         <div id="universityFields">
           <label for="loc_name">Location Name:</label><br />
@@ -106,3 +107,82 @@
     <script src="assets/main.js"></script>
   </body>
 </html>
+=======
+      </div>
+      <div class="form-div">
+        <form action="signup" method="POST" >
+          <a href="create-page.html"> 
+            <button type="button" class="button exit button" id="exit-button"></button>
+          </a>
+          <h3>SIGN UP</h3>
+          <label for="username">Username</label><br />
+          <input type="text" class="username" name="username" /><br />
+          <label for="password">Password</label><br />
+          <input type="password" class="password" name="password" /><br /><br />
+  
+          <div class="radio-text">
+            <label for="user">User</label>
+            <label for="rso">RSO</label>
+            <label for="university">University</label>
+            <input type="radio" id="user" name="role" value="user">
+            <input type="radio" id="rso" name="role" value="rso">
+            <input type="radio" id="university" name="role" value="university">
+          </div>
+  
+          <div id="universityFields">
+            <label for="loc_name">Location Name:</label><br>
+            <input type="text" id="loc_name" name="loc_name"><br>
+            
+            <label for="university_name">University Name:</label><br>
+            <input type="text" id="university_name" name="university_name"><br>
+            
+            <label for="university_desc">University Description:</label><br>
+            <textarea id="university_desc" name="university_desc"></textarea><br>
+            
+            <label for="num_students">Number of Students:</label><br>
+            <input type="number" id="num_students" name="num_students" min="0"><br>
+          </div>
+          <label for="school_email">School Email:</label><br>
+          <input type="email" id="school_email" name="school_email"><br>
+          <input type="submit" value="SIGN UP" />
+        </form>
+      </div>
+      <div class="form-div">
+        <form action="login" method="POST">
+          <a href="create-page.html">  
+            <button type="button" class="button exit button" id="exit-button"></button>
+          </a>
+          <h3>LOGIN</h3>
+          <label for="username">Username</label><br />
+          <input type="text" class="username" name="username" /><br />
+          <label for="school_email">School Email</label><br />
+          <input type="text" class="school_email" name="school_email" /><br />
+          <label for="password">Password</label><br />
+          <input type="password" class="password" name="password" /><br /><br />
+          <input type="submit" value="LOGIN" />
+        </form>
+      </div>
+      <div class="flexbox-container2">
+        <form id="Event_creation_box" action="create-Event" method="POST">
+            <h3>Create Event</h3>
+            <label for="event_title">Name of Event:</label>
+            <input type="text" class="event_title" name="event_title" /><br />
+            <label for="event_time">Time of Event:</label>
+            <input type="text" class="event_time" name="event_time" /><br />
+            <label for="event_desc">Description:</label>
+            <textarea id="event_desc" name="event_desc"></textarea><br>
+            <input type="submit" value="CREATE EVENT" />
+        </form>
+        <form id="RSO_creation_box" action="create-RSO" method="POST">
+            <h3>Create RSO</h3>
+            <label for="RSO_title">Name of RSO:</label>
+            <input type="text" class="RSO_title" name="RSO_title" /><br />
+            <label for="RSO_members">Members of RSO (Must have at least 4)</label>
+            <textarea id="RSO_members" name="RSO_members"></textarea>
+            <input type="submit" value="CREATE RSO" />
+        </form>
+      </div>
+      <script src="../assets/main.js"></script>
+</body>
+</html>
+>>>>>>> 74322930b03912dd91f653de0bae637de38a440c

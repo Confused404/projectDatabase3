@@ -229,6 +229,7 @@ app.post("/login", (req, res) => {
     } else if (!isValid) {
       req.session.userId = userInfo.username;
       req.session.email = String(userInfo.school_email);
+      req.session.loggedIn = true; // Set a session variable to indicate the user is logged in
       console.log("valid login");
       res.redirect("/");
     } else {
@@ -484,7 +485,10 @@ app.post("/get_event_id", (req, res) => {
       }
     }
   );
+<<<<<<< HEAD
 
+=======
+>>>>>>> 74322930b03912dd91f653de0bae637de38a440c
   const sql = "SELECT evnt_id FROM events WHERE evnt_title = ?";
   db.get(sql, [eventTitle], (err, row) => {
     if (err) {
@@ -579,4 +583,8 @@ app.post("/get_comments", (req, res) => {
     res.status(200).json(rows);
   });
   db.close();
+});
+
+app.get('/check-login', (req, res) => {
+  res.json({ loggedIn: req.session.loggedIn || false });
 });

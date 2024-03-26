@@ -44,6 +44,7 @@
           <input type="radio" id="rso" name="role" value="rso" />
           <input type="radio" id="university" name="role" value="university" />
         </div>
+<<<<<<< HEAD
 
         <div id="universityFields">
           <label for="loc_name">Location Name:</label><br />
@@ -87,3 +88,62 @@
     <script src="../assets/events.js"></script>
   </body>
 </html>
+=======
+        <div class="form-div">
+            <form action="signup" method="POST">
+                <a href="events-page.html"> 
+                    <button type="button" class="button exit button" id="exit-button"></button>
+                </a>
+                <h3>SIGN UP</h3>
+                <label for="username">Username</label><br />
+                <input type="text" class="username" name="username" /><br />
+                <label for="password">Password</label><br />
+                <input type="password" class="password" name="password" /><br /><br />
+        
+                <div class="radio-text">
+                  <label for="user">User</label>
+                  <label for="rso">RSO</label>
+                  <label for="university">University</label>
+                  <input type="radio" id="user" name="role" value="user">
+                  <input type="radio" id="rso" name="role" value="rso">
+                  <input type="radio" id="university" name="role" value="university">
+                </div>
+        
+                <div id="universityFields">
+                  <label for="loc_name">Location Name:</label><br>
+                  <input type="text" id="loc_name" name="loc_name"><br>
+                  
+                  <label for="university_name">University Name:</label><br>
+                  <input type="text" id="university_name" name="university_name"><br>
+                  
+                  <label for="university_desc">University Description:</label><br>
+                  <textarea id="university_desc" name="university_desc"></textarea><br>
+                  
+                  <label for="num_students">Number of Students:</label><br>
+                  <input type="number" id="num_students" name="num_students" min="0"><br>
+                </div>
+                <label for="school_email">School Email:</label><br>
+                <input type="email" id="school_email" name="school_email"><br>
+                <input type="submit" value="SIGN UP" />
+              </form>
+          </div>
+          <div class="form-div">
+            <form action="login" method="POST">
+              <a href="events-page.html"> 
+                <button type="button" class="button exit button" id="exit-button"></button>
+              </a>  
+              <h3>LOGIN</h3>
+              <label for="username">Username</label><br />
+              <input type="text" class="username" name="username" /><br />
+              <label for="school_email">School Email</label><br />
+              <input type="text" class="school_email" name="school_email" /><br />
+              <label for="password">Password</label><br />
+              <input type="password" class="password" name="password" /><br /><br />
+              <input type="submit" value="LOGIN" />
+            </form>
+          </div>
+          <script src="../assets/main.js"></script>
+          <script src="../assets/events.js"></script>
+    </body>
+</html>
+>>>>>>> 74322930b03912dd91f653de0bae637de38a440c
