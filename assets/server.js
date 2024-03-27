@@ -7,10 +7,14 @@ const fetch = require("node-fetch");
 const bodyParser = require("body-parser");
 const uuid = require("uuid");
 const session = require("express-session");
-const bigInt = require("big-integer")
+const crypto = require("crypto");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const app = express();
 const PORT = 3000;
+
+const hashKey = process.env.HASH_KEY;
 
 // Serve static files from the 'public' directory
 console.log(path.join(__dirname, ".."));
@@ -161,24 +165,25 @@ app.post("/signup", (req, res) => {
           if (err) {
             console.error(err.message);
           }
-          
-          
-          let uniqueUserId = userInfo.username
-          console.log("inset signup: "  + uniqueUserId)
-          let value1 = uniqueUserId;
-          let value2 = userInfo.password;
+
+          const userId = uuid.v4();
+
+          let value1 = userId;
+
+          let value2 = setUniquePassword(userInfo.password, hashKey);
           let value3 = String(userInfo.school_email);
           let value4 = userInfo.university_name;
           let value5 = userInfo.loc_name;
           let value6 = String(userInfo.university_desc).replace(/'/g, "''");
           let value7 = userInfo.num_students;
           let value8 = userInfo.name;
+          let value9 = userInfo.username;
           let sql;
 
           // Prepare an SQL statement
           if (userInfo.role === "user") {
             sql = `
-            INSERT INTO users (usr_id, name, password, email) VALUES ('${value1}', '${value8}', '${value2}', '${value3}')
+            INSERT INTO users (usr_id, name, password, email, username) VALUES ('${value1}', '${value8}', '${value2}', '${value3}', '${value9})
           `;
           } else if (userInfo.role === "rso") {
             sql = `
@@ -230,14 +235,16 @@ app.post("/login", (req, res) => {
   authenticateUser(userInfo, (err, isValid) => {
     if (err) {
       res.status(500).send(err);
-    } else if (!isValid) { //is valid its lying
-  
-      req.session.userId = setUserId(userInfo.username);
+    } else if (!isValid) {
+      //is valid its lying
+
+      req.session.userId = userInfo.userId;
       req.session.email = String(userInfo.school_email);
       req.session.loggedIn = true; // Set a session variable to indicate the user is logged in
       console.log("valid login");
       res.redirect("/");
-    } else { //its not valid
+    } else {
+      //its not valid
       res.status(200).send("Invalid Login");
     }
   });
@@ -258,7 +265,7 @@ const authenticateUser = (userInfo, callback) => {
 
       // Define tables to check
       const tablesToCheck = ["super_admins", "admins", "users"];
-      userInfo.username = setUserId(userInfo.username)
+
       // Function to perform a single database query
       const performQuery = (table) => {
         return new Promise((resolve, reject) => {
@@ -590,30 +597,26 @@ app.get("/check-login", (req, res) => {
   res.json({ loggedIn: req.session.loggedIn || false });
 });
 
-
-
-// function to be able to set userId and retrieve userId
-
-function setUserId(s) {
-  console.log("string " + s);
-  s = s.toString();
-  let bigIntValue = bigInt(Buffer.from(s, 'utf8').toString('base64').replace(/=+$/, ''), 64);
-  let bigIntValueStr = bigIntValue.toString();
-
-  // If the string representation of the big integer is longer than 10 digits,
-  // take only the first 10 digits.
-  if (bigIntValueStr.length > 10) {
-    bigIntValueStr = bigIntValueStr.substring(0, 10);
-  }
-
-  
-  console.log("10-digit int: " + bigIntValueStr);
-
-  return bigInt(bigIntValueStr, 10); // Convert the 10-digit string back to a big integer
+function setUniquePassword(text, key) {
+  key = crypto
+    .createHash("sha256")
+    .update(String("dumbfuck"))
+    .digest("base64")
+    .substring(0, 32);
+  const iv = crypto.randomBytes(16); // Generate a random initialization vector (IV)
+  const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+  let encrypted = cipher.update(text, "utf8", "hex");
+  console.log("here");
+  encrypted += cipher.final("hex");
+  return iv.toString("hex") + ":" + encrypted; // Prepend IV to the ciphertext
 }
+function getUniquePassword(encryptedText, key) {
+  const parts = encryptedText.split(":");
+  const iv = Buffer.from(parts.shift(), "hex"); // Extract IV from the ciphertext
+  const encrypted = parts.join(":");
 
-// Convert a big integer to a string
-function getUserIdString(i) {
-  const base64 = i.toString(64);
-  return Buffer.from(base64, 'base64').toString('utf8');
+  const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(key), iv);
+  let decrypted = decipher.update(encrypted, "hex", "utf8");
+  decrypted += decipher.final("utf8");
+  return decrypted;
 }
