@@ -82,6 +82,7 @@ CREATE TABLE rsos (
 
 CREATE TABLE users (
     usr_id INT,
+    username VARCHAR(50).
   	name VARCHAR(50),
   	password VARCHAR(50),
   	email VARCHAR(50),
