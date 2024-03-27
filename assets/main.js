@@ -23,44 +23,7 @@ buttons.forEach(function (button) {
   });
 });
 
-function updateLoginButton() {
-  fetch('/check-login') // Replace '/check-login' with the route that checks if the user is logged in
-    .then(response => response.json())
-    .then(data => {
-      if (data.loggedIn) {
-        // Select the login button
-        const loginButton = document.querySelector('#login');
 
-        // If the login button doesn't exist, it means it's already been changed
-        if (!loginButton) return;
-
-        // Change the button text
-        loginButton.textContent = 'ACCOUNT';
-
-        // Change the button id
-        loginButton.id = 'account';
-
-        // Change the button's click event to go to the account details page
-        loginButton.addEventListener('click', function(event) {
-          event.preventDefault();
-          // add click event here
-          // Select the box
-          const box = document.querySelector('#box'); // Replace '#box' with the actual id of the box
-
-          // Unhide the box
-          if (box.offsetHeight == 0) {
-            box.style.display = 'block';
-          }
-        });
-      }
-    });
-}
-
-// Call the function when the page loads
-updateLoginButton();
-
-// Call the function every 5 seconds
-setInterval(updateLoginButton, 5000);
 
 // Check radio button
 let radioButtons = document
@@ -86,7 +49,7 @@ radioButtons.forEach(function (radioButton) {
 // check sign up form submit
 document.addEventListener("DOMContentLoaded", function () {
   const signupForm = document.querySelector('form[action="signup"]');
-  const exitButton = document.querySelector('.exit-button');
+  const exitButton = document.querySelector('.exit-button1');
   exitButton.addEventListener('click', function(event) {
     event.preventDefault(); // Prevent the default action
     // Redirect the user to another page
@@ -156,13 +119,53 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
+function updateLoginButton() {
+  console.log("inside updateLoginButton()");
+  fetch('/check-login') // Replace '/check-login' with the route that checks if the user is logged in
+    .then(response => response.json())
+    .then(data => {
+      if (data.loggedIn) {
+        // Select the login button
+        const loginButton = document.querySelector('#login');
+
+        // If the login button doesn't exist, it means it's already been changed
+        if (!loginButton) return;
+
+        // Change the button text
+        loginButton.textContent = 'ACCOUNT';
+
+        // Change the button id
+        loginButton.id = 'account';
+
+        // Change the button's click event to go to the account details page
+        loginButton.addEventListener('click', function(event) {
+          event.preventDefault();
+          // add click event here
+          // Select the box
+          const box = document.querySelector('#account-box'); // Replace '#box' with the actual id of the box
+
+          // Unhide the box
+          if (box.offsetHeight == 0) {
+            box.style.display = 'block';
+          }
+        });
+      }
+    });
+}
+
 // Login form validation
 document.addEventListener("DOMContentLoaded", function () {
   const loginForm = document.querySelector('form[action="login"]');
-
+  const exitButton = document.querySelector('.exit-button2');
+  exitButton.addEventListener('click', function(event) {
+    event.preventDefault(); // Prevent the default action
+    // Redirect the user to another page
+    console.log("inside exit")
+    window.location.href = 'index.html'; // Replace 'index.html' with the page you want to redirect to
+  });
   loginForm.addEventListener("submit", function (event) {
     const inputs = loginForm.querySelectorAll("input");
-
+    console.log("inside submit event listener");
     let allInputsValid = true;
     inputs.forEach((input) => {
       if (!input.value.trim()) {
@@ -195,11 +198,12 @@ document.addEventListener("DOMContentLoaded", function () {
           throw new Error("Network response was not ok.");
         })
         .then((data) => {
-          console.log("Signup successful:", data);
+          updateLoginButton();
+          console.log("Login successful:", data);
           // Optionally, you can redirect the user to another page or show a success message here
         })
         .catch((error) => {
-          console.error("Error during signup:", error);
+          console.error("Error during Login:", error);
           // Optionally, you can show an error message to the user here
         });
     } else {

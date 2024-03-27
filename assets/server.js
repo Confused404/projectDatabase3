@@ -232,7 +232,7 @@ app.post("/login", (req, res) => {
       res.status(500).send(err);
     } else if (!isValid) { //is valid its lying
   
-      req.session.userId = setUserId(userInfo.username);
+      req.session.userId = userInfo.username;
       req.session.email = String(userInfo.school_email);
       req.session.loggedIn = true; // Set a session variable to indicate the user is logged in
       console.log("valid login");
@@ -258,7 +258,7 @@ const authenticateUser = (userInfo, callback) => {
 
       // Define tables to check
       const tablesToCheck = ["super_admins", "admins", "users"];
-      userInfo.username = setUserId(userInfo.username)
+      userInfo.username = userInfo.username;
       // Function to perform a single database query
       const performQuery = (table) => {
         return new Promise((resolve, reject) => {

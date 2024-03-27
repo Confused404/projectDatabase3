@@ -37,10 +37,27 @@ body {
   cursor: pointer;
 }
 
-#exit-button {
+#exit-button1 {
   width: 50px;
   height: 50px;
-  background-image: url("exit-button.png");
+  background-image: url("../images/exit-button.png");
+  background-color: #f00;
+  background-size: cover;
+  color: #fff;
+  border: none;
+  text-align: center;
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-top: 5px;
+  margin-right: 5px;
+}
+
+#exit-button2 {
+  width: 50px;
+  height: 50px;
+  background-image: url("../images/exit-button.png");
   background-color: #f00;
   background-size: cover;
   color: #fff;
@@ -193,6 +210,26 @@ body {
   width: 45%; /* Adjust width as needed */
   z-index: 999; /* Ensure the form box appears above other content */
   /* background-color: #ffffff; White background */
+}
+
+#account-box {
+  background-image: url("../images/cool-misty-trees.jpg");
+  background-size: cover;
+  background-position: center;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 95%;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .radio-text {
