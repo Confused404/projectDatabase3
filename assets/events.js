@@ -1,4 +1,4 @@
-const eventServerAddress = "http://localhost:3000";
+const eventServerAddress = "http://127.0.0.1:3000";
 
 fetch(`${eventServerAddress}/getData`)
   .then((response) => response.json())
@@ -195,3 +195,5 @@ function submitComment(eventId, commentText, commentDiv, ratingVal) {
       // Optionally, you can show an error message to the user here
     });
 }
+
+

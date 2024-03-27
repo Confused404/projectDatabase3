@@ -20,30 +20,47 @@ buttons.forEach(function (button) {
         button.disabled = true;
       });
     }
-
-    // Check if the user is logged in
-    fetch('/check-login') // Replace '/check-login' with the route that checks if the user is logged in
-      .then(response => response.json())
-      .then(data => {
-        if (data.loggedIn) {
-          // Select the login button
-          const loginButton = document.querySelector('#login');
-
-          // Change the button text
-          loginButton.textContent = 'ACCOUNT';
-
-          // Change the button id
-          loginButton.id = 'account';
-
-          // Change the button's click event to go to the account details page
-          loginButton.addEventListener('click', function(event) {
-            event.preventDefault();
-            // add click event here
-          });
-        }
-      });
   });
 });
+
+function updateLoginButton() {
+  fetch('/check-login') // Replace '/check-login' with the route that checks if the user is logged in
+    .then(response => response.json())
+    .then(data => {
+      if (data.loggedIn) {
+        // Select the login button
+        const loginButton = document.querySelector('#login');
+
+        // If the login button doesn't exist, it means it's already been changed
+        if (!loginButton) return;
+
+        // Change the button text
+        loginButton.textContent = 'ACCOUNT';
+
+        // Change the button id
+        loginButton.id = 'account';
+
+        // Change the button's click event to go to the account details page
+        loginButton.addEventListener('click', function(event) {
+          event.preventDefault();
+          // add click event here
+          // Select the box
+          const box = document.querySelector('#box'); // Replace '#box' with the actual id of the box
+
+          // Unhide the box
+          if (box.offsetHeight == 0) {
+            box.style.display = 'block';
+          }
+        });
+      }
+    });
+}
+
+// Call the function when the page loads
+updateLoginButton();
+
+// Call the function every 5 seconds
+setInterval(updateLoginButton, 5000);
 
 // Check radio button
 let radioButtons = document

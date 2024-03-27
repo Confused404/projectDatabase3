@@ -7,6 +7,7 @@ const fetch = require("node-fetch");
 const bodyParser = require("body-parser");
 const uuid = require("uuid");
 const session = require("express-session");
+const bigInt = require("big-integer")
 
 const app = express();
 const PORT = 3000;
@@ -160,8 +161,11 @@ app.post("/signup", (req, res) => {
           if (err) {
             console.error(err.message);
           }
-
-          let value1 = userInfo.username;
+          
+          
+          let uniqueUserId = userInfo.username
+          console.log("inset signup: "  + uniqueUserId)
+          let value1 = uniqueUserId;
           let value2 = userInfo.password;
           let value3 = String(userInfo.school_email);
           let value4 = userInfo.university_name;
@@ -226,13 +230,14 @@ app.post("/login", (req, res) => {
   authenticateUser(userInfo, (err, isValid) => {
     if (err) {
       res.status(500).send(err);
-    } else if (!isValid) {
-      req.session.userId = userInfo.username;
+    } else if (!isValid) { //is valid its lying
+  
+      req.session.userId = setUserId(userInfo.username);
       req.session.email = String(userInfo.school_email);
       req.session.loggedIn = true; // Set a session variable to indicate the user is logged in
       console.log("valid login");
       res.redirect("/");
-    } else {
+    } else { //its not valid
       res.status(200).send("Invalid Login");
     }
   });
@@ -253,7 +258,7 @@ const authenticateUser = (userInfo, callback) => {
 
       // Define tables to check
       const tablesToCheck = ["super_admins", "admins", "users"];
-
+      userInfo.username = setUserId(userInfo.username)
       // Function to perform a single database query
       const performQuery = (table) => {
         return new Promise((resolve, reject) => {
@@ -584,3 +589,31 @@ app.post("/get_comments", (req, res) => {
 app.get("/check-login", (req, res) => {
   res.json({ loggedIn: req.session.loggedIn || false });
 });
+
+
+
+// function to be able to set userId and retrieve userId
+
+function setUserId(s) {
+  console.log("string " + s);
+  s = s.toString();
+  let bigIntValue = bigInt(Buffer.from(s, 'utf8').toString('base64').replace(/=+$/, ''), 64);
+  let bigIntValueStr = bigIntValue.toString();
+
+  // If the string representation of the big integer is longer than 10 digits,
+  // take only the first 10 digits.
+  if (bigIntValueStr.length > 10) {
+    bigIntValueStr = bigIntValueStr.substring(0, 10);
+  }
+
+  
+  console.log("10-digit int: " + bigIntValueStr);
+
+  return bigInt(bigIntValueStr, 10); // Convert the 10-digit string back to a big integer
+}
+
+// Convert a big integer to a string
+function getUserIdString(i) {
+  const base64 = i.toString(64);
+  return Buffer.from(base64, 'base64').toString('utf8');
+}

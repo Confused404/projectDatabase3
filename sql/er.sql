@@ -8,6 +8,7 @@ CREATE TABLE events (
 
 CREATE TABLE comments (
   	evnt_id INT,
+    usr_id INT,
     comnt_text VARCHAR(8000),
     rating     INT,
     time_stamp VARCHAR(30),
