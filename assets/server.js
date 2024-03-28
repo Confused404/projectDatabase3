@@ -81,9 +81,8 @@ fetch("https://events.ucf.edu/feed.xml")
             // Execute the insert statement
             db.run(sql, function (err) {
               if (err) {
-                console.error(err);
+                //console.error(err);
               }
-              console.log(`Rows inserted into: events`);
             });
 
             sql = `
@@ -92,9 +91,8 @@ fetch("https://events.ucf.edu/feed.xml")
 
             db.run(sql, function (err) {
               if (err) {
-                console.error(err);
+                //console.error(err);
               }
-              console.log(`Rows inserted into: at`);
             });
           }
           db.close();
