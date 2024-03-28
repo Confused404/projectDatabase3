@@ -6,9 +6,15 @@ CREATE TABLE events (
     PRIMARY KEY(evnt_id)
 );
 
+CREATE TABLE session_table (
+  loggedIn BOOLEAN,
+  username INT,
+  email VARCHAR(50)
+);
+  
+
 CREATE TABLE comments (
   	evnt_id INT,
-    usr_id INT,
     comnt_text VARCHAR(8000),
     rating     INT,
     time_stamp VARCHAR(30),
@@ -82,7 +88,7 @@ CREATE TABLE rsos (
 
 CREATE TABLE users (
     usr_id INT,
-    username VARCHAR(50).
+  	username INT,
   	name VARCHAR(50),
   	password VARCHAR(50),
   	email VARCHAR(50),
@@ -91,6 +97,7 @@ CREATE TABLE users (
 
 CREATE TABLE admins (
     usr_id INT,
+  	username INT,
   	password VARCHAR(50),
   	email VARCHAR(50),
     PRIMARY KEY(usr_id),
@@ -99,6 +106,7 @@ CREATE TABLE admins (
 
 CREATE TABLE super_admins (
     usr_id INT,
+  	username INT,
   	password VARCHAR(50),
   	email VARCHAR(50),
     PRIMARY KEY(usr_id),

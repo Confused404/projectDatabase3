@@ -1,6 +1,9 @@
+document.addEventListener("DOMContentLoaded", function () {
 let log = console.log;
 let buttons = document.querySelectorAll(".user");
 const serverAddress = "http://127.0.0.1:3000";
+
+updateLoginButton();
 
 // Add event listener to each button
 buttons.forEach(function (button) {
@@ -124,7 +127,8 @@ function updateLoginButton() {
   fetch('/check-login') // Replace '/check-login' with the route that checks if the user is logged in
     .then(response => response.json())
     .then(data => {
-      if (data.loggedIn) {
+      log(data.exists);
+      if (data.exists) {
         // Select the login button
         const loginButton = document.querySelector('#login');
 
@@ -142,9 +146,10 @@ function updateLoginButton() {
           event.preventDefault();
           // add click event here
           // Select the box
-          const box = document.querySelector('#account-box'); // Replace '#box' with the actual id of the box
+          const box = document.getElementById('account-box'); // Replace '#box' with the actual id of the box
 
           // Unhide the box
+          console.log("box:" + JSON.stringify(box));
           if (box.offsetHeight == 0) {
             box.style.display = 'block';
           }
@@ -193,7 +198,8 @@ document.addEventListener("DOMContentLoaded", function () {
       })
         .then((response) => {
           if (response.ok) {
-            return response.json();
+            console.log("Login successful:");
+            //updateLoginButton();
           }
           throw new Error("Network response was not ok.");
         })
@@ -314,4 +320,5 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
   });
+});
 });

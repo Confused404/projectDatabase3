@@ -145,7 +145,7 @@ app.post("/signup", (req, res) => {
 
   // check if signup info not already taken!
   let validSignup = false;
-  authenticateUser(userInfo, (err, isValid) => {
+  authenticateUser(userInfo, "signup", (err, isValid) => {
     if (err) {
       res.status(500).send(err);
     } else if (!isValid) {
@@ -183,17 +183,17 @@ app.post("/signup", (req, res) => {
           // Prepare an SQL statement
           if (userInfo.role === "user") {
             sql = `
-            INSERT INTO users (usr_id, name, password, email, username) VALUES ('${value1}', '${value8}', '${value2}', '${value3}', '${value9})
+            INSERT INTO users (usr_id, name, password, email, username) VALUES ('${value1}', '${value8}', '${value2}', '${value3}', '${value9}')
           `;
           } else if (userInfo.role === "rso") {
             sql = `
-            INSERT INTO admins (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
+            INSERT INTO admins (usr_id, username, password, email) VALUES ('${value1}', '${value9}' ,'${value2}', '${value3}')
           `;
           } else {
             //if its a university
 
             sql = `
-            INSERT INTO universities (usr_id, univ_name, loc_name, univ_desc, num_students) VALUES ('${value1}', '${value4}', '${value5}', '${value6}', '${value7}')
+            INSERT INTO universities (usr_id, username,univ_name, loc_name, univ_desc, num_students) VALUES ('${value1}', "${value9}','${value4}', '${value5}', '${value6}', '${value7}')
           `;
 
             db.run(sql, function (err) {
@@ -230,19 +230,14 @@ app.post("/login", (req, res) => {
   console.log(req.body);
   let userInfo = req.body;
 
-  console.log("userInfo.school_email:" + userInfo.school_email);
-  console.log("userInfo.username:" + userInfo.username);
-  authenticateUser(userInfo, (err, isValid) => {
+  userInfo.password = String(setUniquePassword(userInfo.password, hashKey)); ///for the love of god dont forget hashkey
+  authenticateUser(userInfo, "login", (err, isValid) => {
     if (err) {
       res.status(500).send(err);
     } else if (!isValid) {
-      //is valid its lying
-
-      req.session.userId = userInfo.username;
-      req.session.email = String(userInfo.school_email);
-      req.session.loggedIn = true; // Set a session variable to indicate the user is logged in
+      insertIntoSessionTable(true, userInfo.username, userInfo.email);
       console.log("valid login");
-      res.redirect("/");
+      res.redirect('../index.html');
     } else {
       //its not valid
       res.status(200).send("Invalid Login");
@@ -251,7 +246,7 @@ app.post("/login", (req, res) => {
 });
 
 // Reusable function to authenticate user
-const authenticateUser = (userInfo, callback) => {
+const authenticateUser = (userInfo, type, callback) => {
   console.log(userInfo);
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
@@ -266,12 +261,16 @@ const authenticateUser = (userInfo, callback) => {
       // Define tables to check
       const tablesToCheck = ["super_admins", "admins", "users"];
       userInfo.username = userInfo.username;
-      userInfo.password = getUniquePassword(userInfo.password);
+
+      if(type === "login"){
+        userInfo.password = String(getUniquePassword(userInfo.password, hashKey));
+      }
+    
       // Function to perform a single database query
       const performQuery = (table) => {
         return new Promise((resolve, reject) => {
           db.get(
-            `SELECT * FROM ${table} WHERE usr_id = ? AND password = ?`,
+            `SELECT * FROM ${table} WHERE username = ? AND password = ?`,
             [userInfo.username, userInfo.password],
             (error, row) => {
               if (error) {
@@ -595,10 +594,37 @@ app.post("/get_comments", (req, res) => {
 });
 
 app.get("/check-login", (req, res) => {
-  res.json({ loggedIn: req.session.loggedIn || false });
+  let db = new sqlite3.Database('./assets/sqlite.db', (err) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send(err.message);
+    }
+    //console.log('Connected to the SQLite database.');
+
+    let sql = `SELECT * FROM session_table LIMIT 1`;
+    db.get(sql, (err, row) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).send(err.message);
+      }
+      db.close((err) => {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log('Close the database connection.');
+      });
+      return row
+        ? res.send({ exists: true, username: row.username })
+        : res.send({ exists: false });
+    });
+  });
+  db.close();
 });
 
 function setUniquePassword(text, key) {
+  return text;
+  console.log("text: " + text + "key: " + key);
+
   key = crypto
     .createHash("sha256")
     .update(String("dumbfuck"))
@@ -612,12 +638,30 @@ function setUniquePassword(text, key) {
   return iv.toString("hex") + ":" + encrypted; // Prepend IV to the ciphertext
 }
 function getUniquePassword(encryptedText, key) {
+  return encryptedText;
   const parts = encryptedText.split(":");
   const iv = Buffer.from(parts.shift(), "hex"); // Extract IV from the ciphertext
   const encrypted = parts.join(":");
-
+  console.log("encryptedtext: " + encryptedText + "key: " + key);
   const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(key), iv);
   let decrypted = decipher.update(encrypted, "hex", "utf8");
   decrypted += decipher.final("utf8");
   return decrypted;
+}
+
+function insertIntoSessionTable(loggedIn, username, email) {
+  let db = new sqlite3.Database('./assets/sqlite.db', (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log('Connected to the SQlite database.');
+  
+    db.run(`INSERT INTO session_table(loggedIn, username, email) VALUES(?, ?, ?)`, [loggedIn, username, email], function(err) {
+      if (err) {
+        return console.log(err.message);
+      }
+      console.log(`A row has been inserted with rowid ${this.lastID}`);
+    });
+    db.close();
+  });
 }
