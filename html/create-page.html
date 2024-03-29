@@ -30,7 +30,10 @@
       </div>
     </div>
     <div class="form-div">
-      <form action="signup" method="POST">
+      <form action="signup" method="POST" >
+        <a href="create-page.html"> 
+          <button type="button" class="button exit button" id="exit-button1"></button>
+        </a>
         <h3>SIGN UP</h3>
         <label for="username">Username</label><br />
         <input type="text" class="username" name="username" /><br />
@@ -45,7 +48,10 @@
           <input type="radio" id="rso" name="role" value="rso" />
           <input type="radio" id="university" name="role" value="university" />
         </div>
-
+        <div id="userFields">
+          <label for="name">Full Name:</label>
+          <input type="text" id="name" name="name" /><br />
+        </div>
         <div id="universityFields">
           <label for="loc_name">Location Name:</label><br />
           <input type="text" id="loc_name" name="loc_name" /><br />
@@ -70,15 +76,27 @@
           /><br />
         </div>
         <label for="school_email">School Email:</label><br />
-        <input type="email" id="school_email" name="school_email" /><br />
+        <input
+          type="email"
+          id="school_email"
+          name="school_email"
+          required
+        /><br />
         <input type="submit" value="SIGN UP" />
       </form>
     </div>
+
+
     <div class="form-div">
       <form action="login" method="POST">
+        <a href="create-page.html"> 
+          <button type="button" class="button exit button" id="exit-button2"></button>
+        </a>
         <h3>LOGIN</h3>
         <label for="username">Username</label><br />
         <input type="text" class="username" name="username" /><br />
+        <label for="school_email">School Email</label><br />
+        <input type="text" class="school_email" name="school_email" /><br />
         <label for="password">Password</label><br />
         <input type="password" class="password" name="password" /><br /><br />
         <input type="submit" value="LOGIN" />
@@ -104,6 +122,11 @@
         <input type="submit" value="CREATE RSO" />
       </form>
     </div>
-    <script src="assets/main.js"></script>
+    <div class="form-div" id="account-box">
+      <form action="account" method="GET">
+        <h3>Account Details</h3><br />
+      </form>
+    </div>
+    <script src="../assets/main.js"></script>
   </body>
 </html>

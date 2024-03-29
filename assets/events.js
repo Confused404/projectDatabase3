@@ -63,7 +63,7 @@ fetch(`${eventServerAddress}/getData`)
         .catch((error) => {
           console.error("Error fetching comments:", error);
         });
-
+        
       // Create elements for adding new comments
       const insertCommentDiv = document.createElement("div");
       insertCommentDiv.className = "insert_comments";
