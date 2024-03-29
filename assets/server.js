@@ -670,7 +670,7 @@ app.get("/check-login", (req, res) => {
         console.log('Close the database connection.');
       });
       return row
-        ? res.send({ exists: true, username: row.username, email: row.email })
+        ? res.send({ exists: true, username: row.username, email: row.email, usr_id: row.usr_id })
         : res.send({ exists: false });
     });
   });
@@ -722,32 +722,45 @@ function insertIntoSessionTable(loggedIn, username, email, userId, role) {
   });
 }
 
-/*
-app.get("/get-session-data", (req, res) => {
-  let db = new sqlite3.Database('./assets/sqlite.db', (err) => {
-    if (err) {
-      console.error(err.message);
-      return res.status(500).send(err.message);
-    }
+app.post('/join-event', function(req, res) {
+  let evnt_id = req.body.evnt_id;
 
-    let sql = `SELECT username, email FROM session_table LIMIT 1`;
-    db.get(sql, (err, row) => {
+  let db = new sqlite3.Database('./assets/sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
       if (err) {
-        console.error(err.message);
-        return res.status(500).send(err.message);
-      }
-      
-      db.close((err) => {
-        if (err) {
           console.error(err.message);
-        }
-        console.log('Close the database connection.');
+      }
+      console.log('Connected to the database.');
+
+      db.serialize(() => {
+          console.log("inside serialize");
+
+          // First, get the usr_id from the session_table
+          db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
+              if (err) {
+                  return console.error(err.message);
+              }
+
+              let usr_id = row ? row.usr_id : null;
+
+              if (usr_id) {
+                  // Then, insert the evnt_id and usr_id into the join_table
+                  db.run(`INSERT INTO join_table(evnt_id, usr_id) VALUES (?, ?)`, [evnt_id, usr_id], function(err) {
+                      if (err) {
+                          return console.error(err.message);
+                      }
+                      console.log(`Row(s) inserted: ${this.changes}`);
+                  });
+              }
+          });
+
+          db.close((err) => {
+              if (err) {
+                  console.error(err.message);
+              }
+              console.log('Close the database connection.');
+          });
       });
 
-      return row
-        ? res.send({ username: row.username, email: row.email })
-        : res.send({ username: null, email: null });
-    });
+      res.send('Event joined');
   });
 });
-*/

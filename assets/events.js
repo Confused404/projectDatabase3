@@ -90,6 +90,7 @@ fetch(`${eventServerAddress}/getData`)
       ratingInput.value = "3";
       ratingDiv.appendChild(ratingInput);
 
+      //submit button for comment section
       insertCommentDiv.appendChild(ratingDiv);
       const submitCommentButton = document.createElement("button");
       submitCommentButton.textContent = "Submit";
@@ -103,12 +104,28 @@ fetch(`${eventServerAddress}/getData`)
       });
       insertCommentDiv.appendChild(submitCommentButton);
 
+      //edit comment button for comment section
       const editCommentButton = document.createElement("button");
       editCommentButton.textContent = "Edit Comment";
       editCommentButton.addEventListener("click", function (event) {
         console.log("edit button clicked");
       });
       insertCommentDiv.appendChild(editCommentButton);
+
+      //joinEventButton for comment section
+      const joinEventButton = document.createElement("button");
+      joinEventButton.textContent = "Join Event";
+      joinEventButton.addEventListener("click", function (event) {
+        console.log("join event button clicked");
+        // Replace 'event_id' with the actual event id you want to use
+        joinEvent(record.evnt_id);
+        setTimeout(function() {
+          joinEventButton.remove();
+        }, 1000);
+      });
+      insertCommentDiv.appendChild(joinEventButton);
+      
+
 
       // Append insertCommentDiv to the eventDiv
       eventDiv.appendChild(insertCommentDiv);
@@ -120,6 +137,28 @@ fetch(`${eventServerAddress}/getData`)
   .catch((error) => {
     console.error("Error fetching event data:", error);
   });
+
+  function joinEvent(evnt_id) {
+    console.log("inside joinEvent function");
+
+    return fetch('/join-event', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+        },
+        body: JSON.stringify({ evnt_id: evnt_id })
+    })
+    .then((response) => {
+        if (!response.ok) { 
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        } else { 
+            console.log(`Done, got ${response.headers.get('content-length')} bytes`);
+        }
+    })
+    .catch((error) => {
+        console.error('Request failed:', error);
+    });
+}
 
 // Function to fetch comments for a specific event
 function fetchComments(eventId) {
