@@ -16,12 +16,14 @@ buttons.forEach(function (button) {
     } else if (formId === "login") {
       form = document.querySelector('form[action="login"]');
     }
-    let parent = form.parentNode;
-    if (parent.offsetHeight == 0) {
-      parent.style.display = "block";
-      buttons.forEach(function (button) {
-        button.disabled = true;
-      });
+    if (form) {
+      let parent = form.parentNode;
+      if (parent.offsetHeight == 0) {
+        parent.style.display = "block";
+        buttons.forEach(function (button) {
+          button.disabled = true;
+        });
+      }
     }
   });
 });
@@ -121,13 +123,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 });
-
+/////
+//////////////////////////////////////////
+/////
+/////
 function updateLoginButton() {
   console.log("inside updateLoginButton()");
   fetch('/check-login') // Replace '/check-login' with the route that checks if the user is logged in
     .then(response => response.json())
     .then(data => {
-      log(data.exists);
+      console.log(data.exists);
       if (data.exists) {
         // Select the login button
         const loginButton = document.querySelector('#login');
@@ -141,6 +146,44 @@ function updateLoginButton() {
         // Change the button id
         loginButton.id = 'account';
 
+        // Select the join button
+        const joinButton = document.querySelector('#signup');
+
+        // If the join button doesn't exist, it means it's already been changed
+        if (joinButton) {
+          // Change the button text
+          joinButton.textContent = 'SIGN OUT';
+
+          // Change the button id
+          joinButton.id = 'signout';
+
+          // Add a click event to the sign out button
+          joinButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            // Add sign out functionality here
+            fetch('/sign-out', {
+              method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                // Sign out was successful
+                // You can redirect the user to the login page or refresh the page
+                console.log("signout successful");
+                setTimeout(function() {
+                  location.reload();
+                }, 1000); //1 second is 1000
+              } else {
+                // Sign out failed
+                // You can show an error message to the user
+                console.log("sign out failed");
+
+              }
+            })
+            .catch(error => console.error('Error:', error));
+          });
+        }
+
         // Change the button's click event to go to the account details page
         loginButton.addEventListener('click', function(event) {
           event.preventDefault();
@@ -153,10 +196,28 @@ function updateLoginButton() {
           if (box.offsetHeight == 0) {
             box.style.display = 'block';
           }
+          console.log(data);
+          // Use the data from the first fetch request
+          console.log(data.username);
+          console.log(data.email);
+          if (data.username && data.email) {
+            
+            // Create elements for user details
+            console.log("inside the ifstatement");
+            const form = box.firstElementChild
+            const usernameLabel = document.createElement("label");
+            usernameLabel.textContent = `Username: ${data.username}`;
+            form.appendChild(usernameLabel);
+
+            const emailLabel = document.createElement("label");
+            emailLabel.textContent = `Email: ${data.email}`;
+            form.appendChild(emailLabel);
+          }
         });
       }
     });
 }
+
 
 // Login form validation
 document.addEventListener("DOMContentLoaded", function () {
@@ -322,3 +383,4 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 });
+

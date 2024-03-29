@@ -9,7 +9,9 @@ CREATE TABLE events (
 CREATE TABLE session_table (
   loggedIn BOOLEAN,
   username INT,
-  email VARCHAR(50)
+  email VARCHAR(50),
+  usr_id INT,
+  role VARCHAR(10)
 );
   
 

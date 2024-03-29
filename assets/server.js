@@ -177,13 +177,14 @@ app.post("/signup", (req, res) => {
           let value8 = userInfo.name;
           let value9 = userInfo.username;
           let sql;
-
+          console.log("user role" + userInfo.role)
           // Prepare an SQL statement
           if (userInfo.role === "user") {
             sql = `
             INSERT INTO users (usr_id, name, password, email, username) VALUES ('${value1}', '${value8}', '${value2}', '${value3}', '${value9}')
           `;
           } else if (userInfo.role === "rso") {
+            console.log("user role is rso")
             sql = `
             INSERT INTO admins (usr_id, username, password, email) VALUES ('${value1}', '${value9}' ,'${value2}', '${value3}')
           `;
@@ -233,13 +234,40 @@ app.post("/login", (req, res) => {
     if (err) {
       res.status(500).send(err);
     } else if (!isValid) {
-      insertIntoSessionTable(true, userInfo.username, userInfo.email);
+      console.log("usweruwu");
+      console.log(userInfo);
+      insertIntoSessionTable(true, userInfo.username, userInfo.school_email, userInfo.userId, userInfo.role);
       console.log("valid login");
       res.redirect('../index.html');
     } else {
       //its not valid
       res.status(200).send("Invalid Login");
     }
+  });
+});
+
+//server side deletion of the session_table from the db
+app.delete('/sign-out', (req, res) => {
+  let db = new sqlite3.Database('./assets/sqlite.db', (err) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send(err.message);
+    }
+
+    let sql = `DELETE FROM session_table`;
+    db.run(sql, (err) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).send(err.message);
+      }
+      db.close((err) => {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log('Close the database connection.');
+      });
+      return res.send({ success: true });
+    });
   });
 });
 
@@ -274,6 +302,7 @@ const authenticateUser = (userInfo, type, callback) => {
               if (error) {
                 reject(error);
               } else {
+               
                 resolve(row);
               }
             }
@@ -293,6 +322,19 @@ const authenticateUser = (userInfo, type, callback) => {
           const whateverthefuck = results.some((row) => row !== undefined);
 
           console.log(whateverthefuck);
+          if(type == 'login' && whateverthefuck){
+            const index = results.findIndex((row) => row !== undefined);
+            if(index == 0){
+              userInfo.role = 'user'
+            }
+            else if(index == 1){
+              userInfo.role = 'admin'
+            }
+            else{
+              userInfo.role = 'super admin'
+            }
+            userInfo.userId = results[index].usr_id
+          }
           if (whateverthefuck) {
             callback(null, false);
             //signup is checking for a true to be true
@@ -337,48 +379,65 @@ app.post("/html/create-Event", (req, res) => {
       }
     }
   );
-
   db.get(
-    `SELECT * FROM admins WHERE usr_id = ?`,
-    [req.session.userId],
+    `SELECT usr_id FROM session_table LIMIT 1`,
+    [],
     (err, row) => {
       if (err) {
         console.error(err);
-        res.status(500).send("Error querying database");
+        res.status(500).send("Error querying session_table");
         return;
       }
-
+  
       if (!row) {
-        res.status(403).send("Only admins can create events");
+        res.status(403).send("No session found");
         return;
       }
-
-      // Insert the new event
-      let sql = `
-      INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
-    `;
-
-      db.run(
-        sql,
-        [event_id, event_title, event_time, event_desc],
-        function (err) {
+      console.log(row);
+      let userId = row.usr_id;
+  
+      db.get(
+        `SELECT * FROM admins WHERE usr_id = ?`,
+        [userId],
+        (err, row) => {
           if (err) {
             console.error(err);
-            res.status(500).send("Error inserting event into database");
+            res.status(500).send("Error querying database");
             return;
           }
-
-          console.log(`New event inserted into database`);
-          res.status(200).send("Event successfully created");
+  
+          if (!row) {
+            res.status(403).send("Only admins can create events");
+            return;
+          }
+  
+          // Insert the new event
+          let sql = `
+          INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
+        `;
+  
+          db.run(
+            sql,
+            [event_id, event_title, event_time, event_desc],
+            function (err) {
+              if (err) {
+                console.error(err);
+                res.status(500).send("Error inserting event into database");
+                return;
+              }
+  
+              console.log(`New event inserted into database`);
+              res.status(200).send("Event successfully created");
+            }
+          );
+  
+          // Close the database connection
+          db.close();
         }
       );
-
-      // Close the database connection
-      db.close();
     }
   );
 });
-
 app.post("/html/create-RSO", (req, res) => {
   // Access form data from req.body
   const { RSO_title, RSO_members } = req.body;
@@ -597,7 +656,6 @@ app.get("/check-login", (req, res) => {
       console.error(err.message);
       return res.status(500).send(err.message);
     }
-    //console.log('Connected to the SQLite database.');
 
     let sql = `SELECT * FROM session_table LIMIT 1`;
     db.get(sql, (err, row) => {
@@ -612,11 +670,10 @@ app.get("/check-login", (req, res) => {
         console.log('Close the database connection.');
       });
       return row
-        ? res.send({ exists: true, username: row.username })
+        ? res.send({ exists: true, username: row.username, email: row.email })
         : res.send({ exists: false });
     });
   });
-  db.close();
 });
 
 function setUniquePassword(text, key) {
@@ -647,19 +704,50 @@ function getUniquePassword(encryptedText, key) {
   return decrypted;
 }
 
-function insertIntoSessionTable(loggedIn, username, email) {
+function insertIntoSessionTable(loggedIn, username, email, userId, role) {
   let db = new sqlite3.Database('./assets/sqlite.db', (err) => {
+    console.log()
     if (err) {
       console.error(err.message);
     }
     console.log('Connected to the SQlite database.');
-  
-    db.run(`INSERT INTO session_table(loggedIn, username, email) VALUES(?, ?, ?)`, [loggedIn, username, email], function(err) {
+    console.log("email: " + email);
+    db.run(`INSERT INTO session_table(loggedIn, username, email, usr_id, role) VALUES(?, ?, ?, ?, ?)`, [loggedIn, username, email, userId, role], function(err) {
       if (err) {
         return console.log(err.message);
       }
-      console.log(`A row has been inserted with rowid ${this.lastID}`);
+      console.log(`A row has been inserted with row id ${this.lastID}`);
     });
     db.close();
   });
 }
+
+/*
+app.get("/get-session-data", (req, res) => {
+  let db = new sqlite3.Database('./assets/sqlite.db', (err) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send(err.message);
+    }
+
+    let sql = `SELECT username, email FROM session_table LIMIT 1`;
+    db.get(sql, (err, row) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).send(err.message);
+      }
+      
+      db.close((err) => {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log('Close the database connection.');
+      });
+
+      return row
+        ? res.send({ username: row.username, email: row.email })
+        : res.send({ username: null, email: null });
+    });
+  });
+});
+*/
