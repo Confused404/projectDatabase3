@@ -57,43 +57,45 @@ fetch("https://events.ucf.edu/feed.xml")
         } else {
           console.log("Connected to the SQLite database.");
           const events = result.events.event;
+          if (events) {
 
-          for (const event of events) {
-            const event_id = event.event_id;
-            const event_time = event.start_date;
-            const event_desc = event.description;
-            const loc_name = event.location;
-            const event_title = event.title;
+            for (const event of events) {
+              const event_id = event.event_id;
+              const event_time = event.start_date;
+              const event_desc = event.description;
+              const loc_name = event.location;
+              const event_title = event.title;
 
-            let value1 = event_id;
-            let value2 = String(event_time).replace(/-0400/g, "");
-            let value3 = String(event_desc).replace(/'/g, "''");
-            let value4 = String(loc_name).replace(/'/g, "''");
-            let value5 = String(event_title).replace(/'/g, "''");
+              let value1 = event_id;
+              let value2 = String(event_time).replace(/-0400/g, "");
+              let value3 = String(event_desc).replace(/'/g, "''");
+              let value4 = String(loc_name).replace(/'/g, "''");
+              let value5 = String(event_title).replace(/'/g, "''");
 
-            let sql = `
-              INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES ('${value1}', '${value5}', '${value2}', '${value3}')
-            `;
+              let sql = `
+                INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES ('${value1}', '${value5}', '${value2}', '${value3}')
+              `;
 
-            //INSERT INTO loaction_table (loc_name, addy, longitude, latitude) VALUES ()
-            //what should we do for the usr_ids of the ucf events?
+              //INSERT INTO loaction_table (loc_name, addy, longitude, latitude) VALUES ()
+              //what should we do for the usr_ids of the ucf events?
 
-            // Execute the insert statement
-            db.run(sql, function (err) {
-              if (err) {
-                //console.error(err);
-              }
-            });
+              // Execute the insert statement
+              db.run(sql, function (err) {
+                if (err) {
+                  //console.error(err);
+                }
+              });
 
-            sql = `
-              INSERT INTO at (loc_name, evnt_id) VALUES ('${value4}', '${value1}')
-            `;
+              sql = `
+                INSERT INTO at (loc_name, evnt_id) VALUES ('${value4}', '${value1}')
+              `;
 
-            db.run(sql, function (err) {
-              if (err) {
-                //console.error(err);
-              }
-            });
+              db.run(sql, function (err) {
+                if (err) {
+                  //console.error(err);
+                }
+              });
+            }
           }
           db.close();
         }
@@ -111,7 +113,7 @@ app.listen(PORT, () => {
 });
 
 // returns data from events table in DB
-app.get("/getData", (req, res) => {
+app.get("/getEventData", (req, res) => {
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
     sqlite3.OPEN_READONLY,
@@ -131,6 +133,28 @@ app.get("/getData", (req, res) => {
 
   db.close();
 });
+
+app.get("/getRSOData", (req, res) => {
+  let db = new sqlite3.Database(
+    "./assets/sqlite.db",
+    sqlite3.OPEN_READONLY,
+    (err) => {
+      if (err) {
+        console.error(err.message);
+      }
+    }
+  );
+
+  db.all("SELECT * FROM rsos", [], (err, rows) => {
+    if (err) {
+      throw err;
+    }
+    res.json(rows);
+  });
+
+  db.close();
+});
+
 
 // Setup route to receive signup information
 app.post("/signup", (req, res) => {
@@ -502,6 +526,7 @@ app.post("/html/create-RSO", (req, res) => {
                 if (err) {
                   reject(err);
                 } else if (!row3) {
+                  //console.log("admin email handle: " + adminEmailDomain);
                   reject(
                     new Error(
                       `Member ${member} does not exist in the database or does not have the same email domain as the admin`

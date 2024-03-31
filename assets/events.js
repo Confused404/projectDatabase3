@@ -1,6 +1,6 @@
 const eventServerAddress = "http://127.0.0.1:3000";
 
-fetch(`${eventServerAddress}/getData`)
+fetch(`${eventServerAddress}/getEventData`)
   .then((response) => response.json())
   .then((data) => {
     // Loop through each event record
