@@ -119,7 +119,7 @@ CREATE TABLE super_admins (
 CREATE TABLE join_table (
     usr_id INT,
   	evnt_id INT,
-    PRIMARY KEY(usr_id),
+  	rso_id,
     FOREIGN KEY(usr_id) REFERENCES users(usr_id)
 );
 
