@@ -619,51 +619,52 @@ app.post("/insert_comment", (req, res) => {
       // You can access the response data using response.data
       console.log("response session info: " + JSON.stringify(response.data));
       session_info = response.data;
+      const commentInfo = req.body;
+      const commentText = commentInfo.commentText;
+      const ratingNum = commentInfo.ratingNum;
+      const evnt_id = commentInfo.evnt_id;
+      const comment_id = uuidv4();
+
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      let hour = now.getHours();
+      const minute = now.getMinutes();
+      const formattedMonth = month < 10 ? `0${month}` : month;
+      const formattedDay = day < 10 ? `0${day}` : day;
+      let timeIndication = "AM";
+      if (hour > 12) {
+        hour -= 12;
+        timeIndication = "PM";
+      }
+      const formattedHour = hour < 10 ? `0${hour}` : hour;
+      const formattedMinute = minute < 10 ? `0${minute}` : minute;
+
+      const sql = `INSERT INTO comments (comment_id, evnt_id, comnt_text, rating, time_stamp, username) VALUES (?, ?, ?, ?, ?, ?)`;
+      const timestamp = `${formattedMonth}-${formattedDay} ${formattedHour}:${formattedMinute} ${timeIndication}`;
+      const params = [
+        comment_id,
+        evnt_id,
+        commentText,
+        ratingNum,
+        timestamp,
+        session_info.username,
+      ];
+
+      db.run(sql, params, function (err) {
+        if (err) {
+          console.error("Error inserting data:", err.message);
+          return;
+        }
+        console.log(`Rows inserted: ${this.changes}`);
+      });
+      db.close();
+      res.status(200).json({ message: "Comment inserted successfully" });
     })
     .catch((error) => {
       // Handle errors if any
       console.error(error);
     });
-
-  const commentInfo = req.body;
-  const commentText = commentInfo.commentText;
-  const ratingNum = commentInfo.ratingNum;
-  const evnt_id = commentInfo.evnt_id;
-
-  const now = new Date();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
-  let hour = now.getHours();
-  const minute = now.getMinutes();
-  const formattedMonth = month < 10 ? `0${month}` : month;
-  const formattedDay = day < 10 ? `0${day}` : day;
-  let timeIndication = "AM";
-  if (hour > 12) {
-    hour -= 12;
-    timeIndication = "PM";
-  }
-  const formattedHour = hour < 10 ? `0${hour}` : hour;
-  const formattedMinute = minute < 10 ? `0${minute}` : minute;
-
-  const sql = `INSERT INTO comments (evnt_id, comnt_text, rating, time_stamp, username) VALUES (?, ?, ?, ?, ?)`;
-  const timestamp = `${formattedMonth}-${formattedDay} ${formattedHour}:${formattedMinute} ${timeIndication}`;
-  const params = [
-    evnt_id,
-    commentText,
-    ratingNum,
-    timestamp,
-    session_info.username,
-  ];
-
-  db.run(sql, params, function (err) {
-    if (err) {
-      console.error("Error inserting data:", err.message);
-      return;
-    }
-    console.log(`Rows inserted: ${this.changes}`);
-  });
-  db.close();
-  res.status(200).json({ message: "Comment inserted successfully" });
 });
 
 // get the comments from all the events
@@ -826,7 +827,52 @@ app.post("/join-event", function (req, res) {
   );
 });
 
-app.post("/edit_commment", function (req, res) {
-  const reqInfo = req.body;
-  console.log("editcomment req: " + reqInfo);
+// POST /edit_comment endpoint to edit a comment
+app.post("/edit_comment", (req, res) => {
+  const requestBody = req.body;
+
+  // Check if comment_id and message are provided
+  if (!requestBody.comment_id || !requestBody.message) {
+    return res
+      .status(400)
+      .json({ error: "Comment ID and message are required." });
+  }
+
+  // Update the comment in the database
+  db.run(
+    "UPDATE comments SET commnt_text = ? WHERE id = ?",
+    [requestBody.message, requestBody.comment_id],
+    function (err) {
+      if (err) {
+        console.error("Error updating comment:", err);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+      console.log(`Comment with ID ${comment_id} updated successfully.`);
+      res.status(200).json({ message: "Comment updated successfully." });
+    }
+  );
+});
+app.post("/delete_comment", (req, res) => {
+  const requestBody = req.body;
+
+  // Check if comment_id is provided
+  if (!requestBody.comment_id) {
+    return res.status(400).json({ error: "Comment ID is required." });
+  }
+
+  // Delete the comment from the database
+  db.run(
+    "DELETE FROM comments WHERE id = ?",
+    [requestBody.comment_id],
+    function (err) {
+      if (err) {
+        console.error("Error deleting comment:", err);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+      console.log(
+        `Comment with ID ${requestBody.comment_id} deleted successfully.`
+      );
+      res.status(200).json({ message: "Comment deleted successfully." });
+    }
+  );
 });
