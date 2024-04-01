@@ -1,4 +1,4 @@
-const eventServerAddress = "http://127.0.0.1:3000";
+const eventServerAddress = "http://localhost:3000";
 
 fetch(`${eventServerAddress}/getData`)
   .then((response) => response.json())
@@ -34,11 +34,59 @@ fetch(`${eventServerAddress}/getData`)
         .then((comments) => {
           // Loop through each comment
           comments.forEach((comment) => {
+            let session_info = null;
+            fetch(`https://${eventServerAddress}/get_session_info`)
+              .then((response) => {
+                // Check if the request was successful
+                if (!response.ok) {
+                  throw new Error("Network response was not ok");
+                }
+                // Parse the JSON response
+                return response.json();
+              })
+              .then((data) => {
+                session_info = JSON.stringify(data);
+                session_info = JSON.parse(session_info);
+              })
+              .catch((error) => {
+                // Handle any errors
+                console.error(
+                  "There was a problem with the fetch operation:",
+                  error
+                );
+              });
+            if (session_info.usr_id == comment.usr_id) {
+              const editButton = document.createElement("button");
+              editButton.className = "edit-button";
+              editButton.textContent = "Edit Comment";
+              editButton.addEventListener("click", function (event) {
+                console.log("Button clicked!");
+                fetch(`https://${eventServerAddress}/edit_comment`)
+                  .then((response) => {
+                    // Check if the request was successful
+                    if (!response.ok) {
+                      throw new Error("Network response was not ok");
+                    }
+                    // Parse the JSON response
+                    return response.json();
+                  })
+                  .then((data) => {
+                    console.log(data);
+                  })
+                  .catch((error) => {
+                    // Handle any errors
+                    console.error(
+                      "There was a problem with the fetch operation:",
+                      error
+                    );
+                  });
+              });
+            }
             // Create elements for each comment
             const individualComment = document.createElement("div");
             individualComment.className = "individual-comment";
             const commentHeading = document.createElement("h3");
-            commentHeading.textContent = "User Comment";
+            commentHeading.textContent = comment.username;
 
             const commentTextElement = document.createElement("p");
             commentTextElement.textContent = comment.comnt_text;
@@ -119,13 +167,11 @@ fetch(`${eventServerAddress}/getData`)
         console.log("join event button clicked");
         // Replace 'event_id' with the actual event id you want to use
         joinEvent(record.evnt_id);
-        setTimeout(function() {
+        setTimeout(function () {
           joinEventButton.remove();
         }, 1000);
       });
       insertCommentDiv.appendChild(joinEventButton);
-      
-
 
       // Append insertCommentDiv to the eventDiv
       eventDiv.appendChild(insertCommentDiv);
@@ -138,25 +184,27 @@ fetch(`${eventServerAddress}/getData`)
     console.error("Error fetching event data:", error);
   });
 
-  function joinEvent(evnt_id) {
-    console.log("inside joinEvent function");
+function joinEvent(evnt_id) {
+  console.log("inside joinEvent function");
 
-    return fetch('/join-event', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json;charset=UTF-8'
-        },
-        body: JSON.stringify({ evnt_id: evnt_id })
-    })
+  return fetch("/join-event", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json;charset=UTF-8",
+    },
+    body: JSON.stringify({ evnt_id: evnt_id }),
+  })
     .then((response) => {
-        if (!response.ok) { 
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
-        } else { 
-            console.log(`Done, got ${response.headers.get('content-length')} bytes`);
-        }
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      } else {
+        console.log(
+          `Done, got ${response.headers.get("content-length")} bytes`
+        );
+      }
     })
     .catch((error) => {
-        console.error('Request failed:', error);
+      console.error("Request failed:", error);
     });
 }
 
