@@ -20,6 +20,7 @@ CREATE TABLE comments (
     comnt_text VARCHAR(8000),
     rating     INT,
     time_stamp VARCHAR(30),
+  	username INT,
   	FOREIGN KEY(evnt_id) REFERENCES events(evnt_id)
 );
 
@@ -85,7 +86,7 @@ CREATE TABLE rsos (
   	rso_title VARCHAR(50),
   	rso_members VARCHAR(8000),
     FOREIGN KEY(usr_id) REFERENCES users(usr_id),
-    PRIMARY KEY(usr_id)
+    PRIMARY KEY(rso_id)
 );
 
 CREATE TABLE users (
@@ -117,7 +118,8 @@ CREATE TABLE super_admins (
 
 CREATE TABLE join_table (
     usr_id INT,
-    PRIMARY KEY(usr_id),
+  	evnt_id INT,
+  	rso_id,
     FOREIGN KEY(usr_id) REFERENCES users(usr_id)
 );
 

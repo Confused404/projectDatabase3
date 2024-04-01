@@ -1,6 +1,6 @@
 const eventServerAddress = "http://localhost:3000";
 
-fetch(`${eventServerAddress}/getData`)
+fetch(`${eventServerAddress}/getEventData`)
   .then((response) => response.json())
   .then((data) => {
     // Loop through each event record
@@ -111,7 +111,7 @@ fetch(`${eventServerAddress}/getData`)
         .catch((error) => {
           console.error("Error fetching comments:", error);
         });
-
+        
       // Create elements for adding new comments
       const insertCommentDiv = document.createElement("div");
       insertCommentDiv.className = "insert_comments";

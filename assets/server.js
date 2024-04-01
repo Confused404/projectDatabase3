@@ -58,43 +58,44 @@ fetch("https://events.ucf.edu/feed.xml")
         } else {
           console.log("Connected to the SQLite database.");
           const events = result.events.event;
+          if (events) {
+            for (const event of events) {
+              const event_id = event.event_id;
+              const event_time = event.start_date;
+              const event_desc = event.description;
+              const loc_name = event.location;
+              const event_title = event.title;
 
-          for (const event of events) {
-            const event_id = event.event_id;
-            const event_time = event.start_date;
-            const event_desc = event.description;
-            const loc_name = event.location;
-            const event_title = event.title;
+              let value1 = event_id;
+              let value2 = String(event_time).replace(/-0400/g, "");
+              let value3 = String(event_desc).replace(/'/g, "''");
+              let value4 = String(loc_name).replace(/'/g, "''");
+              let value5 = String(event_title).replace(/'/g, "''");
 
-            let value1 = event_id;
-            let value2 = String(event_time).replace(/-0400/g, "");
-            let value3 = String(event_desc).replace(/'/g, "''");
-            let value4 = String(loc_name).replace(/'/g, "''");
-            let value5 = String(event_title).replace(/'/g, "''");
+              let sql = `
+                INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES ('${value1}', '${value5}', '${value2}', '${value3}')
+              `;
 
-            let sql = `
-              INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES ('${value1}', '${value5}', '${value2}', '${value3}')
-            `;
+              //INSERT INTO loaction_table (loc_name, addy, longitude, latitude) VALUES ()
+              //what should we do for the usr_ids of the ucf events?
 
-            //INSERT INTO loaction_table (loc_name, addy, longitude, latitude) VALUES ()
-            //what should we do for the usr_ids of the ucf events?
+              // Execute the insert statement
+              db.run(sql, function (err) {
+                if (err) {
+                  //console.error(err);
+                }
+              });
 
-            // Execute the insert statement
-            db.run(sql, function (err) {
-              if (err) {
-                //console.error(err);
-              }
-            });
+              sql = `
+                INSERT INTO at (loc_name, evnt_id) VALUES ('${value4}', '${value1}')
+              `;
 
-            sql = `
-              INSERT INTO at (loc_name, evnt_id) VALUES ('${value4}', '${value1}')
-            `;
-
-            db.run(sql, function (err) {
-              if (err) {
-                //console.error(err);
-              }
-            });
+              db.run(sql, function (err) {
+                if (err) {
+                  //console.error(err);
+                }
+              });
+            }
           }
           db.close();
         }
@@ -112,7 +113,7 @@ app.listen(PORT, () => {
 });
 
 // returns data from events table in DB
-app.get("/getData", (req, res) => {
+app.get("/getEventData", (req, res) => {
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
     sqlite3.OPEN_READONLY,
@@ -124,6 +125,27 @@ app.get("/getData", (req, res) => {
   );
 
   db.all("SELECT * FROM events", [], (err, rows) => {
+    if (err) {
+      throw err;
+    }
+    res.json(rows);
+  });
+
+  db.close();
+});
+
+app.get("/getRSOData", (req, res) => {
+  let db = new sqlite3.Database(
+    "./assets/sqlite.db",
+    sqlite3.OPEN_READONLY,
+    (err) => {
+      if (err) {
+        console.error(err.message);
+      }
+    }
+  );
+
+  db.all("SELECT * FROM rsos", [], (err, rows) => {
     if (err) {
       throw err;
     }
@@ -460,82 +482,89 @@ app.post("/html/create-RSO", (req, res) => {
     }
   );
 
-  console.log("req.session.userId: " + req.session.userId);
-  console.log("req.session.email: " + req.session.email);
-  db.get(
-    `SELECT * FROM admins WHERE usr_id = ?`,
-    [req.session.userId],
-    (err, row) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Error querying database");
-        return;
-      }
-      console.log("row is:" + row);
-      if (!row) {
-        res.status(403).send("Only admins can create RSOs");
-        return;
-      }
-
-      // Validate RSO_members
-      const members = RSO_members.split(",");
-      if (members.length < 4) {
-        res.status(400).send("At least 4 members are required");
-        return;
-      }
-
-      // Check if all members exist in the database
-      const adminEmailDomain = req.session.email.split("@")[1];
-      const memberPromises = members.map((member) => {
-        return new Promise((resolve, reject) => {
-          db.get(
-            `SELECT * FROM users WHERE name = ? AND email LIKE ?`,
-            [member.trim(), `%@${adminEmailDomain}`],
-            (err, row) => {
-              if (err) {
-                reject(err);
-              } else if (!row) {
-                reject(
-                  new Error(
-                    `Member ${member} does not exist in the database or does not have the same email domain as the admin`
-                  )
-                );
-              } else {
-                resolve();
-              }
-            }
-          );
-        });
-      });
-
-      Promise.all(memberPromises)
-        .then(() => {
-          // Insert the new RSO
-          let sql = `
-          INSERT INTO rsos (usr_id, RSO_id, RSO_title, RSO_members) VALUES ('${req.session.userId}', ?, ?, ?)
-        `;
-
-          db.run(sql, [RSO_id, RSO_title, RSO_members], function (err) {
-            if (err) {
-              console.error(err);
-              res.status(500).send("Error inserting RSO into database");
-              return;
-            }
-
-            console.log(`New RSO inserted into database`);
-            res.status(200).send("RSO successfully created");
-          });
-        })
-        .catch((err) => {
-          console.error(err);
-          res.status(400).send(err.message);
-        })
-        .finally(() => {
-          // Close the database connection
-          db.close();
-        });
+  let sql = `SELECT * FROM session_table LIMIT 1`;
+  db.get(sql, (err, row1) => {
+    if (err) {
+      console.error(err.message);
+      return res.status(500).send(err.message);
     }
-  );
+
+    db.get(
+      `SELECT * FROM admins WHERE usr_id = ?`,
+      [row1.usr_id],
+      (err, row2) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send("Error querying database");
+          return;
+        }
+        //console.log("row is:" + row.role);
+        if (row1.role != "admin") {
+          res.status(403).send("Only admins can create RSOs");
+          return;
+        }
+
+        // Validate RSO_members
+        const members = RSO_members.split(",");
+        if (members.length < 4) {
+          res.status(400).send("At least 4 members are required");
+          return;
+        }
+
+        // Check if all members exist in the database
+        const adminEmailDomain = row1.email.split("@")[1];
+        const memberPromises = members.map((member) => {
+          return new Promise((resolve, reject) => {
+            db.get(
+              `SELECT * FROM users WHERE name = ? AND email LIKE ?`,
+              [member.trim(), `%@${adminEmailDomain}`],
+              (err, row3) => {
+                if (err) {
+                  reject(err);
+                } else if (!row3) {
+                  //console.log("admin email handle: " + adminEmailDomain);
+                  reject(
+                    new Error(
+                      `Member ${member} does not exist in the database or does not have the same email domain as the admin`
+                    )
+                  );
+                } else {
+                  resolve();
+                }
+              }
+            );
+          });
+        });
+
+        Promise.all(memberPromises)
+          .then(() => {
+            // Insert the new RSO
+            let sql = `
+            INSERT INTO rsos (usr_id, RSO_id, RSO_title, RSO_members) VALUES ('${row1.usr_id}', ?, ?, ?)
+          `;
+
+            db.run(sql, [RSO_id, RSO_title, RSO_members], function (err) {
+              if (err) {
+                console.error(err);
+                res.status(500).send("Error inserting RSO into database");
+                return;
+              }
+
+              console.log(`New RSO inserted into database`);
+              res.status(200).send("RSO successfully created");
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            res.status(400).send(err.message);
+          })
+          .finally(() => {
+            // Close the database connection
+            db.close();
+          });
+      }
+    );
+  });
 });
 
 app.post("/get_event_id", (req, res) => {
@@ -640,7 +669,6 @@ app.post("/insert_comment", (req, res) => {
 // get the comments from all the events
 app.post("/get_comments", (req, res) => {
   const reqBody = req.body;
-  console.log("get_comments reqBody: " + reqBody);
   const evnt_id = reqBody.evnt_id;
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
@@ -661,7 +689,6 @@ app.post("/get_comments", (req, res) => {
       res.status(500).send("Internal server error");
       return;
     }
-    console.log(rows);
     res.status(200).json(rows);
   });
   db.close();
