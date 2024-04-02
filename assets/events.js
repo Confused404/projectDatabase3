@@ -1,4 +1,4 @@
-const eventServerAddress = "http://localhost:3000";
+const eventServerAddress = "http://127.0.0.1:3000";
 
 async function fetchData() {
   try {
@@ -34,37 +34,9 @@ async function fetchData() {
         commentDiv.appendChild(individualComment);
       }
 
-      const ratingInput = document.createElement("input");
-      ratingInput.type = "range";
-      ratingInput.min = "1";
-      ratingInput.max = "5";
-      ratingInput.step = "1";
-      ratingInput.value = "3";
-      ratingDiv.appendChild(ratingInput);
-
+      eventDiv.appendChild(commentDiv);
       const insertCommentDiv = createInsertCommentElement(record.evnt_id, commentDiv);
-
-      //submit button for comment section
-      insertCommentDiv.appendChild(ratingDiv);
-      const submitCommentButton = document.createElement("button");
-      submitCommentButton.textContent = "Submit";
-      submitCommentButton.addEventListener("click", function (event) {
-        submitComment(
-          record.evnt_id,
-          commentArea.value,
-          commentDiv,
-          ratingInput.value
-        );
-      });
-      insertCommentDiv.appendChild(submitCommentButton);
-
-      //edit comment button for comment section
-      const editCommentButton = document.createElement("button");
-      editCommentButton.textContent = "Edit Comment";
-      editCommentButton.addEventListener("click", function (event) {
-        console.log("edit button clicked");
-      });
-      insertCommentDiv.appendChild(editCommentButton);
+      eventDiv.appendChild(insertCommentDiv);
 
       // Check if the user has joined the event
       checkIfUserJoinedEvent(record.evnt_id)
@@ -88,62 +60,12 @@ async function fetchData() {
           console.error("Error checking if user joined event:", error);
         });
 
-      // Append insertCommentDiv to the eventDiv
-      eventDiv.appendChild(commentDiv);
-      eventDiv.appendChild(insertCommentDiv);
-
+      // Append the eventDiv to the document body
       document.body.appendChild(eventDiv);
     }
   } catch (error) {
     console.error("Error fetching event data:", error);
   }
-}
-  function checkIfUserJoinedEvent(evnt_id) {
-    // Replace 'user_id' with the actual user id you want to use
-    const user_id = 'user_id';
-  
-    return fetch(`/check-user-joined-event`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json;charset=UTF-8'
-      },
-      body: JSON.stringify({ evnt_id: evnt_id, user_id: user_id })
-    })
-    .then((response) => {
-      if (!response.ok) { 
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      } else { 
-        return response.json();
-      }
-    })
-    .then((data) => {
-      return data.hasJoined;
-    })
-    .catch((error) => {
-      console.error('Request failed:', error);
-    });
-  }
-
-  function joinEvent(evnt_id) {
-    console.log("inside joinEvent function");
-
-    return fetch('/join-event', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json;charset=UTF-8'
-        },
-        body: JSON.stringify({ evnt_id: evnt_id })
-    })
-    .then((response) => {
-        if (!response.ok) { 
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
-        } else { 
-            console.log(`Done, got ${response.headers.get('content-length')} bytes`);
-        }
-    })
-    .catch((error) => {
-        console.error('Request failed:', error);
-    });
 }
 
 function createCommentElement(comment) {
@@ -404,3 +326,51 @@ function createDeleteButton(comment_id) {
 }
 
 fetchData();
+
+function checkIfUserJoinedEvent(evnt_id) {
+  // Replace 'user_id' with the actual user id you want to use
+  const user_id = 'user_id';
+
+  return fetch(`/check-user-joined-event`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    },
+    body: JSON.stringify({ evnt_id: evnt_id, user_id: user_id })
+  })
+  .then((response) => {
+    if (!response.ok) { 
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    } else { 
+      return response.json();
+    }
+  })
+  .then((data) => {
+    return data.hasJoined;
+  })
+  .catch((error) => {
+    console.error('Request failed:', error);
+  });
+}
+
+function joinEvent(evnt_id) {
+  console.log("inside joinEvent function");
+
+  return fetch('/join-event', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json;charset=UTF-8'
+      },
+      body: JSON.stringify({ evnt_id: evnt_id })
+  })
+  .then((response) => {
+      if (!response.ok) { 
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+      } else { 
+          console.log(`Done, got ${response.headers.get('content-length')} bytes`);
+      }
+  })
+  .catch((error) => {
+      console.error('Request failed:', error);
+  });
+}
