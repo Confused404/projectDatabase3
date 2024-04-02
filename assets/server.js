@@ -1,5 +1,6 @@
 const express = require("express");
 const fs = require("fs");
+const axios = require("axios");
 const path = require("path");
 const xml2js = require("xml2js");
 const sqlite3 = require("sqlite3").verbose();
@@ -58,7 +59,6 @@ fetch("https://events.ucf.edu/feed.xml")
           console.log("Connected to the SQLite database.");
           const events = result.events.event;
           if (events) {
-
             for (const event of events) {
               const event_id = event.event_id;
               const event_time = event.start_date;
@@ -155,7 +155,6 @@ app.get("/getRSOData", (req, res) => {
   db.close();
 });
 
-
 // Setup route to receive signup information
 app.post("/signup", (req, res) => {
   // Extract form data from request body
@@ -201,14 +200,14 @@ app.post("/signup", (req, res) => {
           let value8 = userInfo.name;
           let value9 = userInfo.username;
           let sql;
-          console.log("user role" + userInfo.role)
+          console.log("user role" + userInfo.role);
           // Prepare an SQL statement
           if (userInfo.role === "user") {
             sql = `
             INSERT INTO users (usr_id, name, password, email, username) VALUES ('${value1}', '${value8}', '${value2}', '${value3}', '${value9}')
           `;
           } else if (userInfo.role === "rso") {
-            console.log("user role is rso")
+            console.log("user role is rso");
             sql = `
             INSERT INTO admins (usr_id, username, password, email) VALUES ('${value1}', '${value9}' ,'${value2}', '${value3}')
           `;
@@ -260,9 +259,15 @@ app.post("/login", (req, res) => {
     } else if (!isValid) {
       console.log("usweruwu");
       console.log(userInfo);
-      insertIntoSessionTable(true, userInfo.username, userInfo.school_email, userInfo.userId, userInfo.role);
+      insertIntoSessionTable(
+        true,
+        userInfo.username,
+        userInfo.school_email,
+        userInfo.userId,
+        userInfo.role
+      );
       console.log("valid login");
-      res.redirect('../index.html');
+      res.redirect("../index.html");
     } else {
       //its not valid
       res.status(200).send("Invalid Login");
@@ -271,8 +276,8 @@ app.post("/login", (req, res) => {
 });
 
 //server side deletion of the session_table from the db
-app.delete('/sign-out', (req, res) => {
-  let db = new sqlite3.Database('./assets/sqlite.db', (err) => {
+app.delete("/sign-out", (req, res) => {
+  let db = new sqlite3.Database("./assets/sqlite.db", (err) => {
     if (err) {
       console.error(err.message);
       return res.status(500).send(err.message);
@@ -288,7 +293,7 @@ app.delete('/sign-out', (req, res) => {
         if (err) {
           console.error(err.message);
         }
-        console.log('Close the database connection.');
+        console.log("Close the database connection.");
       });
       return res.send({ success: true });
     });
@@ -312,10 +317,12 @@ const authenticateUser = (userInfo, type, callback) => {
       const tablesToCheck = ["super_admins", "admins", "users"];
       userInfo.username = userInfo.username;
 
-      if(type === "login"){
-        userInfo.password = String(getUniquePassword(userInfo.password, hashKey));
+      if (type === "login") {
+        userInfo.password = String(
+          getUniquePassword(userInfo.password, hashKey)
+        );
       }
-    
+
       // Function to perform a single database query
       const performQuery = (table) => {
         return new Promise((resolve, reject) => {
@@ -326,7 +333,6 @@ const authenticateUser = (userInfo, type, callback) => {
               if (error) {
                 reject(error);
               } else {
-               
                 resolve(row);
               }
             }
@@ -346,18 +352,16 @@ const authenticateUser = (userInfo, type, callback) => {
           const whateverthefuck = results.some((row) => row !== undefined);
 
           console.log(whateverthefuck);
-          if(type == 'login' && whateverthefuck){
+          if (type == "login" && whateverthefuck) {
             const index = results.findIndex((row) => row !== undefined);
-            if(index == 0){
-              userInfo.role = 'user'
+            if (index == 0) {
+              userInfo.role = "user";
+            } else if (index == 1) {
+              userInfo.role = "admin";
+            } else {
+              userInfo.role = "super admin";
             }
-            else if(index == 1){
-              userInfo.role = 'admin'
-            }
-            else{
-              userInfo.role = 'super admin'
-            }
-            userInfo.userId = results[index].usr_id
+            userInfo.userId = results[index].usr_id;
           }
           if (whateverthefuck) {
             callback(null, false);
@@ -403,64 +407,56 @@ app.post("/html/create-Event", (req, res) => {
       }
     }
   );
-  db.get(
-    `SELECT usr_id FROM session_table LIMIT 1`,
-    [],
-    (err, row) => {
+  db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error querying session_table");
+      return;
+    }
+
+    if (!row) {
+      res.status(403).send("No session found");
+      return;
+    }
+    console.log(row);
+    let userId = row.usr_id;
+
+    db.get(`SELECT * FROM admins WHERE usr_id = ?`, [userId], (err, row) => {
       if (err) {
         console.error(err);
-        res.status(500).send("Error querying session_table");
+        res.status(500).send("Error querying database");
         return;
       }
-  
+
       if (!row) {
-        res.status(403).send("No session found");
+        res.status(403).send("Only admins can create events");
         return;
       }
-      console.log(row);
-      let userId = row.usr_id;
-  
-      db.get(
-        `SELECT * FROM admins WHERE usr_id = ?`,
-        [userId],
-        (err, row) => {
-          if (err) {
-            console.error(err);
-            res.status(500).send("Error querying database");
-            return;
-          }
-  
-          if (!row) {
-            res.status(403).send("Only admins can create events");
-            return;
-          }
-  
-          // Insert the new event
-          let sql = `
+
+      // Insert the new event
+      let sql = `
           INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
         `;
-  
-          db.run(
-            sql,
-            [event_id, event_title, event_time, event_desc],
-            function (err) {
-              if (err) {
-                console.error(err);
-                res.status(500).send("Error inserting event into database");
-                return;
-              }
-  
-              console.log(`New event inserted into database`);
-              res.status(200).send("Event successfully created");
-            }
-          );
-  
-          // Close the database connection
-          db.close();
+
+      db.run(
+        sql,
+        [event_id, event_title, event_time, event_desc],
+        function (err) {
+          if (err) {
+            console.error(err);
+            res.status(500).send("Error inserting event into database");
+            return;
+          }
+
+          console.log(`New event inserted into database`);
+          res.status(200).send("Event successfully created");
         }
       );
-    }
-  );
+
+      // Close the database connection
+      db.close();
+    });
+  });
 });
 app.post("/html/create-RSO", (req, res) => {
   // Access form data from req.body
@@ -615,40 +611,60 @@ app.post("/insert_comment", (req, res) => {
       }
     }
   );
-  const commentInfo = req.body;
+  let session_info = null;
+  axios
+    .get(`http://localhost:${PORT}/get_session_info`)
+    .then((response) => {
+      // Handle the response from the GET request
+      // You can access the response data using response.data
+      console.log("response session info: " + JSON.stringify(response.data));
+      session_info = response.data;
+      const commentInfo = req.body;
+      const commentText = commentInfo.commentText;
+      const ratingNum = commentInfo.ratingNum;
+      const evnt_id = commentInfo.evnt_id;
+      const comment_id = uuidv4();
 
-  const commentText = commentInfo.commentText;
-  const ratingNum = commentInfo.ratingNum;
-  const evnt_id = commentInfo.evnt_id;
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      let hour = now.getHours();
+      const minute = now.getMinutes();
+      const formattedMonth = month < 10 ? `0${month}` : month;
+      const formattedDay = day < 10 ? `0${day}` : day;
+      let timeIndication = "AM";
+      if (hour > 12) {
+        hour -= 12;
+        timeIndication = "PM";
+      }
+      const formattedHour = hour < 10 ? `0${hour}` : hour;
+      const formattedMinute = minute < 10 ? `0${minute}` : minute;
 
-  const now = new Date();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
-  let hour = now.getHours();
-  const minute = now.getMinutes();
-  const formattedMonth = month < 10 ? `0${month}` : month;
-  const formattedDay = day < 10 ? `0${day}` : day;
-  let timeIndication = "AM";
-  if (hour > 12) {
-    hour -= 12;
-    timeIndication = "PM";
-  }
-  const formattedHour = hour < 10 ? `0${hour}` : hour;
-  const formattedMinute = minute < 10 ? `0${minute}` : minute;
+      const sql = `INSERT INTO comments (comment_id, evnt_id, comnt_text, rating, time_stamp, username) VALUES (?, ?, ?, ?, ?, ?)`;
+      const timestamp = `${formattedMonth}-${formattedDay} ${formattedHour}:${formattedMinute} ${timeIndication}`;
+      const params = [
+        comment_id,
+        evnt_id,
+        commentText,
+        ratingNum,
+        timestamp,
+        session_info.username,
+      ];
 
-  const sql = `INSERT INTO comments (evnt_id, comnt_text, rating, time_stamp) VALUES (?, ?, ?, ?)`;
-  const timestamp = `${formattedMonth}-${formattedDay} ${formattedHour}:${formattedMinute} ${timeIndication}`;
-  const params = [evnt_id, commentText, ratingNum, timestamp];
-
-  db.run(sql, params, function (err) {
-    if (err) {
-      console.error("Error inserting data:", err.message);
-      return;
-    }
-    console.log(`Rows inserted: ${this.changes}`);
-  });
-  db.close();
-  res.status(200).json({ message: "Comment inserted successfully" });
+      db.run(sql, params, function (err) {
+        if (err) {
+          console.error("Error inserting data:", err.message);
+          return;
+        }
+        console.log(`Rows inserted: ${this.changes}`);
+      });
+      db.close();
+      res.status(200).json({ message: "Comment inserted successfully" });
+    })
+    .catch((error) => {
+      // Handle errors if any
+      console.error(error);
+    });
 });
 
 // get the comments from all the events
@@ -679,8 +695,8 @@ app.post("/get_comments", (req, res) => {
   db.close();
 });
 
-app.get("/check-login", (req, res) => {
-  let db = new sqlite3.Database('./assets/sqlite.db', (err) => {
+app.get("/get_session_info", (req, res) => {
+  let db = new sqlite3.Database("./assets/sqlite.db", (err) => {
     if (err) {
       console.error(err.message);
       return res.status(500).send(err.message);
@@ -696,10 +712,15 @@ app.get("/check-login", (req, res) => {
         if (err) {
           console.error(err.message);
         }
-        console.log('Close the database connection.');
+        console.log("Close the database connection.");
       });
       return row
-        ? res.send({ exists: true, username: row.username, email: row.email, usr_id: row.usr_id })
+        ? res.send({
+            exists: true,
+            username: row.username,
+            email: row.email,
+            usr_id: row.usr_id,
+          })
         : res.send({ exists: false });
     });
   });
@@ -734,107 +755,126 @@ function getUniquePassword(encryptedText, key) {
 }
 
 function insertIntoSessionTable(loggedIn, username, email, userId, role) {
-  let db = new sqlite3.Database('./assets/sqlite.db', (err) => {
-    console.log()
+  let db = new sqlite3.Database("./assets/sqlite.db", (err) => {
+    console.log();
     if (err) {
       console.error(err.message);
     }
-    console.log('Connected to the SQlite database.');
+    console.log("Connected to the SQlite database.");
     console.log("email: " + email);
-    db.run(`INSERT INTO session_table(loggedIn, username, email, usr_id, role) VALUES(?, ?, ?, ?, ?)`, [loggedIn, username, email, userId, role], function(err) {
-      if (err) {
-        return console.log(err.message);
+    db.run(
+      `INSERT INTO session_table(loggedIn, username, email, usr_id, role) VALUES(?, ?, ?, ?, ?)`,
+      [loggedIn, username, email, userId, role],
+      function (err) {
+        if (err) {
+          return console.log(err.message);
+        }
+        console.log(`A row has been inserted with row id ${this.lastID}`);
       }
-      console.log(`A row has been inserted with row id ${this.lastID}`);
-    });
+    );
     db.close();
   });
 }
 
-app.post('/join-event', function(req, res) {
+app.post("/join-event", function (req, res) {
   let evnt_id = req.body.evnt_id;
 
-  let db = new sqlite3.Database('./assets/sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
+  let db = new sqlite3.Database(
+    "./assets/sqlite.db",
+    sqlite3.OPEN_READWRITE,
+    (err) => {
       if (err) {
-          console.error(err.message);
+        console.error(err.message);
       }
-      console.log('Connected to the database.');
+      console.log("Connected to the database.");
 
       db.serialize(() => {
-          console.log("inside serialize");
+        console.log("inside serialize");
 
-          // First, get the usr_id from the session_table
-          db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
-              if (err) {
+        // First, get the usr_id from the session_table
+        db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
+          if (err) {
+            return console.error(err.message);
+          }
+
+          let usr_id = row ? row.usr_id : null;
+
+          if (usr_id) {
+            // Then, insert the evnt_id and usr_id into the join_table
+            db.run(
+              `INSERT INTO join_table(evnt_id, usr_id) VALUES (?, ?)`,
+              [evnt_id, usr_id],
+              function (err) {
+                if (err) {
                   return console.error(err.message);
+                }
+                console.log(`Row(s) inserted: ${this.changes}`);
               }
+            );
+          }
+        });
 
-              let usr_id = row ? row.usr_id : null;
-
-              if (usr_id) {
-                  // Then, insert the evnt_id and usr_id into the join_table
-                  db.run(`INSERT INTO join_table(evnt_id, usr_id) VALUES (?, ?)`, [evnt_id, usr_id], function(err) {
-                      if (err) {
-                          return console.error(err.message);
-                      }
-                      console.log(`Row(s) inserted: ${this.changes}`);
-                  });
-              }
-          });
-
-          db.close((err) => {
-              if (err) {
-                  console.error(err.message);
-              }
-              console.log('Close the database connection.');
-          });
+        db.close((err) => {
+          if (err) {
+            console.error(err.message);
+          }
+          console.log("Close the database connection.");
+        });
       });
 
-      res.send('Event joined');
-  });
+      res.send("Event joined");
+    }
+  );
 });
 
-app.post('/join-rso', function(req, res) {
-  let rso_id = req.body.rso_id;
+// POST /edit_comment endpoint to edit a comment
+app.post("/edit_comment", (req, res) => {
+  const requestBody = req.body;
 
-  let db = new sqlite3.Database('./assets/sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
+  // Check if comment_id and message are provided
+  if (!requestBody.comment_id || !requestBody.message) {
+    return res
+      .status(400)
+      .json({ error: "Comment ID and message are required." });
+  }
+
+  // Update the comment in the database
+  db.run(
+    "UPDATE comments SET commnt_text = ? WHERE id = ?",
+    [requestBody.message, requestBody.comment_id],
+    function (err) {
       if (err) {
-          console.error(err.message);
+        console.error("Error updating comment:", err);
+        return res.status(500).json({ error: "Internal server error" });
       }
-      console.log('Connected to the database.');
+      console.log(`Comment with ID ${comment_id} updated successfully.`);
+      res.status(200).json({ message: "Comment updated successfully." });
+    }
+  );
+});
+app.post("/delete_comment", (req, res) => {
+  const requestBody = req.body;
 
-      db.serialize(() => {
-          console.log("inside serialize");
+  // Check if comment_id is provided
+  if (!requestBody.comment_id) {
+    return res.status(400).json({ error: "Comment ID is required." });
+  }
 
-          // First, get the usr_id from the session_table
-          db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
-              if (err) {
-                  return console.error(err.message);
-              }
-
-              let usr_id = row ? row.usr_id : null;
-
-              if (usr_id) {
-                  // Then, insert the rso_id and usr_id into the join_table
-                  db.run(`INSERT INTO join_table(rso_id, usr_id) VALUES (?, ?)`, [rso_id, usr_id], function(err) {
-                      if (err) {
-                          return console.error(err.message);
-                      }
-                      console.log(`Row(s) inserted: ${this.changes}`);
-                  });
-              }
-          });
-
-          db.close((err) => {
-              if (err) {
-                  console.error(err.message);
-              }
-              console.log('Close the database connection.');
-          });
-      });
-
-      res.send('RSO joined');
-  });
+  // Delete the comment from the database
+  db.run(
+    "DELETE FROM comments WHERE id = ?",
+    [requestBody.comment_id],
+    function (err) {
+      if (err) {
+        console.error("Error deleting comment:", err);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+      console.log(
+        `Comment with ID ${requestBody.comment_id} deleted successfully.`
+      );
+      res.status(200).json({ message: "Comment deleted successfully." });
+    }
+  );
 });
 
 app.post('/update-rso-members', function(req, res) {
