@@ -775,7 +775,6 @@ function insertIntoSessionTable(loggedIn, username, email, userId, role) {
     db.close();
   });
 }
-
 app.post("/join-rso", function (req, res) {
   let rso_id = req.body.rso_id;
 
@@ -785,6 +784,7 @@ app.post("/join-rso", function (req, res) {
     (err) => {
       if (err) {
         console.error(err.message);
+        return res.status(500).send(err.message);
       }
       console.log("Connected to the database.");
 
@@ -794,7 +794,8 @@ app.post("/join-rso", function (req, res) {
         // First, get the usr_id from the session_table
         db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
           if (err) {
-            return console.error(err.message);
+            console.error(err.message);
+            return res.status(500).send(err.message);
           }
 
           let usr_id = row ? row.usr_id : null;
@@ -806,23 +807,26 @@ app.post("/join-rso", function (req, res) {
               [rso_id, usr_id],
               function (err) {
                 if (err) {
-                  return console.error(err.message);
+                  console.error(err.message);
+                  return res.status(500).send(err.message);
                 }
                 console.log(`Row(s) inserted: ${this.changes}`);
+
+                db.close((err) => {
+                  if (err) {
+                    console.error(err.message);
+                    return res.status(500).send(err.message);
+                  }
+                  console.log("Close the database connection.");
+                  res.send("RSO joined");
+                });
               }
             );
+          } else {
+            res.status(400).send("User not found in session_table");
           }
-        });
-
-        db.close((err) => {
-          if (err) {
-            console.error(err.message);
-          }
-          console.log("Close the database connection.");
         });
       });
-
-      console.log("rso joined");
     }
   );
 });
@@ -996,6 +1000,7 @@ app.post("/update-rso-members", function (req, res) {
                       if (err) {
                         return console.error(err.message);
                       }
+                      console.log("added to rso_list");
                       console.log(`Row(s) updated: ${this.changes}`);
                     }
                   );
@@ -1150,4 +1155,66 @@ app.get("/get-user-id", (req, res) => {
       }
     }
   );
+});
+
+app.post('/leave-rso', function(req, res) {
+  let rso_id = req.body.rso_id; // Get the rso_id from the request body
+
+  let db = new sqlite3.Database('./assets/sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log('Connected to the database.');
+
+    db.serialize(() => {
+      console.log("inside leave-rso");
+
+      // First, get the usr_id from the session_table
+      db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
+        if (err) {
+          return console.error(err.message);
+        }
+
+        let usr_id = row ? row.usr_id : null;
+
+        if (usr_id) {
+          // Then, get the name from the users table
+          db.get(`SELECT name FROM users WHERE usr_id = ?`, [usr_id], (err, row) => {
+            if (err) {
+              return console.error(err.message);
+            }
+
+            let name = row ? row.name : null;
+
+            if (name) {
+              // Then, remove the user from the join_table
+              db.run(`DELETE FROM join_table WHERE usr_id = ? AND rso_id = ?`, [usr_id, rso_id], function(err) {
+                if (err) {
+                  return console.error(err.message);
+                }
+                console.log(`Row(s) deleted: ${this.changes}`);
+
+                // Then, update the rso_members in the rso table
+                db.run(`UPDATE rsos SET rso_members = REPLACE(rso_members, ', ' || ?, '') WHERE rso_id = ?`, [name, rso_id], function(err) {
+                  if (err) {
+                    return console.error(err.message);
+                  }
+                  console.log(`Row(s) updated: ${this.changes}`);
+                });
+              });
+            }
+          });
+        }
+      });
+
+      db.close((err) => {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log('Close the database connection.');
+      });
+      res.send('RSO members updated');
+    });
+
+  });
 });

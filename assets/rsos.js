@@ -47,10 +47,24 @@ fetch(`${rsoServerAddress}/getRSOData`)
                             //want to add the retrieved name here..
                           }, 1000);
                         });
-                
                         // Append the joinRsoButton to the rsoDiv
                         rsoDiv.appendChild(joinRsoButton);
-                      }
+                    }
+                    if(hasJoined) {
+                        // leaveRsoButton for comment section
+                        const leaveRsoButton = document.createElement("button");
+                        leaveRsoButton.textContent = "Leave RSO";
+                        leaveRsoButton.addEventListener("click", function (event) {
+                          console.log("leave RSO button clicked");
+                          leaveRso(record.rso_id);
+                          setTimeout(function() {
+                            leaveRsoButton.remove();
+                          }, 1000);
+                        });
+                    
+                        // Append the leaveRsoButton to the rsoDiv
+                        rsoDiv.appendChild(leaveRsoButton);
+                    }
                   })
                   .catch((error) => {
                     console.error("Error checking if user joined RSO:", error);
@@ -72,11 +86,12 @@ fetch(`${rsoServerAddress}/getRSOData`)
       body: JSON.stringify({ rso_id: rso_id })
     })
     .then((response) => {
+      console.log("right after join-rso");
       if (!response.ok) { 
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       } else { 
         console.log(`Done, got ${response.headers.get('content-length')} bytes`);
-  
+        console.log("right before update-rso-members");
         // Call the update-rso-members endpoint here
         return fetch('/update-rso-members', {
           method: 'POST',
@@ -135,6 +150,28 @@ function getUserIdFromSession() {
     })
     .then((data) => {
       return data.usr_id;
+    })
+    .catch((error) => {
+      console.error('Request failed:', error);
+    });
+  }
+
+  function leaveRso(rso_id) {
+    console.log("inside leaveRso function");
+  
+    return fetch('/leave-rso', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8'
+      },
+      body: JSON.stringify({ rso_id: rso_id })
+    })
+    .then((response) => {
+      if (!response.ok) { 
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      } else { 
+        console.log(`Done, got ${response.headers.get('content-length')} bytes`);
+      }
     })
     .catch((error) => {
       console.error('Request failed:', error);
