@@ -13,14 +13,15 @@ CREATE TABLE session_table (
   usr_id INT,
   role VARCHAR(10)
 );
-  
 
 CREATE TABLE comments (
+  	comment_id INT,
   	evnt_id INT,
     comnt_text VARCHAR(8000),
     rating     INT,
     time_stamp VARCHAR(30),
   	username INT,
+  	PRIMARY KEY(comment_id),
   	FOREIGN KEY(evnt_id) REFERENCES events(evnt_id)
 );
 
@@ -119,8 +120,9 @@ CREATE TABLE super_admins (
 CREATE TABLE join_table (
     usr_id INT,
   	evnt_id INT,
-  	rso_id,
+  	rso_id INT,
     FOREIGN KEY(usr_id) REFERENCES users(usr_id)
+  	
 );
 
 CREATE TABLE universities (

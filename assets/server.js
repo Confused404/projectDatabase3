@@ -836,3 +836,172 @@ app.post('/join-rso', function(req, res) {
       res.send('RSO joined');
   });
 });
+
+app.post('/update-rso-members', function(req, res) {
+  let rso_id = req.body.rso_id; // Get the rso_id from the request body
+
+  let db = new sqlite3.Database('./assets/sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log('Connected to the database.');
+
+    db.serialize(() => {
+      console.log("inside update-rso-members");
+
+      // First, get the usr_id from the session_table
+      db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
+        if (err) {
+          return console.error(err.message);
+        }
+
+        let usr_id = row ? row.usr_id : null;
+
+        if (usr_id) {
+          // Then, get the name from the users table
+          db.get(`SELECT name FROM users WHERE usr_id = ?`, [usr_id], (err, row) => {
+            if (err) {
+              return console.error(err.message);
+            }
+
+            let name = row ? row.name : null;
+
+            if (name) {
+              // Then, update the rso_members in the rso table
+              db.run(`UPDATE rsos SET rso_members = rso_members || ', ' || ? WHERE rso_id = ?`, [name, rso_id], function(err) {
+                if (err) {
+                  return console.error(err.message);
+                }
+                console.log(`Row(s) updated: ${this.changes}`);
+              });
+            }
+          });
+        }
+      });
+
+      db.close((err) => {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log('Close the database connection.');
+      });
+      res.send('RSO members updated');
+    });
+
+  });
+});
+
+app.post('/check-user-joined-event', function(req, res) {
+  let evnt_id = req.body.evnt_id;
+
+  let db = new sqlite3.Database('./assets/sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log('Connected to the database.');
+
+    db.serialize(() => {
+      console.log("inside serialize");
+
+      // First, get the usr_id from the session_table
+      db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
+        if (err) {
+          return console.error(err.message);
+        }
+
+        let usr_id = row ? row.usr_id : null;
+
+        if (usr_id && evnt_id) {
+          // Then, check if the user has joined the event
+          db.get(`SELECT * FROM join_table WHERE evnt_id = ? AND usr_id = ?`, [evnt_id, usr_id], function(err, row) {
+            if (err) {
+              return console.error(err.message);
+            }
+
+            // If the row exists, the user has joined the event
+            let hasJoined = row ? true : false;
+            res.json({ hasJoined: hasJoined });
+          });
+        } else {
+          res.json({ hasJoined: false });
+        }
+      });
+
+      db.close((err) => {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log('Close the database connection.');
+      });
+    });
+  });
+});
+
+app.post('/check-user-joined-rso', function(req, res) {
+  let rso_id = req.body.rso_id;
+
+  let db = new sqlite3.Database('./assets/sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log('Connected to the database.');
+
+    db.serialize(() => {
+      console.log("inside serialize");
+
+      // First, get the usr_id from the session_table
+      db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
+        if (err) {
+          return console.error(err.message);
+        }
+
+        let usr_id = row ? row.usr_id : null;
+
+        if (usr_id && rso_id) {
+          // Then, check if the user has joined the RSO
+          db.get(`SELECT * FROM join_table WHERE rso_id = ? AND usr_id = ?`, [rso_id, usr_id], function(err, row) {
+            if (err) {
+              return console.error(err.message);
+            }
+
+            // If the row exists, the user has joined the RSO
+            let hasJoined = row ? true : false;
+            console.log("hasJoined: " + hasJoined);
+            res.json({ hasJoined: hasJoined });
+          });
+        } else {
+          res.json({ hasJoined: false });
+        }
+      });
+
+      db.close((err) => {
+        if (err) {
+          console.error(err.message);
+        }
+        console.log('Close the database connection.');
+      });
+    });
+  });
+});
+
+app.get('/get-user-id', (req, res) => {
+  let db = new sqlite3.Database('./assets/sqlite.db', (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log('Connected to the database.');
+  });
+
+  // Query the session table to get the usr_id
+  db.get('SELECT usr_id FROM session_table WHERE loggedIn = ?', [1], (err, row) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Error querying the database');
+    } else if (row) {
+      console.log("get-user-id works")
+      res.json({ usr_id: row.usr_id });
+    } else {
+      res.status(404).send('Session not found');
+    }
+  });
+});

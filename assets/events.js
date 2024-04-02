@@ -112,19 +112,29 @@ fetch(`${eventServerAddress}/getEventData`)
       });
       insertCommentDiv.appendChild(editCommentButton);
 
-      //joinEventButton for comment section
-      const joinEventButton = document.createElement("button");
-      joinEventButton.textContent = "Join Event";
-      joinEventButton.addEventListener("click", function (event) {
-        console.log("join event button clicked");
-        // Replace 'event_id' with the actual event id you want to use
-        joinEvent(record.evnt_id);
-        setTimeout(function() {
-          joinEventButton.remove();
-        }, 1000);
+      // Check if the user has joined the event
+      checkIfUserJoinedEvent(record.evnt_id)
+      .then((hasJoined) => {
+        if (!hasJoined) {
+          //joinEventButton for comment section
+          const joinEventButton = document.createElement("button");
+          joinEventButton.textContent = "Join Event";
+          joinEventButton.addEventListener("click", function (event) {
+            console.log("join event button clicked");
+            // Replace 'event_id' with the actual event id you want to use
+            joinEvent(record.evnt_id);
+            setTimeout(function() {
+              joinEventButton.remove();
+            }, 1000);
+          });
+          insertCommentDiv.appendChild(joinEventButton);
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking if user joined event:", error);
       });
-      insertCommentDiv.appendChild(joinEventButton);
-      
+
+      // ... remaining code ...
 
 
       // Append insertCommentDiv to the eventDiv
@@ -137,6 +147,32 @@ fetch(`${eventServerAddress}/getEventData`)
   .catch((error) => {
     console.error("Error fetching event data:", error);
   });
+
+  function checkIfUserJoinedEvent(evnt_id) {
+    // Replace 'user_id' with the actual user id you want to use
+    const user_id = 'user_id';
+  
+    return fetch(`/check-user-joined-event`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8'
+      },
+      body: JSON.stringify({ evnt_id: evnt_id, user_id: user_id })
+    })
+    .then((response) => {
+      if (!response.ok) { 
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      } else { 
+        return response.json();
+      }
+    })
+    .then((data) => {
+      return data.hasJoined;
+    })
+    .catch((error) => {
+      console.error('Request failed:', error);
+    });
+  }
 
   function joinEvent(evnt_id) {
     console.log("inside joinEvent function");
