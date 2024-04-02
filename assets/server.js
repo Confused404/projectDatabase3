@@ -776,6 +776,57 @@ function insertIntoSessionTable(loggedIn, username, email, userId, role) {
   });
 }
 
+app.post("/join-rso", function (req, res) {
+  let rso_id = req.body.rso_id;
+
+  let db = new sqlite3.Database(
+    "./assets/sqlite.db",
+    sqlite3.OPEN_READWRITE,
+    (err) => {
+      if (err) {
+        console.error(err.message);
+      }
+      console.log("Connected to the database.");
+
+      db.serialize(() => {
+        console.log("inside serialize");
+
+        // First, get the usr_id from the session_table
+        db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
+          if (err) {
+            return console.error(err.message);
+          }
+
+          let usr_id = row ? row.usr_id : null;
+
+          if (usr_id) {
+            // Then, insert the rso_id and usr_id into the join_table
+            db.run(
+              `INSERT INTO join_table(rso_id, usr_id) VALUES (?, ?)`,
+              [rso_id, usr_id],
+              function (err) {
+                if (err) {
+                  return console.error(err.message);
+                }
+                console.log(`Row(s) inserted: ${this.changes}`);
+              }
+            );
+          }
+        });
+
+        db.close((err) => {
+          if (err) {
+            console.error(err.message);
+          }
+          console.log("Close the database connection.");
+        });
+      });
+
+      console.log("rso joined");
+    }
+  );
+});
+
 app.post("/join-event", function (req, res) {
   let evnt_id = req.body.evnt_id;
 
