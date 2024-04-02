@@ -1,4 +1,4 @@
-const eventServerAddress = "http://127.0.0.1:3000";
+const eventServerAddress = "http://localhost:3000";
 
 async function fetchData() {
   try {
@@ -20,24 +20,6 @@ async function fetchData() {
       const eventDesc = document.createElement("p");
       eventDesc.innerHTML = record.evnt_desc;
       eventDiv.appendChild(eventDesc);
-
-      const commentDiv = document.createElement("div");
-      commentDiv.className = "comments-section";
-      const commentAreaTitle = document.createElement("h2");
-      commentAreaTitle.textContent = "Comments Section";
-      commentDiv.appendChild(commentAreaTitle);
-
-      const comments = await fetchComments(record.evnt_id);
-
-      for (const comment of comments) {
-        const individualComment = createCommentElement(comment);
-        commentDiv.appendChild(individualComment);
-      }
-
-      eventDiv.appendChild(commentDiv);
-      const insertCommentDiv = createInsertCommentElement(record.evnt_id, commentDiv);
-      eventDiv.appendChild(insertCommentDiv);
-
       // Check if the user has joined the event
       checkIfUserJoinedEvent(record.evnt_id)
         .then((hasJoined) => {
@@ -49,16 +31,37 @@ async function fetchData() {
               console.log("join event button clicked");
               // Replace 'event_id' with the actual event id you want to use
               joinEvent(record.evnt_id);
-              setTimeout(function() {
+              setTimeout(function () {
                 joinEventButton.remove();
               }, 1000);
             });
-            insertCommentDiv.appendChild(joinEventButton);
+            eventDiv.appendChild(joinEventButton);
           }
         })
         .catch((error) => {
           console.error("Error checking if user joined event:", error);
         });
+
+      const commentDiv = document.createElement("div");
+      commentDiv.className = "comments-section";
+      const commentAreaTitle = document.createElement("h2");
+      commentAreaTitle.textContent = "Comments Section";
+      commentDiv.appendChild(commentAreaTitle);
+
+      const comments = await fetchComments(record.evnt_id);
+
+      for (const comment of comments) {
+        console.log(comment);
+        const individualComment = createCommentElement(comment);
+        commentDiv.appendChild(individualComment);
+      }
+
+      eventDiv.appendChild(commentDiv);
+      const insertCommentDiv = createInsertCommentElement(
+        record.evnt_id,
+        commentDiv
+      );
+      eventDiv.appendChild(insertCommentDiv);
 
       // Append the eventDiv to the document body
       document.body.appendChild(eventDiv);
@@ -69,6 +72,7 @@ async function fetchData() {
 }
 
 function createCommentElement(comment) {
+  console.log("comment inside createc comment : ", comment.comment_id);
   const individualComment = document.createElement("div");
   individualComment.className = "individual-comment";
   const commentHeading = document.createElement("h3");
@@ -90,8 +94,9 @@ function createCommentElement(comment) {
 
   // Add edit button if the comment belongs to the current user
   if (comment.belongsToCurrentUser) {
-    const editButton = createEditButton(comment_id, "wanna fix it?");
-    const deleteButton = createDeleteButton(comment_id);
+    console.log("comment in check: ", comment);
+    const editButton = createEditButton(comment.comment_id, "tryna edit me?");
+    const deleteButton = createDeleteButton(comment.comment_id);
     individualComment.appendChild(editButton);
     individualComment.appendChild(deleteButton);
   }
@@ -104,64 +109,55 @@ function createEditButton(comment_id, commentText) {
   editButton.className = "edit-button";
   editButton.textContent = "Edit Comment";
 
-  // Create text input field for editing comment text
-  const editText = document.createElement("input");
-  editText.type = "text";
-  editText.value = commentText; // Set initial value to the current comment text
-  editText.style.display = "none"; // Hide the input field initially
-
   // Event listener for clicking the edit button
   editButton.addEventListener("click", function (event) {
-    console.log("Button clicked!");
+    const parentElement = editButton.parentElement;
 
-    // Toggle display of text input field
-    editText.style.display =
-      editText.style.display === "none" ? "block" : "none";
+    // Create an input field for editing the comment text
+    const inputField = document.createElement("input");
+    inputField.type = "text";
+    inputField.placeholder = commentText; // Set initial value to the current comment text
 
-    // If the text input field is visible, focus on it
-    if (editText.style.display === "block") {
-      editText.focus();
-    }
-  });
+    // Replace the paragraph element with the input field
+    parentElement.replaceChild(inputField, parentElement.querySelector("p"));
 
-  // Event listener for input field blur (when user clicks outside the input field)
-  editText.addEventListener("blur", async function (event) {
-    // When the input field loses focus, update the comment text
+    // Focus on the input field
+    inputField.focus();
 
-    // Get the updated comment text
-    const updatedCommentText = editText.value;
+    // Event listener for input field blur (when user clicks outside the input field)
+    inputField.addEventListener("blur", async function () {
+      // Get the updated comment text
+      const updatedCommentText = inputField.value;
 
-    // Send a request to update the comment text
-    try {
-      const response = await fetch(`${eventServerAddress}/edit_comment`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          comment_id: comment_id,
-          message: updatedCommentText,
-        }),
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+      // Send a request to update the comment text
+      try {
+        const response = await fetch(`${eventServerAddress}/edit_comment`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            comment_id: comment_id,
+            message: updatedCommentText,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        console.log(data);
+
+        // Replace the input field with a new paragraph element containing the updated comment text
+        const newParagraph = document.createElement("p");
+        newParagraph.textContent = updatedCommentText;
+        parentElement.replaceChild(newParagraph, inputField);
+      } catch (error) {
+        console.error("Error during editing comment:", error);
       }
-      const data = await response.json();
-      console.log(data);
-
-      // Hide the text input field after editing
-      editText.style.display = "none";
-    } catch (error) {
-      console.error("Error during editing comment:", error);
-    }
+    });
   });
 
-  // Append the edit button and text input field to a container
-  const container = document.createElement("div");
-  container.appendChild(editButton);
-  container.appendChild(editText);
-
-  return container;
+  return editButton;
 }
 
 function createInsertCommentElement(eventId, commentDiv) {
@@ -199,16 +195,16 @@ function createInsertCommentElement(eventId, commentDiv) {
   });
   insertCommentDiv.appendChild(submitCommentButton);
 
-  const joinEventButton = document.createElement("button");
-  joinEventButton.textContent = "Join Event";
-  joinEventButton.addEventListener("click", async function (event) {
-    console.log("join event button clicked");
-    joinEvent(eventId);
-    setTimeout(function () {
-      joinEventButton.remove();
-    }, 1000);
-  });
-  insertCommentDiv.appendChild(joinEventButton);
+  // const joinEventButton = document.createElement("button");
+  // joinEventButton.textContent = "Join Event";
+  // joinEventButton.addEventListener("click", async function (event) {
+  //   console.log("join event button clicked");
+  //   joinEvent(eventId);
+  //   setTimeout(function () {
+  //     joinEventButton.remove();
+  //   }, 1000);
+  // });
+  // insertCommentDiv.appendChild(joinEventButton);
 
   return insertCommentDiv;
 }
@@ -325,52 +321,54 @@ function createDeleteButton(comment_id) {
   return deleteButton;
 }
 
-fetchData();
-
 function checkIfUserJoinedEvent(evnt_id) {
   // Replace 'user_id' with the actual user id you want to use
-  const user_id = 'user_id';
+  const user_id = "user_id";
 
   return fetch(`/check-user-joined-event`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json;charset=UTF-8'
+      "Content-Type": "application/json;charset=UTF-8",
     },
-    body: JSON.stringify({ evnt_id: evnt_id, user_id: user_id })
+    body: JSON.stringify({ evnt_id: evnt_id, user_id: user_id }),
   })
-  .then((response) => {
-    if (!response.ok) { 
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    } else { 
-      return response.json();
-    }
-  })
-  .then((data) => {
-    return data.hasJoined;
-  })
-  .catch((error) => {
-    console.error('Request failed:', error);
-  });
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      } else {
+        return response.json();
+      }
+    })
+    .then((data) => {
+      return data.hasJoined;
+    })
+    .catch((error) => {
+      console.error("Request failed:", error);
+    });
 }
 
 function joinEvent(evnt_id) {
   console.log("inside joinEvent function");
 
-  return fetch('/join-event', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json;charset=UTF-8'
-      },
-      body: JSON.stringify({ evnt_id: evnt_id })
+  return fetch("/join-event", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json;charset=UTF-8",
+    },
+    body: JSON.stringify({ evnt_id: evnt_id }),
   })
-  .then((response) => {
-      if (!response.ok) { 
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-      } else { 
-          console.log(`Done, got ${response.headers.get('content-length')} bytes`);
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      } else {
+        console.log(
+          `Done, got ${response.headers.get("content-length")} bytes`
+        );
       }
-  })
-  .catch((error) => {
-      console.error('Request failed:', error);
-  });
+    })
+    .catch((error) => {
+      console.error("Request failed:", error);
+    });
 }
+
+fetchData();
