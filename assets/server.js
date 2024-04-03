@@ -625,23 +625,8 @@ app.post("/insert_comment", (req, res) => {
       const evnt_id = commentInfo.evnt_id;
       const comment_id = uuid.v4();
 
-      const now = new Date();
-      const month = now.getMonth() + 1;
-      const day = now.getDate();
-      let hour = now.getHours();
-      const minute = now.getMinutes();
-      const formattedMonth = month < 10 ? `0${month}` : month;
-      const formattedDay = day < 10 ? `0${day}` : day;
-      let timeIndication = "AM";
-      if (hour > 12) {
-        hour -= 12;
-        timeIndication = "PM";
-      }
-      const formattedHour = hour < 10 ? `0${hour}` : hour;
-      const formattedMinute = minute < 10 ? `0${minute}` : minute;
-
+      const timestamp = generateTimestamp();
       const sql = `INSERT INTO comments (comment_id, evnt_id, comnt_text, rating, time_stamp, username) VALUES (?, ?, ?, ?, ?, ?)`;
-      const timestamp = `${formattedMonth}-${formattedDay} ${formattedHour}:${formattedMinute} ${timeIndication}`;
       const params = [
         comment_id,
         evnt_id,
@@ -884,6 +869,7 @@ app.post("/join-event", function (req, res) {
 
 // POST /edit_comment endpoint to edit a comment
 app.post("/edit_comment", (req, res) => {
+  // Establish connection to the database
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
     sqlite3.OPEN_READWRITE,
@@ -895,32 +881,38 @@ app.post("/edit_comment", (req, res) => {
       }
     }
   );
-  const requestBody = req.body;
 
-  // Check if comment_id and message are provided
-  if (!requestBody.comment_id || !requestBody.message) {
+  const { comment_id, message, rating } = req.body;
+
+  // Check if comment_id, message, and rating are provided
+  if (!comment_id || !message || rating === undefined) {
     return res
       .status(400)
-      .json({ error: "Comment ID and message are required." });
+      .json({ error: "Comment ID, message, and rating are required." });
   }
 
+  const newTimestamp = generateTimestamp();
   // Update the comment in the database
   db.run(
-    "UPDATE comments SET comnt_text = ? WHERE comment_id = ?",
-    [requestBody.message, requestBody.comment_id],
+    "UPDATE comments SET comnt_text = ?, time_stamp = ?, rating = ? WHERE comment_id = ?",
+    [message, newTimestamp, rating, comment_id],
     function (err) {
       if (err) {
         console.error("Error updating comment:", err);
         return res.status(500).json({ error: "Internal server error" });
       }
-      console.log(
-        `Comment with ID ${requestBody.comment_id} updated successfully.`
-      );
-      res.status(200).json({ message: "Comment updated successfully." });
+      console.log(`Comment with ID ${comment_id} updated successfully.`);
+      res.status(200).json({
+        message: "Comment updated successfully.",
+        timestamp: newTimestamp,
+      });
     }
   );
+
+  // Close the database connection
   db.close();
 });
+
 app.post("/delete_comment", (req, res) => {
   const requestBody = req.body;
   let db = new sqlite3.Database(
@@ -1157,64 +1149,97 @@ app.get("/get-user-id", (req, res) => {
   );
 });
 
-app.post('/leave-rso', function(req, res) {
+app.post("/leave-rso", function (req, res) {
   let rso_id = req.body.rso_id; // Get the rso_id from the request body
 
-  let db = new sqlite3.Database('./assets/sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
-    if (err) {
-      console.error(err.message);
-    }
-    console.log('Connected to the database.');
+  let db = new sqlite3.Database(
+    "./assets/sqlite.db",
+    sqlite3.OPEN_READWRITE,
+    (err) => {
+      if (err) {
+        console.error(err.message);
+      }
+      console.log("Connected to the database.");
 
-    db.serialize(() => {
-      console.log("inside leave-rso");
+      db.serialize(() => {
+        console.log("inside leave-rso");
 
-      // First, get the usr_id from the session_table
-      db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
-        if (err) {
-          return console.error(err.message);
-        }
+        // First, get the usr_id from the session_table
+        db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
+          if (err) {
+            return console.error(err.message);
+          }
 
-        let usr_id = row ? row.usr_id : null;
+          let usr_id = row ? row.usr_id : null;
 
-        if (usr_id) {
-          // Then, get the name from the users table
-          db.get(`SELECT name FROM users WHERE usr_id = ?`, [usr_id], (err, row) => {
-            if (err) {
-              return console.error(err.message);
-            }
-
-            let name = row ? row.name : null;
-
-            if (name) {
-              // Then, remove the user from the join_table
-              db.run(`DELETE FROM join_table WHERE usr_id = ? AND rso_id = ?`, [usr_id, rso_id], function(err) {
+          if (usr_id) {
+            // Then, get the name from the users table
+            db.get(
+              `SELECT name FROM users WHERE usr_id = ?`,
+              [usr_id],
+              (err, row) => {
                 if (err) {
                   return console.error(err.message);
                 }
-                console.log(`Row(s) deleted: ${this.changes}`);
 
-                // Then, update the rso_members in the rso table
-                db.run(`UPDATE rsos SET rso_members = REPLACE(rso_members, ', ' || ?, '') WHERE rso_id = ?`, [name, rso_id], function(err) {
-                  if (err) {
-                    return console.error(err.message);
-                  }
-                  console.log(`Row(s) updated: ${this.changes}`);
-                });
-              });
-            }
-          });
-        }
+                let name = row ? row.name : null;
+
+                if (name) {
+                  // Then, remove the user from the join_table
+                  db.run(
+                    `DELETE FROM join_table WHERE usr_id = ? AND rso_id = ?`,
+                    [usr_id, rso_id],
+                    function (err) {
+                      if (err) {
+                        return console.error(err.message);
+                      }
+                      console.log(`Row(s) deleted: ${this.changes}`);
+
+                      // Then, update the rso_members in the rso table
+                      db.run(
+                        `UPDATE rsos SET rso_members = REPLACE(rso_members, ', ' || ?, '') WHERE rso_id = ?`,
+                        [name, rso_id],
+                        function (err) {
+                          if (err) {
+                            return console.error(err.message);
+                          }
+                          console.log(`Row(s) updated: ${this.changes}`);
+                        }
+                      );
+                    }
+                  );
+                }
+              }
+            );
+          }
+        });
+
+        db.close((err) => {
+          if (err) {
+            console.error(err.message);
+          }
+          console.log("Close the database connection.");
+        });
+        res.send("RSO members updated");
       });
-
-      db.close((err) => {
-        if (err) {
-          console.error(err.message);
-        }
-        console.log('Close the database connection.');
-      });
-      res.send('RSO members updated');
-    });
-
-  });
+    }
+  );
 });
+function generateTimestamp() {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+  let hour = now.getHours();
+  const minute = now.getMinutes();
+  const formattedMonth = month < 10 ? `0${month}` : month;
+  const formattedDay = day < 10 ? `0${day}` : day;
+  let timeIndication = "AM";
+  if (hour > 12) {
+    hour -= 12;
+    timeIndication = "PM";
+  }
+  const formattedHour = hour < 10 ? `0${hour}` : hour;
+  const formattedMinute = minute < 10 ? `0${minute}` : minute;
+  const timestamp = `${formattedMonth}-${formattedDay} ${formattedHour}:${formattedMinute} ${timeIndication}`;
+  return timestamp;
+}

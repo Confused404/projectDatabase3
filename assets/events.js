@@ -1,4 +1,4 @@
-const eventServerAddress = "http://127.0.0.1:3000";
+const eventServerAddress = "http://localhost:3000";
 
 async function fetchData() {
   try {
@@ -82,9 +82,11 @@ function createCommentElement(comment) {
   commentTextElement.textContent = comment.comnt_text;
 
   const ratingElement = document.createElement("p");
+  ratingElement.className = "rating-num";
   ratingElement.textContent = `Rating: ${comment.rating}`;
 
   const timestampElement = document.createElement("p");
+  timestampElement.className = "timestamp";
   timestampElement.textContent = `Timestamp: ${comment.time_stamp}`;
 
   individualComment.appendChild(commentHeading);
@@ -95,7 +97,7 @@ function createCommentElement(comment) {
   // Add edit button if the comment belongs to the current user
   if (comment.belongsToCurrentUser) {
     console.log("comment in check: ", comment);
-    const editButton = createEditButton(comment.comment_id, "tryna edit me?");
+    const editButton = createEditButton(comment);
     const deleteButton = createDeleteButton(comment.comment_id);
     individualComment.appendChild(editButton);
     individualComment.appendChild(deleteButton);
@@ -104,32 +106,68 @@ function createCommentElement(comment) {
   return individualComment;
 }
 
-function createEditButton(comment_id, commentText) {
+function createEditButton(comment) {
   const editButton = document.createElement("button");
-  editButton.className = "edit-button";
   editButton.textContent = "Edit Comment";
 
   // Event listener for clicking the edit button
-  editButton.addEventListener("click", function (event) {
+  editButton.addEventListener("click", async function () {
+    // Update the commentRating to reflect the current rating
+    comment.commentRating = parseInt(comment.commentRating); // Ensure commentRating is an integer
     const parentElement = editButton.parentElement;
+
+    // Store the first paragraph element (assuming it contains the comment text)
+    const firstParagraph = parentElement.querySelector("h3");
 
     // Create an input field for editing the comment text
     const inputField = document.createElement("input");
     inputField.type = "text";
-    inputField.placeholder = commentText; // Set initial value to the current comment text
+    inputField.value = comment.comnt_text; // Set initial value to the current comment text
 
-    // Replace the paragraph element with the input field
-    parentElement.replaceChild(inputField, parentElement.querySelector("p"));
+    // Create a slider for editing the comment rating
+    const ratingSlider = document.createElement("input");
+    ratingSlider.type = "range";
+    ratingSlider.min = "1";
+    ratingSlider.max = "5";
+    ratingSlider.step = "1";
+    ratingSlider.value = comment.commentRating; // Set initial value to the current comment rating
+
+    // Create labels for the rating slider values
+    const ratingLabels = document.createElement("div");
+    ratingLabels.classList.add("rating-labels");
+    for (let i = 1; i <= 5; i++) {
+      const label = document.createElement("span");
+      label.textContent = `${i} `;
+      ratingLabels.appendChild(label);
+    }
+
+    // Create buttons for confirming and canceling changes
+    const confirmButton = document.createElement("button");
+    confirmButton.textContent = "Confirm";
+    const cancelButton = document.createElement("button");
+    cancelButton.textContent = "Cancel";
+
+    // Append input field, slider, labels, and buttons to the parent element
+    parentElement.innerHTML = ""; // Clear existing content
+    parentElement.appendChild(firstParagraph); // Re-append the first paragraph
+    parentElement.appendChild(inputField);
+    parentElement.appendChild(document.createElement("br")); // Add a line break
+    parentElement.appendChild(ratingSlider);
+    parentElement.appendChild(ratingLabels);
+    parentElement.appendChild(document.createElement("br")); // Add a line break
+    parentElement.appendChild(confirmButton);
+    parentElement.appendChild(cancelButton);
 
     // Focus on the input field
     inputField.focus();
 
-    // Event listener for input field blur (when user clicks outside the input field)
-    inputField.addEventListener("blur", async function () {
-      // Get the updated comment text
+    // Event listener for confirm button click
+    confirmButton.addEventListener("click", async function () {
+      // Get the updated comment text and rating
       const updatedCommentText = inputField.value;
+      const updatedRating = ratingSlider.value;
 
-      // Send a request to update the comment text
+      // Send a request to update the comment text and rating
       try {
         const response = await fetch(`${eventServerAddress}/edit_comment`, {
           method: "POST",
@@ -137,8 +175,9 @@ function createEditButton(comment_id, commentText) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            comment_id: comment_id,
+            comment_id: comment.comment_id,
             message: updatedCommentText,
+            rating: updatedRating,
           }),
         });
         if (!response.ok) {
@@ -147,13 +186,58 @@ function createEditButton(comment_id, commentText) {
         const data = await response.json();
         console.log(data);
 
-        // Replace the input field with a new paragraph element containing the updated comment text
+        // Replace the parent element's content with new elements containing the updated comment text, rating, and timestamp
+        parentElement.innerHTML = "";
+        parentElement.appendChild(firstParagraph); // Re-append the first paragraph
         const newParagraph = document.createElement("p");
         newParagraph.textContent = updatedCommentText;
-        parentElement.replaceChild(newParagraph, inputField);
+        parentElement.appendChild(newParagraph);
+
+        const newRatingParagraph = document.createElement("p");
+        newRatingParagraph.textContent = `Rating: ${updatedRating}`;
+        parentElement.appendChild(newRatingParagraph);
+
+        const timestampParagraph = document.createElement("p");
+        timestampParagraph.textContent = `Timestamp: ${data.timestamp}`;
+        parentElement.appendChild(timestampParagraph);
+
+        // Re-append the edit button
+        parentElement.appendChild(editButton);
+        const newDeletebutton = createDeleteButton(comment.comment_id);
+        parentElement.appendChild(newDeletebutton);
+        comment.comnt_text = updatedCommentText;
+        comment.commentRating = updatedRating;
+        comment.timestamp = data.timestamp;
       } catch (error) {
         console.error("Error during editing comment:", error);
       }
+    });
+
+    // Event listener for cancel button click
+    cancelButton.addEventListener("click", function () {
+      // Restore the original comment text, rating, and timestamp
+      inputField.value = comment.commentText;
+      ratingSlider.value = comment.commentRating;
+
+      // Replace the parent element's content with new elements containing the original comment text, rating, and timestamp
+      parentElement.innerHTML = "";
+      parentElement.appendChild(firstParagraph); // Re-append the first paragraph
+      const originalTextParagraph = document.createElement("p");
+      originalTextParagraph.textContent = `${comment.comnt_text}`;
+      parentElement.appendChild(originalTextParagraph);
+
+      const originalRatingParagraph = document.createElement("p");
+      originalRatingParagraph.textContent = `Rating: ${comment.rating}`;
+      parentElement.appendChild(originalRatingParagraph);
+
+      const originalTimestampParagraph = document.createElement("p");
+      originalTimestampParagraph.textContent = `Timestamp: ${comment.time_stamp}`;
+      parentElement.appendChild(originalTimestampParagraph);
+
+      // Re-append the edit button
+      parentElement.appendChild(editButton);
+      const newDeletebutton = createDeleteButton(comment.comment_id);
+      parentElement.appendChild(newDeletebutton);
     });
   });
 
@@ -179,6 +263,7 @@ function createInsertCommentElement(eventId, commentDiv) {
   }
 
   const ratingInput = document.createElement("input");
+  ratingInput.className = "rating-slider";
   ratingInput.type = "range";
   ratingInput.min = "1";
   ratingInput.max = "5";
