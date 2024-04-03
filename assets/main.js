@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   let log = console.log;
   let buttons = document.querySelectorAll(".user");
-  const serverAddress = "http://localhost:3000";
+  const serverAddress = "http://127.0.0.1:3000";
 
   updateLoginButton();
 
@@ -183,33 +183,47 @@ document.addEventListener("DOMContentLoaded", function () {
             });
           }
 
+          let isAccountBoxGenerated = false;
+
           // Change the button's click event to go to the account details page
           loginButton.addEventListener("click", function (event) {
             event.preventDefault();
-            // add click event here
+          
             // Select the box
-            const box = document.getElementById("account-box"); // Replace '#box' with the actual id of the box
-
+            const box = document.getElementById("account-box");
+          
             // Unhide the box
-            console.log("box:" + JSON.stringify(box));
             if (box.offsetHeight == 0) {
               box.style.display = "block";
             }
-            console.log(data);
+          
+            // If the account box has already been generated, skip the rest of the code
+            if (isAccountBoxGenerated) {
+              return;
+            }
+          
             // Use the data from the first fetch request
-            console.log(data.username);
-            console.log(data.email);
             if (data.username && data.email) {
               // Create elements for user details
-              console.log("inside the ifstatement");
               const form = box.firstElementChild;
               const usernameLabel = document.createElement("label");
               usernameLabel.textContent = `Username: ${data.username}`;
               form.appendChild(usernameLabel);
-
+          
               const emailLabel = document.createElement("label");
               emailLabel.textContent = `Email: ${data.email}`;
               form.appendChild(emailLabel);
+
+              //put the list of rsos joined
+              //put the list of events? it might get kind of crazy looking,
+              // should i put just the name of the event? 
+              //fuck its gonna have to be another .html i gotta put everything
+              //email and username,
+              //lists would include: rsos joined, (public, private, and rso)-events joined
+          
+              // Set the flag to true so the account box won't be generated again
+              window.location.href = "/html/account-page.html";
+              isAccountBoxGenerated = true;
             }
           });
         }

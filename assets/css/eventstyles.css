@@ -1,9 +1,29 @@
+.record {
+  border-bottom: 3px outset violet;
+  border-width: 5%;
+  margin-bottom: 3%;
+}
+
 .comments-section {
   background-color: white;
   color: black;
   font-size: larger;
+  border: 5px solid #dba54b;
+  padding-left: 1%;
+  padding-right: 1%;
+}
+.comments-section h3{
+  color: black;
+}
+.comments-section p{
+color: black;
+font-size: 80%;
 }
 .individual-comment {
   /* display: flex; */
   border-bottom: 5px;
+  margin-bottom: 2.5%;
+  border: 5px double black;
+  padding-left: 1%;
+  padding-bottom: .5%;
 }

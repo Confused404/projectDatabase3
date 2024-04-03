@@ -44,8 +44,10 @@ fetch(`${rsoServerAddress}/getRSOData`)
                           joinRso(record.rso_id);
                           setTimeout(function() {
                             joinRsoButton.remove();
+                            window.location.href = "../html/rso-page.html"; // Replace 'index.html' with the page you want to redirect to
                             //want to add the retrieved name here..
-                          }, 1000);
+                          }, 500);
+
                         });
                         // Append the joinRsoButton to the rsoDiv
                         rsoDiv.appendChild(joinRsoButton);
@@ -59,19 +61,21 @@ fetch(`${rsoServerAddress}/getRSOData`)
                           leaveRso(record.rso_id);
                           setTimeout(function() {
                             leaveRsoButton.remove();
-                          }, 1000);
+                            window.location.href = "../html/rso-page.html"; // Replace 'index.html' with the page you want to redirect to
+                          }, 500);
+
                         });
                     
                         // Append the leaveRsoButton to the rsoDiv
                         rsoDiv.appendChild(leaveRsoButton);
+
                     }
                   })
                   .catch((error) => {
                     console.error("Error checking if user joined RSO:", error);
                   });
             });
-            document.body.appendChild(rsoDiv);
-            
+            document.body.appendChild(rsoDiv);            
         });
   });
           
@@ -107,6 +111,7 @@ fetch(`${rsoServerAddress}/getRSOData`)
     .catch((error) => {
       console.error('Request failed:', error);
     });
+    
   }
 
 function checkIfUserJoinedRso(rso_id, user_id) {
