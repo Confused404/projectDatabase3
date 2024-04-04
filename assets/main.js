@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
       event.preventDefault();
-      window.location.href = "index.html"
+      window.location.href = "index.html";
 
       if (allInputsValid) {
         let formData = new FormData(this);
@@ -194,20 +194,20 @@ document.addEventListener("DOMContentLoaded", function () {
           // Change the button's click event to go to the account details page
           loginButton.addEventListener("click", function (event) {
             event.preventDefault();
-          
+
             // Select the box
             const box = document.getElementById("account-box");
-          
+
             // Unhide the box
             if (box.offsetHeight == 0) {
               box.style.display = "block";
             }
-          
+
             // If the account box has already been generated, skip the rest of the code
             if (isAccountBoxGenerated) {
               return;
             }
-          
+
             // Use the data from the first fetch request
             if (data.username && data.email) {
               // Create elements for user details
@@ -215,18 +215,18 @@ document.addEventListener("DOMContentLoaded", function () {
               const usernameLabel = document.createElement("label");
               usernameLabel.textContent = `Username: ${data.username}`;
               form.appendChild(usernameLabel);
-          
+
               const emailLabel = document.createElement("label");
               emailLabel.textContent = `Email: ${data.email}`;
               form.appendChild(emailLabel);
 
               //put the list of rsos joined
               //put the list of events? it might get kind of crazy looking,
-              // should i put just the name of the event? 
+              // should i put just the name of the event?
               //fuck its gonna have to be another .html i gotta put everything
               //email and username,
               //lists would include: rsos joined, (public, private, and rso)-events joined
-          
+
               // Set the flag to true so the account box won't be generated again
               window.location.href = "/html/account-page.html";
               isAccountBoxGenerated = true;
@@ -297,104 +297,104 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
- // Event creation form validation and submission
-document.addEventListener("DOMContentLoaded", function () {
-  const eventCreationForm = document.querySelector('form[action="create-Event"]');
+  //  // Event creation form validation and submission
+  // document.addEventListener("DOMContentLoaded", function () {
+  //   const eventCreationForm = document.querySelector('form[action="create-Event"]');
 
-  eventCreationForm.addEventListener("submit", function (event) {
-    const inputs = eventCreationForm.querySelectorAll("input");
+  //   eventCreationForm.addEventListener("submit", function (event) {
+  //     const inputs = eventCreationForm.querySelectorAll("input");
 
-    let allInputsValid = true;
-    inputs.forEach((input) => {
-      if (!input.value.trim()) {
-        allInputsValid = false;
-      }
-    });
+  //     let allInputsValid = true;
+  //     inputs.forEach((input) => {
+  //       if (!input.value.trim()) {
+  //         allInputsValid = false;
+  //       }
+  //     });
 
-    if (allInputsValid) {
-      let formData = new FormData(this);
-      let formInfo = {};
-      for (const pair of formData.entries()) {
-        let key = pair[0];
-        let value = pair[1];
-        formInfo[key] = value;
-      }
+  //     if (allInputsValid) {
+  //       let formData = new FormData(this);
+  //       let formInfo = {};
+  //       for (const pair of formData.entries()) {
+  //         let key = pair[0];
+  //         let value = pair[1];
+  //         formInfo[key] = value;
+  //       }
 
-      // Send form data to the server
-      const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-      fetch(`${serverAddress}/create-Event`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: urlEncodedFormData,
-      })
-        .then((response) => {
-          if (response.ok) {
-            return response.json();
-          }
-          throw new Error("Network response was not ok.");
-        })
-        .then((data) => {
-          console.log("Event creation successful:", data);
-        })
-        .catch((error) => {
-          console.error("Error during event creation:", error);
-        });
-    } else {
-      alert("please fill in all required inputs");
-      return;
-    }
-  });
-});
+  //       // Send form data to the server
+  //       const urlEncodedFormData = new URLSearchParams(formInfo).toString();
+  //       fetch(`${serverAddress}/create-Event`, {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/x-www-form-urlencoded",
+  //         },
+  //         body: urlEncodedFormData,
+  //       })
+  //         .then((response) => {
+  //           if (response.ok) {
+  //             return response.json();
+  //           }
+  //           throw new Error("Network response was not ok.");
+  //         })
+  //         .then((data) => {
+  //           console.log("Event creation successful:", data);
+  //         })
+  //         .catch((error) => {
+  //           console.error("Error during event creation:", error);
+  //         });
+  //     } else {
+  //       alert("please fill in all required inputs");
+  //       return;
+  //     }
+  //   });
+  // });
 
-  // RSO creation form validation and submission
-  document.addEventListener("DOMContentLoaded", function () {
-    const rsoCreationForm = document.querySelector('form[action="create-RSO"]');
+  //   // RSO creation form validation and submission
+  //   document.addEventListener("DOMContentLoaded", function () {
+  //     const rsoCreationForm = document.querySelector('form[action="create-RSO"]');
 
-    rsoCreationForm.addEventListener("submit", function (event) {
-      const inputs = rsoCreationForm.querySelectorAll("input");
+  //     rsoCreationForm.addEventListener("submit", function (event) {
+  //       const inputs = rsoCreationForm.querySelectorAll("input");
 
-      let allInputsValid = true;
-      inputs.forEach((input) => {
-        if (!input.value.trim()) {
-          allInputsValid = false;
-        }
-      });
-      if (allInputsValid) {
-        let formData = new FormData(this);
-        let formInfo = {};
-        for (const pair of formData.entries()) {
-          let key = pair[0];
-          let value = pair[1];
-          formInfo[key] = value;
-        }
-        console.log(formInfo);
-        // Send form data to the server
-        const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-        fetch(`${serverAddress}/create-RSO`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: urlEncodedFormData,
-        })
-          .then((response) => {
-            if (response.ok) {
-              return response.json();
-            }
-            throw new Error("Network response was not ok.");
-          })
-          .then((data) => {
-            console.log("RSO creation successful:", data);
-          })
-          .catch((error) => {
-            console.error("Error during RSO creation:", error);
-          });
-      } else {
-        alert("please fill in all required inputs");
-        return;
-      }
-    });
-  });
+  //       let allInputsValid = true;
+  //       inputs.forEach((input) => {
+  //         if (!input.value.trim()) {
+  //           allInputsValid = false;
+  //         }
+  //       });
+  //       if (allInputsValid) {
+  //         let formData = new FormData(this);
+  //         let formInfo = {};
+  //         for (const pair of formData.entries()) {
+  //           let key = pair[0];
+  //           let value = pair[1];
+  //           formInfo[key] = value;
+  //         }
+  //         console.log(formInfo);
+  //         // Send form data to the server
+  //         const urlEncodedFormData = new URLSearchParams(formInfo).toString();
+  //         fetch(`${serverAddress}/create-RSO`, {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/x-www-form-urlencoded",
+  //           },
+  //           body: urlEncodedFormData,
+  //         })
+  //           .then((response) => {
+  //             if (response.ok) {
+  //               return response.json();
+  //             }
+  //             throw new Error("Network response was not ok.");
+  //           })
+  //           .then((data) => {
+  //             console.log("RSO creation successful:", data);
+  //           })
+  //           .catch((error) => {
+  //             console.error("Error during RSO creation:", error);
+  //           });
+  //       } else {
+  //         alert("please fill in all required inputs");
+  //         return;
+  //       }
+  //     });
+  //   });
 });

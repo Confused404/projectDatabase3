@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Create-page</title>
     <link rel="stylesheet" href="../assets/css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/create_events.css" />
   </head>
   <body>
     <div class="flexbox-container1">
@@ -21,7 +22,11 @@
         <a href="rso-page.html">
           <button class="button tan-button rso-tab">RSO'S</button>
         </a>
-        <button type="button" class="button yellow-button login-tab user" id="login">
+        <button
+          type="button"
+          class="button yellow-button login-tab user"
+          id="login"
+        >
           LOGIN
         </button>
         <button class="button tan-button join-tab user" id="signup">
@@ -30,9 +35,13 @@
       </div>
     </div>
     <div class="form-div">
-      <form action="signup" method="POST" >
-        <a href="create-page.html"> 
-          <button type="button" class="button exit button" id="exit-button1"></button>
+      <form action="signup" method="POST">
+        <a href="create-page.html">
+          <button
+            type="button"
+            class="button exit button"
+            id="exit-button1"
+          ></button>
         </a>
         <h3>SIGN UP</h3>
         <label for="username">Username</label><br />
@@ -86,11 +95,14 @@
       </form>
     </div>
 
-
     <div class="form-div">
       <form action="login" method="POST">
-        <a href="create-page.html"> 
-          <button type="button" class="button exit button" id="exit-button2"></button>
+        <a href="create-page.html">
+          <button
+            type="button"
+            class="button exit button"
+            id="exit-button2"
+          ></button>
         </a>
         <h3>LOGIN</h3>
         <label for="username">Username</label><br />
@@ -111,12 +123,112 @@
           <label for="public_event">Public Event</label>
           <label for="private_event">Private Event</label>
           <label for="rso_event">RSO Event</label>
-          <input type="radio" id="public_event" name="event_type" value="public" />
-          <input type="radio" id="private_event" name="event_type" value="private" />
+          <input
+            type="radio"
+            id="public_event"
+            name="event_type"
+            value="public"
+          />
+          <input
+            type="radio"
+            id="private_event"
+            name="event_type"
+            value="private"
+          />
           <input type="radio" id="rso_event" name="event_type" value="rso" />
         </div>
-        <label for="event_time">Time of Event:</label>
-        <input type="text" class="event_time" name="event_time" /><br />
+        <div class="event-date-container">
+          <label for="event_date">Date of Event:</label>
+          <select name="event_month" id="event_month">
+            <option value="Jan">Jan</option>
+            <option value="Feb">Feb</option>
+            <option value="Mar">Mar</option>
+            <option value="Apr">Apr</option>
+            <option value="May">May</option>
+            <option value="Jun">Jun</option>
+            <option value="Jul">Jul</option>
+            <option value="Aug">Aug</option>
+            <option value="Sep">Sep</option>
+            <option value="Oct">Oct</option>
+            <option value="Nov">Nov</option>
+            <option value="Dec">Dec</option>
+          </select>
+          <select name="event_day" id="event_day">
+            <option value="01">01</option>
+            <option value="02">02</option>
+            <option value="03">03</option>
+            <option value="04">04</option>
+            <option value="05">05</option>
+            <option value="06">06</option>
+            <option value="07">07</option>
+            <option value="08">08</option>
+            <option value="09">09</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+            <option value="13">13</option>
+            <option value="14">14</option>
+            <option value="15">15</option>
+            <option value="16">16</option>
+            <option value="17">17</option>
+            <option value="18">18</option>
+            <option value="19">19</option>
+            <option value="20">20</option>
+            <option value="21">21</option>
+            <option value="22">22</option>
+            <option value="23">23</option>
+            <option value="24">24</option>
+            <option value="25">25</option>
+            <option value="26">26</option>
+            <option value="27">27</option>
+            <option value="28">28</option>
+            <option value="29">29</option>
+            <option value="30">30</option>
+            <option value="31">31</option>
+          </select>
+          <select name="event_year">
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+          </select>
+        </div>
+        <div class="event-time-container">
+          <label for="event_time">Time of Event:</label>
+          <input
+            type="number"
+            name="event_hour"
+            id="event_hour"
+            placeholder="Hour"
+            min="1"
+            max="12"
+            <!--
+            Updated
+            max
+            value
+            for
+            12-hour
+            format
+            --
+          />
+
+          <input
+            type="number"
+            name="event_minute"
+            id="event_minute"
+            placeholder="Minute"
+            min="0"
+            max="59"
+            step="1"
+            required
+          />
+          <!-- Dropdown for AM or PM -->
+          <select name="event_ampm" id="event_ampm">
+            <option value="AM">AM</option>
+            <option value="PM">PM</option>
+          </select>
+        </div>
         <label for="event_desc">Description:</label>
         <textarea id="event_desc" name="event_desc"></textarea><br />
         <input type="submit" value="CREATE EVENT" />
@@ -132,9 +244,11 @@
     </div>
     <div class="form-div" id="account-box">
       <form action="account" method="GET">
-        <h3>Account Details</h3><br />
+        <h3>Account Details</h3>
+        <br />
       </form>
     </div>
     <script src="../assets/main.js"></script>
+    <script src="../assets/create_events.js"></script>
   </body>
 </html>
