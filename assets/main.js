@@ -139,7 +139,22 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((response) => response.json())
       .then((data) => {
         console.log(data.exists);
+        console.log("data exists: " + data.exists);
         if (data.exists) {
+          console.log("role: " + data.role);
+          if(data.role === "super_admin"){
+            console.log("inside super admin if statement of update login button");
+            const eventsButton = document.querySelector("#events");
+          
+            // If the login button doesn't exist, it means it's already been changed
+            if (!eventsButton) return;
+          
+            eventsButton.addEventListener("click", function (event) {
+              event.preventDefault();
+              window.location.href = "../html/unapproved-events.html";
+            });
+          }
+          console.log("past the super_admin portion of update login");
           // Select the login button
           const loginButton = document.querySelector("#login");
 

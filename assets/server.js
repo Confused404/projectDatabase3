@@ -226,7 +226,7 @@ app.post("/signup", (req, res) => {
             //if its a university
 
             sql = `
-            INSERT INTO universities (usr_id, username,univ_name, loc_name, univ_desc, num_students) VALUES ('${value1}', "${value9}','${value4}', '${value5}', '${value6}', '${value7}')
+            INSERT INTO universities (usr_id, univ_name, loc_name, univ_desc, num_students) VALUES ('${value1}','${value4}', '${value5}', '${value6}', '${value7}')
           `;
 
             db.run(sql, function (err) {
@@ -237,7 +237,7 @@ app.post("/signup", (req, res) => {
             });
 
             sql = `
-            INSERT INTO super_admins (usr_id, password, email) VALUES ('${value1}', '${value2}', '${value3}')
+            INSERT INTO super_admins (usr_id, username, password, email) VALUES ('${value1}', '${value9}', '${value2}', '${value3}')
           `;
           }
           // Execute the insert statement
@@ -346,7 +346,7 @@ const authenticateUser = (userInfo, type, callback) => {
               if (error) {
                 reject(error);
               } else {
-                resolve(row);
+                resolve({row, table}); //made it an object
               }
             }
           );
@@ -362,21 +362,21 @@ const authenticateUser = (userInfo, type, callback) => {
           // Check if any row is found (invalid login)
           results.forEach((result) => console.log(results));
           console.log(results.length);
-          const whateverthefuck = results.some((row) => row !== undefined);
-
-          console.log(whateverthefuck);
-          if (type == "login" && whateverthefuck) {
-            const index = results.findIndex((row) => row !== undefined);
-            if (index == 0) {
+          const validResult = results.find((result) => result.row !== undefined);
+          
+          console.log("validResult: " + validResult.table);
+          if (type == "login" && validResult) {
+            // Use the table name to determine the user's role
+            if (validResult.table == "users") {
               userInfo.role = "user";
-            } else if (index == 1) {
+            } else if (validResult.table == "admins") {
               userInfo.role = "admin";
             } else {
-              userInfo.role = "super admin";
+              userInfo.role = "super_admin";
             }
-            userInfo.userId = results[index].usr_id;
+            userInfo.userId = validResult.row.usr_id;
           }
-          if (whateverthefuck) {
+          if (validResult) {
             callback(null, false);
             //signup is checking for a true to be true
           } else {
@@ -764,6 +764,7 @@ app.get("/get_session_info", (req, res) => {
             username: row.username,
             email: row.email,
             usr_id: row.usr_id,
+            role: row.role
           })
         : res.send({ exists: false });
     });

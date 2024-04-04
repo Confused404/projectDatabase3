@@ -6,66 +6,68 @@ async function fetchData() {
     const data = await response.json();
 
     for (const record of data) {
-      const eventDiv = document.createElement("div");
-      eventDiv.className = "record";
+      if(record.approved){
+        const eventDiv = document.createElement("div");
+        eventDiv.className = "record";
 
-      const eventTitle = document.createElement("h1");
-      eventTitle.textContent = record.evnt_title;
-      eventDiv.appendChild(eventTitle);
+        const eventTitle = document.createElement("h1");
+        eventTitle.textContent = record.evnt_title;
+        eventDiv.appendChild(eventTitle);
 
-      const eventTime = document.createElement("h2");
-      eventTime.textContent = record.evnt_time;
-      eventDiv.appendChild(eventTime);
+        const eventTime = document.createElement("h2");
+        eventTime.textContent = record.evnt_time;
+        eventDiv.appendChild(eventTime);
 
-      const eventDesc = document.createElement("p");
-      eventDesc.innerHTML = record.evnt_desc;
-      eventDiv.appendChild(eventDesc);
-      // Check if the user has joined the event
-      checkIfUserJoinedEvent(record.evnt_id)
-        .then((hasJoined) => {
-          if (!hasJoined) {
-            //joinEventButton for comment section
-            const joinEventButton = document.createElement("button");
-            joinEventButton.textContent = "Join Event";
-            joinEventButton.addEventListener("click", function (event) {
-              console.log("join event button clicked");
-              // Replace 'event_id' with the actual event id you want to use
-              joinEvent(record.evnt_id);
-              setTimeout(function () {
-                joinEventButton.remove();
-              }, 1000);
-            });
-            eventDiv.appendChild(joinEventButton);
-          }
-        })
-        .catch((error) => {
-          console.error("Error checking if user joined event:", error);
-        });
+        const eventDesc = document.createElement("p");
+        eventDesc.innerHTML = record.evnt_desc;
+        eventDiv.appendChild(eventDesc);
+        // Check if the user has joined the event
+        checkIfUserJoinedEvent(record.evnt_id)
+          .then((hasJoined) => {
+            if (!hasJoined) {
+              //joinEventButton for comment section
+              const joinEventButton = document.createElement("button");
+              joinEventButton.textContent = "Join Event";
+              joinEventButton.addEventListener("click", function (event) {
+                console.log("join event button clicked");
+                // Replace 'event_id' with the actual event id you want to use
+                joinEvent(record.evnt_id);
+                setTimeout(function () {
+                  joinEventButton.remove();
+                }, 1000);
+              });
+              eventDiv.appendChild(joinEventButton);
+            }
+          })
+          .catch((error) => {
+            console.error("Error checking if user joined event:", error);
+          });
 
-      const commentDiv = document.createElement("div");
-      commentDiv.className = "comments-section";
-      const commentAreaTitle = document.createElement("h2");
-      commentAreaTitle.textContent = "Comments Section";
-      commentDiv.appendChild(commentAreaTitle);
+        const commentDiv = document.createElement("div");
+        commentDiv.className = "comments-section";
+        const commentAreaTitle = document.createElement("h2");
+        commentAreaTitle.textContent = "Comments Section";
+        commentDiv.appendChild(commentAreaTitle);
 
-      const comments = await fetchComments(record.evnt_id);
+        const comments = await fetchComments(record.evnt_id);
 
-      for (const comment of comments) {
-        console.log(comment);
-        const individualComment = createCommentElement(comment);
-        commentDiv.appendChild(individualComment);
+        for (const comment of comments) {
+          console.log(comment);
+          const individualComment = createCommentElement(comment);
+          commentDiv.appendChild(individualComment);
+        }
+
+        eventDiv.appendChild(commentDiv);
+        const insertCommentDiv = createInsertCommentElement(
+          record.evnt_id,
+          commentDiv
+        );
+        eventDiv.appendChild(insertCommentDiv);
+
+        // Append the eventDiv to the document body
+        document.body.appendChild(eventDiv);
       }
-
-      eventDiv.appendChild(commentDiv);
-      const insertCommentDiv = createInsertCommentElement(
-        record.evnt_id,
-        commentDiv
-      );
-      eventDiv.appendChild(insertCommentDiv);
-
-      // Append the eventDiv to the document body
-      document.body.appendChild(eventDiv);
-    }
+    } 
   } catch (error) {
     console.error("Error fetching event data:", error);
   }
