@@ -71,9 +71,10 @@ fetch("https://events.ucf.edu/feed.xml")
               let value3 = String(event_desc).replace(/'/g, "''");
               let value4 = String(loc_name).replace(/'/g, "''");
               let value5 = String(event_title).replace(/'/g, "''");
+              let value6 = true;
 
               let sql = `
-                INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES ('${value1}', '${value5}', '${value2}', '${value3}')
+                INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc, approved) VALUES ('${value1}', '${value5}', '${value2}', '${value3}', '${value6}')
               `;
 
               //INSERT INTO loaction_table (loc_name, addy, longitude, latitude) VALUES ()
@@ -95,6 +96,17 @@ fetch("https://events.ucf.edu/feed.xml")
                   //console.error(err);
                 }
               });
+
+              sql = `
+                INSERT INTO public_events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES ('${value1}', '${value5}', '${value2}', '${value3}')
+              `;
+
+              db.run(sql, function (err) {
+                if (err) {
+                  //console.error(err);
+                }
+              });
+
             }
           }
           db.close();
@@ -176,7 +188,6 @@ app.post("/signup", (req, res) => {
     } else {
       console.log("inside else statement");
       validSignup = true;
-      res.status(200).send("Valid signup");
       console.log("valid signup check: " + validSignup);
 
       let db = new sqlite3.Database(
@@ -200,7 +211,7 @@ app.post("/signup", (req, res) => {
           let value8 = userInfo.name;
           let value9 = userInfo.username;
           let sql;
-          console.log("user role" + userInfo.role);
+          console.log("user role: " + userInfo.role);
           // Prepare an SQL statement
           if (userInfo.role === "user") {
             sql = `
@@ -240,6 +251,8 @@ app.post("/signup", (req, res) => {
           db.close();
         }
       );
+      res.redirect("../index.html");
+
     }
   });
 });
@@ -386,12 +399,29 @@ const authenticateUser = (userInfo, type, callback) => {
 
 app.post("/html/create-Event", (req, res) => {
   // Access form data from req.body
-  const { event_title, event_time, event_desc } = req.body;
+  const { event_title, event_time, event_desc} = req.body;
 
   // Validate form data
   if (event_title === "" || event_time === "" || event_desc === "") {
     res.status(400).send("All fields are required");
     return;
+  }
+
+  // Check the event type and set the table name
+  let tableName;
+  switch (req.body.event_type) {
+    case 'public':
+      tableName = 'public_events';
+      break;
+    case 'private':
+      tableName = 'private_events';
+      break;
+    case 'rso':
+      tableName = 'rso_events';
+      break;
+    default:
+      console.error('Invalid event type:', req.body.event_type);
+      return;
   }
 
   // Generate a UUID for event_id
@@ -433,31 +463,60 @@ app.post("/html/create-Event", (req, res) => {
         return;
       }
 
-      // Insert the new event
-      let sql = `
-          INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
+      // Insert into 'events' table
+      const insertIntoEvents = () => {
+        let sql = `
+          INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc, approved) VALUES (?, ?, ?, ?, ?)
+        `;
+      
+        db.run(
+          sql,
+          [event_id, event_title, event_time, event_desc, false],
+          function (err) {
+            if (err) {
+              console.error(err);
+              //res.status(500).send("Error inserting event into database");
+              return;
+            }
+            console.log(`New event inserted into events`);
+            //res.status(200).send("Event successfully created");
+          }
+        );
+      };
+
+      // Insert into other tables
+      const insertIntoOtherTable = (tableName) => {
+        let sql = `
+          INSERT INTO '${tableName}' (evnt_id, evnt_title, evnt_time, evnt_desc) VALUES (?, ?, ?, ?)
         `;
 
-      db.run(
-        sql,
-        [event_id, event_title, event_time, event_desc],
-        function (err) {
-          if (err) {
-            console.error(err);
-            res.status(500).send("Error inserting event into database");
-            return;
+        db.run(
+          sql,
+          [event_id, event_title, event_time, event_desc],
+          function (err) {
+            if (err) {
+              console.error(err);
+              res.status(500).send("Error inserting event into database");
+              return;
+            } else {
+              console.log(`New event inserted into ${tableName}`);
+              res.status(200).send("Event successfully created");
+            }
           }
+        );
+      };
 
-          console.log(`New event inserted into database`);
-          res.status(200).send("Event successfully created");
-        }
-      );
+      // Call the functions
+      insertIntoEvents();
+      insertIntoOtherTable(tableName);
 
       // Close the database connection
       db.close();
     });
   });
 });
+
+
 app.post("/html/create-RSO", (req, res) => {
   // Access form data from req.body
   const { RSO_title, RSO_members } = req.body;

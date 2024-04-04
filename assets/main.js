@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
       window.location.href = "index.html"; // Replace 'index.html' with the page you want to redirect to
     });
     signupForm.addEventListener("submit", function (event) {
+      //event.preventDefault();
       const inputs = signupForm.querySelectorAll("input");
       console.log("testing singup");
       console.log(signupForm.role);
@@ -83,6 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
       event.preventDefault();
+      window.location.href = "index.html"
 
       if (allInputsValid) {
         let formData = new FormData(this);
@@ -111,7 +113,11 @@ document.addEventListener("DOMContentLoaded", function () {
           })
           .then((data) => {
             console.log("Signup successful:", data);
-            // Optionally, you can redirect the user to another page or show a success message here
+            if (data.validSignup) {
+              window.location.href = "../index.html";
+            } else {
+              // Handle invalid signup
+            }
           })
           .catch((error) => {
             console.error("Error during signup:", error);
@@ -291,57 +297,56 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Event creation form validation and submission
-  document.addEventListener("DOMContentLoaded", function () {
-    const eventCreationForm = document.querySelector(
-      'form[action="create-Event"]'
-    );
+ // Event creation form validation and submission
+document.addEventListener("DOMContentLoaded", function () {
+  const eventCreationForm = document.querySelector('form[action="create-Event"]');
 
-    eventCreationForm.addEventListener("submit", function (event) {
-      const inputs = eventCreationForm.querySelectorAll("input");
+  eventCreationForm.addEventListener("submit", function (event) {
+    const inputs = eventCreationForm.querySelectorAll("input");
 
-      let allInputsValid = true;
-      inputs.forEach((input) => {
-        if (!input.value.trim()) {
-          allInputsValid = false;
-        }
-      });
-      if (allInputsValid) {
-        let formData = new FormData(this);
-        let formInfo = {};
-        for (const pair of formData.entries()) {
-          let key = pair[0];
-          let value = pair[1];
-          formInfo[key] = value;
-        }
-        console.log(formInfo);
-        // Send form data to the server
-        const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-        fetch(`${serverAddress}/create-Event`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: urlEncodedFormData,
-        })
-          .then((response) => {
-            if (response.ok) {
-              return response.json();
-            }
-            throw new Error("Network response was not ok.");
-          })
-          .then((data) => {
-            console.log("Event creation successful:", data);
-          })
-          .catch((error) => {
-            console.error("Error during event creation:", error);
-          });
-      } else {
-        alert("please fill in all required inputs");
-        return;
+    let allInputsValid = true;
+    inputs.forEach((input) => {
+      if (!input.value.trim()) {
+        allInputsValid = false;
       }
     });
+
+    if (allInputsValid) {
+      let formData = new FormData(this);
+      let formInfo = {};
+      for (const pair of formData.entries()) {
+        let key = pair[0];
+        let value = pair[1];
+        formInfo[key] = value;
+      }
+
+      // Send form data to the server
+      const urlEncodedFormData = new URLSearchParams(formInfo).toString();
+      fetch(`${serverAddress}/create-Event`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: urlEncodedFormData,
+      })
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error("Network response was not ok.");
+        })
+        .then((data) => {
+          console.log("Event creation successful:", data);
+        })
+        .catch((error) => {
+          console.error("Error during event creation:", error);
+        });
+    } else {
+      alert("please fill in all required inputs");
+      return;
+    }
   });
+});
 
   // RSO creation form validation and submission
   document.addEventListener("DOMContentLoaded", function () {

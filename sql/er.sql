@@ -3,6 +3,7 @@ CREATE TABLE events (
   	evnt_title VARCHAR(50),
     evnt_time VARCHAR(30),
     evnt_desc VARCHAR(8000),
+  	approved BOOLEAN,
     PRIMARY KEY(evnt_id)
 );
 
@@ -43,6 +44,7 @@ CREATE TABLE location_table (
 
 CREATE TABLE rso_events (
     evnt_id INT,
+  	evnt_title VARCHAR(50),
     evnt_time VARCHAR(30),
     evnt_desc VARCHAR(8000),
     PRIMARY KEY(evnt_id),
@@ -59,6 +61,7 @@ CREATE TABLE owns (
 
 CREATE TABLE private_events (
     evnt_id INT,
+  	evnt_title VARCHAR(50),
     evnt_time VARCHAR(30),
     evnt_desc VARCHAR(8000),
     PRIMARY KEY(evnt_id),
@@ -75,6 +78,7 @@ CREATE TABLE Creates (
 
 CREATE TABLE public_events (
     evnt_id INT,
+  	evnt_title VARCHAR(50),
     evnt_time VARCHAR(30),
     evnt_desc VARCHAR(8000),
     PRIMARY KEY(evnt_id),
