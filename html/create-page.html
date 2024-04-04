@@ -42,8 +42,8 @@
 
         <div class="radio-text">
           <label for="user">User</label>
-          <label for="rso">RSO</label>
-          <label for="university">University</label>
+          <label for="rso">Admin</label>
+          <label for="university">Super Admin</label>
           <input type="radio" id="user" name="role" value="user" />
           <input type="radio" id="rso" name="role" value="rso" />
           <input type="radio" id="university" name="role" value="university" />
@@ -107,6 +107,14 @@
         <h3>Create Event</h3>
         <label for="event_title">Name of Event:</label>
         <input type="text" class="event_title" name="event_title" /><br />
+        <div class="radio-text">
+          <label for="public_event">Public Event</label>
+          <label for="private_event">Private Event</label>
+          <label for="rso_event">RSO Event</label>
+          <input type="radio" id="public_event" name="event_type" value="public" />
+          <input type="radio" id="private_event" name="event_type" value="private" />
+          <input type="radio" id="rso_event" name="event_type" value="rso" />
+        </div>
         <label for="event_time">Time of Event:</label>
         <input type="text" class="event_time" name="event_time" /><br />
         <label for="event_desc">Description:</label>

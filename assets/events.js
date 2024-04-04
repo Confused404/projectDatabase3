@@ -1,4 +1,4 @@
-const eventServerAddress = "http://localhost:3000";
+const eventServerAddress = "http://127.0.0.1:3000";
 
 async function fetchData() {
   try {
