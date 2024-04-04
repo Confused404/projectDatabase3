@@ -1,0 +1,9 @@
+.event-time-container {
+  display: flex;
+  align-items: center; /* Center vertically */
+}
+
+.event-time-container label {
+  margin-right: 10px; /* Adjust margin as needed */
+  white-space: nowrap; /* Prevent label from wrapping */
+}

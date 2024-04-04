@@ -106,7 +106,6 @@ fetch("https://events.ucf.edu/feed.xml")
                   //console.error(err);
                 }
               });
-
             }
           }
           db.close();
@@ -252,7 +251,6 @@ app.post("/signup", (req, res) => {
         }
       );
       res.redirect("../index.html");
-
     }
   });
 });
@@ -398,10 +396,41 @@ const authenticateUser = (userInfo, type, callback) => {
 };
 
 app.post("/html/create-Event", (req, res) => {
-  // Access form data from req.body
-  const { event_title, event_time, event_desc} = req.body;
+  // Data from req.body
+
+  const {
+    event_month,
+    event_day,
+    event_year,
+    event_hour,
+    event_minute,
+    event_ampm,
+  } = req.body;
+
+  // Create a Date object with the provided day, month, and year
+  const timestampDate = new Date(`${event_month} ${event_day}, ${event_year}`);
+
+  // Get the weekday name (short form)
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const weekdayName = weekdays[timestampDate.getDay()];
+
+  // Convert hour to 24-hour format
+  let hour = parseInt(event_hour, 10);
+  if (event_ampm === "PM" && hour !== 12) {
+    hour += 12;
+  } else if (event_ampm === "AM" && hour === 12) {
+    hour = 0;
+  }
+
+  // Construct timestamp string
+  const event_time = `${weekdayName}, ${event_day} ${event_month} ${event_year} ${hour
+    .toString()
+    .padStart(2, "0")}:${event_minute.padStart(2, "0")}:00`;
+
+  const { event_title, event_desc } = req.body;
 
   // Validate form data
+
   if (event_title === "" || event_time === "" || event_desc === "") {
     res.status(400).send("All fields are required");
     return;
@@ -410,17 +439,17 @@ app.post("/html/create-Event", (req, res) => {
   // Check the event type and set the table name
   let tableName;
   switch (req.body.event_type) {
-    case 'public':
-      tableName = 'public_events';
+    case "public":
+      tableName = "public_events";
       break;
-    case 'private':
-      tableName = 'private_events';
+    case "private":
+      tableName = "private_events";
       break;
-    case 'rso':
-      tableName = 'rso_events';
+    case "rso":
+      tableName = "rso_events";
       break;
     default:
-      console.error('Invalid event type:', req.body.event_type);
+      console.error("Invalid event type:", req.body.event_type);
       return;
   }
 
@@ -468,7 +497,7 @@ app.post("/html/create-Event", (req, res) => {
         let sql = `
           INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc, approved) VALUES (?, ?, ?, ?, ?)
         `;
-      
+
         db.run(
           sql,
           [event_id, event_title, event_time, event_desc, false],
@@ -515,7 +544,6 @@ app.post("/html/create-Event", (req, res) => {
     });
   });
 });
-
 
 app.post("/html/create-RSO", (req, res) => {
   // Access form data from req.body
