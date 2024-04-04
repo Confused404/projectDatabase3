@@ -231,7 +231,7 @@ function createEditButton(comment) {
       parentElement.appendChild(originalRatingParagraph);
 
       const originalTimestampParagraph = document.createElement("p");
-      originalTimestampParagraph.textContent = `Timestamp: ${comment.time_stamp}`;
+      originalTimestampParagraph.textContent = `Timestamp: ${comment.time_gistamp}`;
       parentElement.appendChild(originalTimestampParagraph);
 
       // Re-append the edit button
@@ -277,6 +277,8 @@ function createInsertCommentElement(eventId, commentDiv) {
   submitCommentButton.textContent = "Submit";
   submitCommentButton.addEventListener("click", function (event) {
     submitComment(eventId, commentArea.value, ratingInput.value, commentDiv);
+    console.log(commentArea);
+    commentArea.value = "";
   });
   insertCommentDiv.appendChild(submitCommentButton);
 
@@ -366,8 +368,9 @@ async function submitComment(eventId, commentText, ratingVal, commentDiv) {
     // Fetch updated comments and refresh the comments section
     const updatedComments = await fetchComments(eventId);
     updateCommentsSection(updatedComments, commentDiv);
+    console.log(commentDiv);
   } catch (error) {
-    console.error("Error during comment:", error);
+    alert("MUST SIGN UP TO COMMENT");
   }
 }
 function createDeleteButton(comment_id) {
