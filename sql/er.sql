@@ -4,6 +4,7 @@ CREATE TABLE events (
     evnt_time VARCHAR(30),
     evnt_desc VARCHAR(8000),
   	approved BOOLEAN,
+  	evnt_type VARCHAR(50),
     PRIMARY KEY(evnt_id)
 );
 

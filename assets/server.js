@@ -73,7 +73,7 @@ fetch("https://events.ucf.edu/feed.xml")
               let value3 = String(event_desc).replace(/'/g, "''");
               let value4 = String(loc_name).replace(/'/g, "''");
               let value5 = String(event_title).replace(/'/g, "''");
-              let value6 = true;
+              let value6 = "true";
 
               let sql = `
                 INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc, approved) VALUES ('${value1}', '${value5}', '${value2}', '${value3}', '${value6}')
@@ -125,8 +125,8 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// returns data from events table in DB
-app.get("/getEventData", (req, res) => {
+//////////////////////////////////////////////////////////////////////////////////////////////
+app.get("/getApprovedEvents", (req, res) => {
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
     sqlite3.OPEN_READONLY,
@@ -137,15 +137,124 @@ app.get("/getEventData", (req, res) => {
     }
   );
 
-  db.all("SELECT * FROM events", [], (err, rows) => {
-    if (err) {
-      throw err;
-    }
-    res.json(rows);
-  });
+  const tables = ["public_events", "private_events", "rso_events"];
+  const results = {};
 
-  db.close();
+  // First, get the approved events
+  db.all(
+    `SELECT * FROM events WHERE approved = 'true'`,
+    [],
+    async (err, approvedEvents) => {
+      if (err) {
+        throw err;
+      }
+      // Filter out the events whose evnt_id does not begin with 8
+      const filteredEvents = approvedEvents.filter(
+        (event) => !event.evnt_id.toString().startsWith("8")
+      );
+
+      // Log each of these events
+      filteredEvents.forEach((event) => {
+        console.log(event);
+      });
+
+      // Then, for each approved event, find its details in the respective table
+      const promises = approvedEvents.map(async (event) => {
+        const tablePromises = tables.map((table) => {
+          return new Promise((resolve, reject) => {
+            getRowFromTable(db, table, event.evnt_id)
+              .then((row) => {
+                //console.log(row);
+                if (row) {
+                  if (table === "private_events") {
+                    // Get the domain from the email in the session table
+                    db.get(
+                      `SELECT SUBSTR(email, INSTR(email, '@') + 1) AS domain FROM session_table`,
+                      [],
+                      (err, sessionRow) => {
+                        if (err) {
+                          reject(err);
+                        }
+
+                        // Get the usr_id from the creates table
+                        db.get(
+                          `SELECT usr_id FROM Creates WHERE evnt_id = ?`,
+                          [event.evnt_id],
+                          (err, createsRow) => {
+                            if (err) {
+                              reject(err);
+                            }
+
+                            // Check if the usr_id exists in the admins table with the same domain
+                            db.get(
+                              `SELECT *, SUBSTR(email, INSTR(email, '@') + 1) AS admin_domain FROM admins WHERE usr_id = ?`,
+                              [createsRow.usr_id],
+                              (err, adminRow) => {
+                                if (err) {
+                                  reject(err);
+                                }
+
+                                // If the usr_id exists in the admins table and the domain matches the session domain, add the event to the results
+                                if (
+                                  adminRow &&
+                                  adminRow.admin_domain === sessionRow.domain
+                                ) {
+                                  if (!results[table]) {
+                                    results[table] = [];
+                                  }
+
+                                  results[table].push(row);
+                                }
+                                resolve();
+                              }
+                            );
+                          }
+                        );
+                      }
+                    );
+                  } else {
+                    if (!results[table]) {
+                      results[table] = [];
+                    }
+                    results[table].push(row);
+                    resolve();
+                  }
+                } else {
+                  resolve();
+                }
+              })
+              .catch((err) => {
+                console.log("SQL Error:", err); // Log SQL errors
+                resolve();
+              });
+          });
+        });
+
+        return Promise.all(tablePromises);
+      });
+
+      Promise.all(promises).then(() => {
+        res.json(results);
+        db.close();
+      });
+    }
+  );
 });
+
+const getRowFromTable = (db, table, evnt_id) => {
+  return new Promise((resolve, reject) => {
+    db.get(
+      `SELECT * FROM ${table} WHERE evnt_id = ?`,
+      [evnt_id],
+      (err, row) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(row);
+      }
+    );
+  });
+};
 
 app.get("/getRSOData", (req, res) => {
   let db = new sqlite3.Database(
@@ -362,6 +471,7 @@ const authenticateUser = (userInfo, type, callback) => {
             (result) => result.row !== undefined
           );
 
+          //console.log("validResult: " + validResult.table);
           if (type == "login" && validResult) {
             // Use the table name to determine the user's role
             if (validResult.table == "users") {
@@ -493,14 +603,15 @@ app.post("/create-Event", (req, res) => {
       }
 
       // Insert into 'events' table
-      const insertIntoEvents = () => {
+      const insertIntoEvents = (event_type) => {
+        console.log("inside insertIntoEvents, event type is: " + event_type);
         let sql = `
-          INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc, approved) VALUES (?, ?, ?, ?, ?)
+          INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc, approved, evnt_type) VALUES (?, ?, ?, ?, ?, ?)
         `;
 
         db.run(
           sql,
-          [event_id, event_title, event_time, event_desc, false],
+          [event_id, event_title, event_time, event_desc, false, event_type],
           function (err) {
             if (err) {
               console.error(err);
@@ -566,11 +677,28 @@ app.post("/create-Event", (req, res) => {
         });
       };
 
+      const insertIntoCreates = (userId, eventId) => {
+        let sql = `
+          INSERT INTO Creates (usr_id, evnt_id) VALUES (?, ?)
+        `;
+
+        db.run(sql, [userId, eventId], function (err) {
+          if (err) {
+            console.error(err);
+            res.status(500).send("Error inserting into creates table");
+            return;
+          }
+          console.log(`New record inserted into creates`);
+        });
+      };
+
       // Call the functions
-      insertIntoEvents();
+      insertIntoEvents(req.body.event_type);
       insertIntoOtherTable(tableName);
       insertIntoAt();
       insertIntoLocationTable();
+      insertIntoCreates(userId, event_id);
+
       // Close the database connection
       db.close();
     });
@@ -1363,6 +1491,133 @@ function generateTimestamp() {
   const timestamp = `${formattedMonth}-${formattedDay} ${formattedHour}:${formattedMinute} ${timeIndication}`;
   return timestamp;
 }
+
+app.post("/approveEvent", (req, res) => {
+  const { eventId } = req.body;
+  let db = new sqlite3.Database(
+    "./assets/sqlite.db",
+    sqlite3.OPEN_READWRITE,
+    (err) => {
+      if (err) {
+        console.error(err.message);
+        res.json({ success: false, error: err.message });
+      } else {
+        db.run(
+          `UPDATE events SET approved = 'true' WHERE evnt_id = ?`,
+          [eventId],
+          function (err) {
+            if (err) {
+              console.error(err.message);
+              res.json({ success: false, error: err.message });
+            } else {
+              res.json({ success: true });
+            }
+          }
+        );
+        db.close();
+      }
+    }
+  );
+});
+
+app.delete("/rejectEvent", (req, res) => {
+  const { eventId, eventType } = req.body;
+  let tableName;
+  switch (eventType) {
+    case "public":
+      tableName = "public_events";
+      break;
+    case "private":
+      tableName = "private_events";
+      break;
+    case "rso":
+      tableName = "rso_events";
+      break;
+    default:
+      console.error("Invalid event type:", eventType);
+      return;
+  }
+
+  let db = new sqlite3.Database(
+    "./assets/sqlite.db",
+    sqlite3.OPEN_READWRITE,
+    (err) => {
+      if (err) {
+        console.error(err.message);
+        res.json({ success: false, error: err.message });
+      } else {
+        db.run(
+          `DELETE FROM '${tableName}' WHERE evnt_id = ?`,
+          [eventId],
+          function (err) {
+            if (err) {
+              console.error(err.message);
+              res.json({ success: false, error: err.message });
+            } else {
+              db.run(
+                `DELETE FROM events WHERE evnt_id = ?`,
+                [eventId],
+                function (err) {
+                  if (err) {
+                    console.error(err.message);
+                    res.json({ success: false, error: err.message });
+                  } else {
+                    res.json({ success: true });
+                  }
+                }
+              );
+            }
+          }
+        );
+        db.close();
+      }
+    }
+  );
+});
+
+app.get("/getUnapprovedEvents", (req, res) => {
+  let db = new sqlite3.Database("./assets/sqlite.db", (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log("Connected to the database.");
+  });
+
+  // Get the email of the currently logged in user from the session table
+  db.get(`SELECT email FROM session_table LIMIT 1`, [], (err, row) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send("Error querying session_table");
+      return;
+    }
+
+    if (!row) {
+      res.status(403).send("No session found");
+      return;
+    }
+
+    const userEmailDomain = row.email.split("@")[1];
+
+    // Get the unapproved events created by admins with the same email domain
+    const sql = `
+      SELECT events.* 
+      FROM events 
+      JOIN Creates ON events.evnt_id = Creates.evnt_id 
+      JOIN admins ON Creates.usr_id = admins.usr_id 
+      WHERE admins.email LIKE ? AND events.approved = 0
+    `;
+
+    db.all(sql, [`%@${userEmailDomain}`], (err, rows) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send("Error querying events");
+        return;
+      }
+
+      res.json(rows);
+    });
+  });
+});
 
 // Route to serve HTML with API key injected
 app.get("/create-event-page", (req, res) => {
