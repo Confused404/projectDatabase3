@@ -306,7 +306,7 @@ app.post("/signup", (req, res) => {
           const value8 = userInfo.name;
           const value9 = userInfo.username;
           let sql;
-
+          console.log(userInfo);
           if (userInfo.role === "user") {
             sql = `INSERT INTO users (usr_id, name, password, email, username) VALUES (?, ?, ?, ?, ?)`;
           } else if (userInfo.role === "rso") {
@@ -319,6 +319,7 @@ app.post("/signup", (req, res) => {
               [value1, value4, value5, value6, value7],
               function (err) {
                 if (err) {
+                  console.log("here is thee error");
                   console.error(err);
                 } else {
                   console.log("University added to db");
@@ -328,8 +329,11 @@ app.post("/signup", (req, res) => {
 
             sql = `INSERT INTO super_admins (usr_id, username, password, email) VALUES (?, ?, ?, ?)`;
           }
-
-          db.run(sql, [value1, value8, value2, value3, value9], function (err) {
+          console.log("sql ", sql);
+          let para = [value1, value2, value3, value9];
+          if (userInfo.role == "user") para.splice(1, 0, value8);
+          console.log("para ", para);
+          db.run(sql, para, function (err) {
             if (err) {
               console.error(err);
               return res.status(500).send(err.message);
@@ -338,22 +342,22 @@ app.post("/signup", (req, res) => {
             console.log("Account added to db");
             db.close();
 
-            // After signup, attempt login
-            axios
-              .post("http://localhost:3000/login", userInfo)
-              .then((response) => {
-                if (response.data === "OK") {
-                  // Login successful, redirect to index.html
-                  return res.send(userInfo);
-                } else {
-                  // Login failed
-                  return res.status(401).send("Invalid login");
-                }
-              })
-              .catch((error) => {
-                console.error("Error during login:", error);
-                return res.status(500).send("Internal Server Error");
-              });
+            // // After signup, attempt login
+            // axios
+            //   .post("http://localhost:3000/login", userInfo)
+            //   .then((response) => {
+            //     if (response.data === "OK") {
+            //       // Login successful, redirect to index.html
+            //       return res.send(userInfo);
+            //     } else {
+            //       // Login failed
+            //       return res.status(401).send("Invalid login");
+            //     }
+            //   })
+            //   .catch((error) => {
+            //     console.error("Error during login:", error);
+            //     return res.status(500).send("Internal Server Error");
+            //   });
           });
         }
       );
