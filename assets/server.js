@@ -342,11 +342,9 @@ app.post("/signup", (req, res) => {
             axios
               .post("http://localhost:3000/login", userInfo)
               .then((response) => {
-                console.log("response data ", response.data);
                 if (response.data === "OK") {
-                  console.log("getting correctly");
                   // Login successful, redirect to index.html
-                  return res.sendStatus(200);
+                  return res.send(userInfo);
                 } else {
                   // Login failed
                   return res.status(401).send("Invalid login");
@@ -368,7 +366,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post("/login", (req, res) => {
   // Extract form data from request body
-  console.log(req.body);
   let userInfo = req.body;
 
   userInfo.password = String(setUniquePassword(userInfo.password, hashKey)); ///for the love of god dont forget hashkey
@@ -383,11 +380,8 @@ app.post("/login", (req, res) => {
         userInfo.userId,
         userInfo.role
       );
-      console.log("valid login");
-      // res.send("gj");
-      // res.redirect("../index.html");
+
       res.send("OK");
-      // res.redirect("../index.html");
     } else {
       //its not valid
       res.status(401).send("Invalid Login");
@@ -466,7 +460,6 @@ const authenticateUser = (userInfo, type, callback) => {
       // Execute all promises concurrently
       Promise.all(tableQueries)
         .then((results) => {
-          console.log(results.length);
           const validResult = results.find(
             (result) => result.row !== undefined
           );
@@ -1002,7 +995,6 @@ function insertIntoSessionTable(loggedIn, username, email, userId, role) {
         if (err) {
           return console.log(err.message);
         }
-        console.log(`A row has been inserted with row id ${this.lastID}`);
       }
     );
     db.close();

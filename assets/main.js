@@ -98,15 +98,19 @@ document.addEventListener("DOMContentLoaded", function () {
       })
         .then((response) => {
           if (response.ok) {
-            return response.text(); // Assuming the response is text
+            return response.json(); // Assuming the response is text
           }
           throw new Error("Network response was not ok.");
         })
         .then((data) => {
           // Handle successful signup
-          console.log("Signup successful:", data);
           updateLoginButton();
-          window.location.href = "../index.html"; // Redirect to index.html
+          let message = "Welcome " + data.username + "!";
+          showErrorModal(message);
+          setTimeout(function () {
+            console.log("called");
+            window.location.href = "../index.html"; // Redirect to index.html
+          }, 2000); // 1000 milliseconds = 1 second
         })
         .catch((error) => {
           showErrorModal(error);
