@@ -1,3 +1,12 @@
+#Event_creation_box {
+  top: 64%;
+  position: absolute;
+}
+#RSO_creation_box {
+  position: absolute;
+  top: 138.5%;
+}
+
 .event-time-container {
   display: flex;
   align-items: center; /* Center vertically */
@@ -6,4 +15,23 @@
 .event-time-container label {
   margin-right: 10px; /* Adjust margin as needed */
   white-space: nowrap; /* Prevent label from wrapping */
+}
+.submit-button {
+  height: 2000px;
+}
+
+#map {
+  width: 50%;
+  height: 30em; /* Adjust the height as needed */
+  margin-bottom: 10px; /* Add some margin below the map */
+}
+
+/* Style for the location input */
+#locationInput {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
 }

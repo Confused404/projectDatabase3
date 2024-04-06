@@ -13,7 +13,9 @@
           <button class="button yellow-button logo-tab"></button>
         </a>
         <a href="html/events-page.html">
-          <button class="button tan-button events-tab" id="events">EVENTS</button>
+          <button class="button tan-button events-tab" id="events">
+            EVENTS
+          </button>
         </a>
         <a href="html/create-page.html">
           <button class="button tan-button create-tab">CREATE</button>
@@ -21,7 +23,11 @@
         <a href="html/rso-page.html">
           <button class="button tan-button rso-tab">RSO'S</button>
         </a>
-        <button type="button" class="button yellow-button login-tab user" id="login">
+        <button
+          type="button"
+          class="button yellow-button login-tab user"
+          id="login"
+        >
           LOGIN
         </button>
         <button class="button tan-button join-tab user" id="signup">
@@ -30,9 +36,13 @@
       </div>
     </div>
     <div class="form-div">
-      <form action="signup" method="POST" >
-        <a href="index.html"> 
-          <button type="button" class="button exit button" id="exit-button1"></button>
+      <form action="signup" method="POST">
+        <a href="index.html">
+          <button
+            type="button"
+            class="button exit button"
+            id="exit-button1"
+          ></button>
         </a>
         <h3>SIGN UP</h3>
         <label for="username">Username</label><br />
@@ -76,21 +86,19 @@
           /><br />
         </div>
         <label for="school_email">School Email:</label><br />
-        <input
-          type="email"
-          id="school_email"
-          name="school_email"
-          required
-        /><br />
+        <input type="email" id="school_email" name="school_email" /><br />
         <input type="submit" value="SIGN UP" />
       </form>
     </div>
 
-
     <div class="form-div">
       <form action="login" method="POST">
-        <a href="index.html"> 
-          <button type="button" class="button exit button" id="exit-button2"></button>
+        <a href="index.html">
+          <button
+            type="button"
+            class="button exit button"
+            id="exit-button2"
+          ></button>
         </a>
         <h3>LOGIN</h3>
         <label for="username">Username</label><br />
@@ -104,12 +112,19 @@
     </div>
     <div class="form-div" id="account-box">
       <form action="account" method="GET">
-        <h3>Account Details</h3><br />
+        <h3>Account Details</h3>
+        <br />
       </form>
     </div>
     <div class="flexbox-container2">
       <div id="front-title" class="clearfix"></div>
     </div>
+    <div id="errorModal" class="modal">
+      <div class="modal-content">
+        <p id="errorMessage"></p>
+      </div>
+    </div>
+    <script src="assets/js/modal.js"></script>
     <script src="assets/main.js"></script>
   </body>
 </html>

@@ -206,13 +206,13 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  
+
   width: 45%; /* Adjust width as needed */
   z-index: 999; /* Ensure the form box appears above other content */
   /* background-color: #ffffff; White background */
 }
 
-#account-box form{
+#account-box form {
   background-image: url("../images/cool-misty-trees.jpg");
   background-color: black;
   background-size: cover;
@@ -256,16 +256,6 @@ form {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-}
-
-#RSO_creation_box {
-  position: absolute;
-  top: 98%;
-}
-
-#Event_creation_box {
-  top: 41%;
-  position: absolute;
 }
 
 form h3 {
@@ -360,4 +350,48 @@ form input[type="submit"]:hover {
 
 #userFields {
   display: none;
+}
+
+/* MODAL STYLES */
+#errorModal {
+  /* Other modal styles */
+  display: none;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 87%;
+  left: 50.2%;
+  transform: translate(-50%, -50%);
+  width: 20%;
+  height: 150%;
+  overflow: auto;
+  z-index: 10000;
+  pointer-events: none;
+  /* Apply transition for opacity */
+  opacity: 0; /* Set initial opacity to 0 */
+}
+
+/* Center the text inside the modal content */
+#errorMessage {
+  text-align: center;
+}
+
+/* CSS to apply when the modal is shown */
+#errorModal.show {
+  display: block;
+  pointer-events: auto;
+  opacity: 1; /* Make the modal fully visible */
+}
+.modal-content {
+  background-color: #fefefe;
+  padding: 20px;
+  border-radius: 10px;
+  font-size: 150;
+  max-width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  display: flex;
+  font-size: 150%;
+  font-weight: bolder;
+  transition: opacity 2s ease-in-out;
 }

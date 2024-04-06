@@ -1,4 +1,4 @@
-const eventServerAddress = "http://127.0.0.1:3000";
+const eventServerAddress = "http://localhost:3000";
 
 async function fetchData() {
   try {
@@ -6,7 +6,7 @@ async function fetchData() {
     const data = await response.json();
 
     for (const record of data) {
-      if(record.approved){
+      if (record.approved) {
         const eventDiv = document.createElement("div");
         eventDiv.className = "record";
 
@@ -67,7 +67,7 @@ async function fetchData() {
         // Append the eventDiv to the document body
         document.body.appendChild(eventDiv);
       }
-    } 
+    }
   } catch (error) {
     console.error("Error fetching event data:", error);
   }

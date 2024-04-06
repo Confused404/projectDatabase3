@@ -16,6 +16,8 @@ const app = express();
 const PORT = 3000;
 
 const hashKey = process.env.HASH_KEY;
+const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+console.log(apiKey);
 
 // Serve static files from the 'public' directory
 console.log(path.join(__dirname, ".."));
@@ -166,91 +168,88 @@ app.get("/getRSOData", (req, res) => {
   db.close();
 });
 
-// Setup route to receive signup information
 app.post("/signup", (req, res) => {
-  // Extract form data from request body
-  //console.log(req.body);
-
   const userInfo = req.body;
-  //console.log("form data for username: " + userInfo.username);
-  // Process the form data (you can save it to a database, send emails, etc.)
 
-  // check if signup info not already taken!
-  let validSignup = false;
   authenticateUser(userInfo, "signup", (err, isValid) => {
     if (err) {
-      res.status(500).send(err);
+      return res.status(500).send(err);
     } else if (!isValid) {
-      console.log("inside !isvalid else");
-      res.status(401).send("Invalid signup");
-      return;
+      return res.status(401).send("Invalid signup");
     } else {
-      console.log("inside else statement");
-      validSignup = true;
-      console.log("valid signup check: " + validSignup);
-
-      let db = new sqlite3.Database(
+      const db = new sqlite3.Database(
         "./assets/sqlite.db",
         sqlite3.OPEN_READWRITE,
         (err) => {
           if (err) {
             console.error(err.message);
+            return res.status(500).send(err.message);
           }
 
           const userId = uuid.v4();
-
-          let value1 = userId;
-
-          let value2 = setUniquePassword(userInfo.password, hashKey);
-          let value3 = String(userInfo.school_email);
-          let value4 = userInfo.university_name;
-          let value5 = userInfo.loc_name;
-          let value6 = String(userInfo.university_desc).replace(/'/g, "''");
-          let value7 = userInfo.num_students;
-          let value8 = userInfo.name;
-          let value9 = userInfo.username;
+          const value1 = userId;
+          const value2 = setUniquePassword(userInfo.password, hashKey);
+          const value3 = String(userInfo.school_email);
+          const value4 = userInfo.university_name;
+          const value5 = userInfo.loc_name;
+          const value6 = String(userInfo.university_desc).replace(/'/g, "''");
+          const value7 = userInfo.num_students;
+          const value8 = userInfo.name;
+          const value9 = userInfo.username;
           let sql;
-          console.log("user role: " + userInfo.role);
-          // Prepare an SQL statement
+
           if (userInfo.role === "user") {
-            sql = `
-            INSERT INTO users (usr_id, name, password, email, username) VALUES ('${value1}', '${value8}', '${value2}', '${value3}', '${value9}')
-          `;
+            sql = `INSERT INTO users (usr_id, name, password, email, username) VALUES (?, ?, ?, ?, ?)`;
           } else if (userInfo.role === "rso") {
-            console.log("user role is rso");
-            sql = `
-            INSERT INTO admins (usr_id, username, password, email) VALUES ('${value1}', '${value9}' ,'${value2}', '${value3}')
-          `;
+            sql = `INSERT INTO admins (usr_id, username, password, email) VALUES (?, ?, ?, ?)`;
           } else {
-            //if its a university
+            sql = `INSERT INTO universities (usr_id, univ_name, loc_name, univ_desc, num_students) VALUES (?, ?, ?, ?, ?)`;
 
-            sql = `
-            INSERT INTO universities (usr_id, univ_name, loc_name, univ_desc, num_students) VALUES ('${value1}','${value4}', '${value5}', '${value6}', '${value7}')
-          `;
-
-            db.run(sql, function (err) {
-              if (err) {
-                console.error(err);
+            db.run(
+              sql,
+              [value1, value4, value5, value6, value7],
+              function (err) {
+                if (err) {
+                  console.error(err);
+                } else {
+                  console.log("University added to db");
+                }
               }
-              console.log("University added to db");
-            });
+            );
 
-            sql = `
-            INSERT INTO super_admins (usr_id, username, password, email) VALUES ('${value1}', '${value9}', '${value2}', '${value3}')
-          `;
+            sql = `INSERT INTO super_admins (usr_id, username, password, email) VALUES (?, ?, ?, ?)`;
           }
-          // Execute the insert statement
-          db.run(sql, function (err) {
+
+          db.run(sql, [value1, value8, value2, value3, value9], function (err) {
             if (err) {
               console.error(err);
+              return res.status(500).send(err.message);
             }
-            console.log("account added to db");
-          });
 
-          db.close();
+            console.log("Account added to db");
+            db.close();
+
+            // After signup, attempt login
+            axios
+              .post("http://localhost:3000/login", userInfo)
+              .then((response) => {
+                console.log("response data ", response.data);
+                if (response.data === "OK") {
+                  console.log("getting correctly");
+                  // Login successful, redirect to index.html
+                  return res.sendStatus(200);
+                } else {
+                  // Login failed
+                  return res.status(401).send("Invalid login");
+                }
+              })
+              .catch((error) => {
+                console.error("Error during login:", error);
+                return res.status(500).send("Internal Server Error");
+              });
+          });
         }
       );
-      res.redirect("../index.html");
     }
   });
 });
@@ -268,8 +267,6 @@ app.post("/login", (req, res) => {
     if (err) {
       res.status(500).send(err);
     } else if (!isValid) {
-      console.log("usweruwu");
-      console.log(userInfo);
       insertIntoSessionTable(
         true,
         userInfo.username,
@@ -278,10 +275,13 @@ app.post("/login", (req, res) => {
         userInfo.role
       );
       console.log("valid login");
-      res.redirect("../index.html");
+      // res.send("gj");
+      // res.redirect("../index.html");
+      res.send("OK");
+      // res.redirect("../index.html");
     } else {
       //its not valid
-      res.status(200).send("Invalid Login");
+      res.status(401).send("Invalid Login");
     }
   });
 });
@@ -344,7 +344,7 @@ const authenticateUser = (userInfo, type, callback) => {
               if (error) {
                 reject(error);
               } else {
-                resolve({row, table}); //made it an object
+                resolve({ row, table }); //made it an object
               }
             }
           );
@@ -357,12 +357,11 @@ const authenticateUser = (userInfo, type, callback) => {
       // Execute all promises concurrently
       Promise.all(tableQueries)
         .then((results) => {
-          // Check if any row is found (invalid login)
-          results.forEach((result) => console.log(results));
           console.log(results.length);
-          const validResult = results.find((result) => result.row !== undefined);
-          
-          console.log("validResult: " + validResult.table);
+          const validResult = results.find(
+            (result) => result.row !== undefined
+          );
+
           if (type == "login" && validResult) {
             // Use the table name to determine the user's role
             if (validResult.table == "users") {
@@ -395,7 +394,7 @@ const authenticateUser = (userInfo, type, callback) => {
   );
 };
 
-app.post("/html/create-Event", (req, res) => {
+app.post("/create-Event", (req, res) => {
   // Data from req.body
 
   const {
@@ -427,8 +426,9 @@ app.post("/html/create-Event", (req, res) => {
     .toString()
     .padStart(2, "0")}:${event_minute.padStart(2, "0")}:00`;
 
-  const { event_title, event_desc } = req.body;
+  const { event_title, event_desc, addy, loc_name, lat, long } = req.body;
 
+  console.log("location check ", req.body);
   // Validate form data
 
   if (event_title === "" || event_time === "" || event_desc === "") {
@@ -535,10 +535,42 @@ app.post("/html/create-Event", (req, res) => {
         );
       };
 
+      const insertIntoAt = () => {
+        let sql = `
+            INSERT INTO at (evnt_id, loc_name) VALUES (?, ?)
+        `;
+
+        db.run(sql, [event_id, loc_name], function (err) {
+          if (err) {
+            console.error(err);
+            // Handle error if needed
+            return;
+          }
+          console.log(`New entry inserted into at`);
+          // Handle success if needed
+        });
+      };
+      const insertIntoLocationTable = () => {
+        let sql = `
+            INSERT INTO location_table (loc_name, addy, longitude, latitude) VALUES (?, ?, ?, ?)
+        `;
+
+        db.run(sql, [loc_name, addy, long, lat], function (err) {
+          if (err) {
+            console.error(err);
+            // Handle error if needed
+            return;
+          }
+          console.log(`New entry inserted into location_table`);
+          // Handle success if needed
+        });
+      };
+
       // Call the functions
       insertIntoEvents();
       insertIntoOtherTable(tableName);
-
+      insertIntoAt();
+      insertIntoLocationTable();
       // Close the database connection
       db.close();
     });
@@ -792,7 +824,7 @@ app.get("/get_session_info", (req, res) => {
             username: row.username,
             email: row.email,
             usr_id: row.usr_id,
-            role: row.role
+            role: row.role,
           })
         : res.send({ exists: false });
     });
@@ -1331,3 +1363,8 @@ function generateTimestamp() {
   const timestamp = `${formattedMonth}-${formattedDay} ${formattedHour}:${formattedMinute} ${timeIndication}`;
   return timestamp;
 }
+
+// Route to serve HTML with API key injected
+app.get("/create-event-page", (req, res) => {
+  res.render("create-event-page", { apiKey });
+});

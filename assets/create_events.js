@@ -1,4 +1,8 @@
-const serverAddress = "http::localhost/3000";
+const serverAddress = "http://localhost:3000";
+let map;
+let marker;
+let longitude;
+let latitude;
 // Event creation form validation and submission
 document.addEventListener("DOMContentLoaded", function () {
   const eventCreationForm = document.querySelector(
@@ -6,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
   );
 
   eventCreationForm.addEventListener("submit", function (event) {
+    event.preventDefault();
     const inputs = eventCreationForm.querySelectorAll("input");
 
     let allInputsValid = true;
@@ -23,9 +28,11 @@ document.addEventListener("DOMContentLoaded", function () {
         let value = pair[1];
         formInfo[key] = value;
       }
-      console.log(formInfo);
+      formInfo.lat = latitude;
+      formInfo.long = longitude;
       // Send form data to the server
       const urlEncodedFormData = new URLSearchParams(formInfo).toString();
+
       fetch(`${serverAddress}/create-Event`, {
         method: "POST",
         headers: {
@@ -46,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
           console.error("Error during event creation:", error);
         });
     } else {
-      alert("please fill in all required inputs");
+      alert("Please fill in all required inputs");
       return;
     }
   });
@@ -96,35 +103,89 @@ document.addEventListener("DOMContentLoaded", function () {
           console.error("Error during RSO creation:", error);
         });
     } else {
-      alert("please fill in all required inputs");
+      showErrorModal("Please fill in all inputs!");
       return;
     }
   });
 });
 
-function setDefaultDateTime() {
-  var currentDate = new Date();
+document.addEventListener("DOMContentLoaded", function () {
+  function setDefaultDateTime() {
+    var currentDate = new Date();
 
-  // Set default day number
-  var currentDay = currentDate.getDate();
-  document.getElementById("event_day").value = currentDay
-    .toString()
-    .padStart(2, "0");
+    // Set default day number
+    var currentDay = currentDate.getDate();
+    let event_day = document.getElementById("event_day").value;
+    document.getElementById("event_day").value = currentDay
+      .toString()
+      .padStart(2, "0");
+    console.log("wierd af ", event_day);
+    // Set default month
+    var currentMonth = currentDate.getMonth() + 1; // Months are zero-based, so add 1
+    document.getElementById("event_month").value = currentMonth
+      .toString()
+      .padStart(2, "0");
 
-  // Set default month
-  var currentMonth = currentDate.toLocaleString("en-us", { month: "short" });
-  document.getElementById("event_month").value = currentMonth;
+    // Set default time in 12-hour format
+    var currentHour = currentDate.getHours();
+    var currentMinute = currentDate.getMinutes();
+    var ampm = currentHour >= 12 ? "PM" : "AM";
+    currentHour = currentHour % 12;
+    currentHour = currentHour ? currentHour : 12; // the hour '0' should be '12'
+    document.getElementById("event_hour").value = currentHour
+      .toString()
+      .padStart(2, "0");
+    document.getElementById("event_minute").value = currentMinute
+      .toString()
+      .padStart(2, "0");
+    document.getElementById("event_ampm").value = ampm;
+  }
 
-  // Set default time in 12-hour format
-  var currentHour = currentDate.getHours();
-  var currentMinute = currentDate.getMinutes();
-  var ampm = currentHour >= 12 ? "PM" : "AM";
-  currentHour = currentHour % 12;
-  currentHour = currentHour ? currentHour : 12; // the hour '0' should be '12'
-  document.getElementById("event_hour").value = currentHour;
-  document.getElementById("event_minute").value = currentMinute;
-  document.getElementById("event_ampm").value = ampm;
+  // Call the function to set default date and time
+  setDefaultDateTime();
+});
+
+function initMap() {
+  // Initialize the map
+  map = new google.maps.Map(document.getElementById("map"), {
+    center: { lat: 28.6024, lng: -81.2001 },
+    zoom: 16, // Adjust the zoom level as needed
+  });
+
+  // Initialize the marker
+  marker = new google.maps.Marker({
+    map: map,
+    draggable: true, // Allow marker to be dragged
+  });
+
+  // Initialize Autocomplete
+  const locationInput = document.getElementById("locationInput");
+  const autocomplete = new google.maps.places.Autocomplete(locationInput);
+
+  // Set the fields to be returned for each PlaceResult
+  autocomplete.setFields(["formatted_address", "geometry"]);
+
+  // Add listener for place changes
+  autocomplete.addListener("place_changed", function () {
+    const place = autocomplete.getPlace();
+    if (!place.geometry) {
+      console.error("Place details not found for input: ", place);
+      return;
+    }
+
+    // Update map center and marker position
+    map.setCenter(place.geometry.location);
+    marker.setPosition(place.geometry.location);
+
+    // Update latitude and longitude variables
+    latitude = place.geometry.location.lat();
+    longitude = place.geometry.location.lng();
+  });
+
+  // Add listener for marker drag
+  marker.addListener("dragend", function () {
+    map.setCenter(marker.getPosition());
+    latitude = marker.getPosition().lat();
+    longitude = marker.getPosition().lng();
+  });
 }
-
-// Call the function to set default date and time
-setDefaultDateTime();
