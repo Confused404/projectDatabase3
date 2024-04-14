@@ -1,4 +1,4 @@
-const eventServerAddress = "http://localhost:3000";
+const eventServerAddress = "http://127.0.0.1:3000";
 fetchAndDisplayApprovedEvents();
 
 async function fetchAndDisplayApprovedEvents() {
@@ -6,7 +6,18 @@ async function fetchAndDisplayApprovedEvents() {
     const response = await fetch(`${eventServerAddress}/getApprovedEvents`);
     const data = await response.json();
     console.log("data: ", data);
+    const processedTables = new Set();
     for (const table in data) {
+      if (!processedTables.has(table)) {
+        const tableTitle = document.createElement("h1");
+        tableTitle.textContent = table.replace(/_/g, ' ').toUpperCase();
+        tableTitle.style.fontSize = "400%"; // Adjust the size as needed
+        tableTitle.style.color = "white";
+        tableTitle.style.textAlign = "center";
+        tableTitle.style.borderBottom = "1px solid white";
+        document.body.appendChild(tableTitle);
+        processedTables.add(table);
+      }
       for (const record of data[table]) {
         const eventDiv = document.createElement("div");
         eventDiv.className = `${table} record`;

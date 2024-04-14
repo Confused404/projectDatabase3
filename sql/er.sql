@@ -39,8 +39,7 @@ CREATE TABLE location_table (
     loc_name VARCHAR(8000),
     addy VARCHAR(8000),
     longitude VARCHAR(40),
-    latitude VARCHAR(40),
-    PRIMARY KEY(loc_name)
+    latitude VARCHAR(40)
 );
 
 CREATE TABLE rso_events (
@@ -72,6 +71,7 @@ CREATE TABLE private_events (
 CREATE TABLE Creates (
     usr_id INT,
     evnt_id INT,
+  	rso_name VARCHAR(100),
     PRIMARY KEY (usr_id, evnt_id),
     FOREIGN KEY (usr_id) REFERENCES users (usr_id),
     FOREIGN KEY (evnt_id) REFERENCES events (evnt_id)

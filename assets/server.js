@@ -212,7 +212,52 @@ app.get("/getApprovedEvents", (req, res) => {
                         );
                       }
                     );
-                  } else {
+                  } 
+                  else if (table === "rso_events") {
+                    // Get the rso_name from the Creates table
+                    db.get(`SELECT rso_name FROM Creates WHERE evnt_id = ?`, [event.evnt_id], (err, createsRow) => {
+                      if (err) {
+                        reject(err);
+                      }
+                    
+                      // Match the rso_name to a rso_title in the rsos table
+                      db.get(`SELECT * FROM rsos WHERE rso_title = ?`, [createsRow.rso_name], (err, rsoRow) => {
+                        if (err) {
+                          reject(err);
+                        }
+                      
+                        // Get the user's role and usr_id from the session_table
+                        db.get(`SELECT role, usr_id FROM session_table`, [], (err, sessionRow) => {
+                          if (err) {
+                            reject(err);
+                          }
+                        
+                          let tableName = sessionRow.role === 'user' ? 'users' : 'admins';
+                        
+                          // Get the user's name from the users or admins table using the usr_id
+                          db.get(`SELECT name FROM ${tableName} WHERE usr_id = ?`, [sessionRow.usr_id], (err, userRow) => {
+                            if (err) {
+                              reject(err);
+                            }
+                          
+                            // Check each name in the rso_members column against the user's name
+                            const rsoMembers = rsoRow.rso_members.split(",").map(name => name.trim());
+                            console.log("name: " + userRow.name);
+                            if (rsoMembers.includes(userRow.name)) {
+                              // If there's a match, add the event to the results
+                              if (!results[table]) {
+                                results[table] = [];
+                              }
+                            
+                              results[table].push(row);
+                            }
+                            resolve();
+                          });
+                        });
+                      });
+                    });
+                  }
+                  else {
                     if (!results[table]) {
                       results[table] = [];
                     }
@@ -308,9 +353,9 @@ app.post("/signup", (req, res) => {
           let sql;
           console.log(userInfo);
           if (userInfo.role === "user") {
-            sql = `INSERT INTO users (usr_id, name, password, email, username) VALUES (?, ?, ?, ?, ?)`;
+            sql = `INSERT INTO users (usr_id, name, password, username, email) VALUES (?, ?, ?, ?, ?)`;
           } else if (userInfo.role === "rso") {
-            sql = `INSERT INTO admins (usr_id, username, password, email) VALUES (?, ?, ?, ?)`;
+            sql = `INSERT INTO admins (usr_id, password, username, email) VALUES (?, ?, ?, ?)`;
           } else {
             sql = `INSERT INTO universities (usr_id, univ_name, loc_name, univ_desc, num_students) VALUES (?, ?, ?, ?, ?)`;
 
@@ -327,10 +372,10 @@ app.post("/signup", (req, res) => {
               }
             );
 
-            sql = `INSERT INTO super_admins (usr_id, username, password, email) VALUES (?, ?, ?, ?)`;
+            sql = `INSERT INTO super_admins (usr_id, password, username, email) VALUES (?, ?, ?, ?)`;
           }
           console.log("sql ", sql);
-          let para = [value1, value2, value3, value9];
+          let para = [value1, value2, value9, value3];
           if (userInfo.role == "user") para.splice(1, 0, value8);
           console.log("para ", para);
           db.run(sql, para, function (err) {
@@ -605,10 +650,10 @@ app.post("/create-Event", (req, res) => {
         let sql = `
           INSERT INTO events (evnt_id, evnt_title, evnt_time, evnt_desc, approved, evnt_type) VALUES (?, ?, ?, ?, ?, ?)
         `;
-
+/////////////////////////////////////////////////////////////////////////////////////////
         db.run(
           sql,
-          [event_id, event_title, event_time, event_desc, false, event_type],
+          [event_id, event_title, event_time, event_desc, 0, event_type],
           function (err) {
             if (err) {
               console.error(err);
@@ -633,11 +678,11 @@ app.post("/create-Event", (req, res) => {
           function (err) {
             if (err) {
               console.error(err);
-              res.status(500).send("Error inserting event into database");
+              //res.status(500).send("Error inserting event into database");
               return;
             } else {
               console.log(`New event inserted into ${tableName}`);
-              res.status(200).send("Event successfully created");
+              //res.status(200).send("Event successfully created");
             }
           }
         );
@@ -674,27 +719,64 @@ app.post("/create-Event", (req, res) => {
         });
       };
 
-      const insertIntoCreates = (userId, eventId) => {
+      const insertIntoCreates = (userId, eventId, tableName, rso_name) => {
+        console.log("inside insertintocreates")
+        if(tableName === "rso_events"){
+          let checkSql = `
+            SELECT * FROM rsos WHERE rso_title = ?
+          `;
+      
+          db.get(checkSql, [rso_name], function (err, row) {
+            if (err) {
+              console.error(err);
+              res.status(500).send("Error querying rsos table");
+              return false;
+            }
+      
+            if (!row) {
+              res.status(400).send("Event title does not exist in rsos table");
+              return false;
+            }
+      
+            let sql = `
+              INSERT INTO Creates (usr_id, evnt_id, rso_name) VALUES (?, ?, ?)
+            `;
+            console.log("before db.run in insertintocreates")
+            db.run(sql, [userId, eventId, rso_name], function (err) {
+              if (err) {
+                console.error(err);
+                res.status(500).send("Error inserting into creates table");
+                return false;
+              }
+              console.log("New rso record inserted into Creates");
+            });
+          });
+          return true;
+        }
+      
         let sql = `
           INSERT INTO Creates (usr_id, evnt_id) VALUES (?, ?)
         `;
-
+      
         db.run(sql, [userId, eventId], function (err) {
           if (err) {
             console.error(err);
             res.status(500).send("Error inserting into creates table");
-            return;
+            return false;
           }
           console.log(`New record inserted into creates`);
         });
+        return true;
       };
 
       // Call the functions
-      insertIntoEvents(req.body.event_type);
-      insertIntoOtherTable(tableName);
-      insertIntoAt();
-      insertIntoLocationTable();
-      insertIntoCreates(userId, event_id);
+      console.log("req.body.rso_name: " + req.body.rso_name);
+      if(insertIntoCreates(userId, event_id, tableName, req.body.rso_name)){
+        insertIntoOtherTable(tableName)
+        insertIntoEvents(req.body.event_type);
+        insertIntoAt();
+        insertIntoLocationTable();
+      }
 
       // Close the database connection
       db.close();
@@ -857,7 +939,7 @@ app.post("/insert_comment", (req, res) => {
   );
   let session_info = null;
   axios
-    .get(`http://localhost:${PORT}/get_session_info`)
+    .get(`http://127.0.0.1:${PORT}/get_session_info`)
     .then((response) => {
       // Handle the response from the GET request
       // You can access the response data using response.data

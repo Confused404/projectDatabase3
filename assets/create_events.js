@@ -1,4 +1,4 @@
-const serverAddress = "http://localhost:3000";
+const serverAddress = "http://127.0.0.1:3000";
 let map;
 let marker;
 let longitude;
@@ -8,6 +8,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const eventCreationForm = document.querySelector(
     'form[action="create-Event"]'
   );
+
+  // Add event listener for rso_event radio button
+  document.getElementsByName('event_type').forEach(function(radio) {
+    radio.addEventListener('change', function() {
+      document.getElementById('rso_name_div').style.display = 
+        (this.id === 'rso_event' && this.checked) ? 'block' : 'none';
+    });
+  });
 
   eventCreationForm.addEventListener("submit", function (event) {
     event.preventDefault();
