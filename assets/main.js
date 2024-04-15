@@ -100,7 +100,9 @@ document.addEventListener("DOMContentLoaded", function () {
           if (response.ok) {
             return response.json(); // Assuming the response is text
           }
-          throw new Error("Network response was not ok.");
+          return response.json().then((data) => {
+            throw new Error(data.error);
+          });
         })
         .then((data) => {
           // Handle successful signup
@@ -113,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }, 2000); // 1000 milliseconds = 1 second
         })
         .catch((error) => {
-          showErrorModal(error);
+          showErrorModal(error.message);
           console.error("Error during signup:", error);
           // Optionally, you can show an error message to the user here
         });
@@ -126,123 +128,123 @@ document.addEventListener("DOMContentLoaded", function () {
 //////////////////////////////////////////
 /////
 /////
-function updateLoginButton() {
-  console.log("inside updateLoginButton()");
-  fetch("/get_session_info") // Replace '/check-login' with the route that checks if the user is logged in
-    .then((response) => response.json())
-    .then((data) => {
-      console.log(data.exists);
-      console.log("data exists: " + data.exists);
-      if (data.exists) {
-        console.log("role: " + data.role);
-        if (data.role === "super_admin") {
-          console.log("inside super admin if statement of update login button");
-          const eventsButton = document.querySelector("#events");
+// function updateLoginButton() {
+//   console.log("inside updateLoginButton()");
+//   fetch("/get_session_info") // Replace '/check-login' with the route that checks if the user is logged in
+//     .then((response) => response.json())
+//     .then((data) => {
+//       console.log(data.exists);
+//       console.log("data exists: " + data.exists);
+//       if (data.exists) {
+//         console.log("role: " + data.role);
+//         if (data.role === "super_admin") {
+//           console.log("inside super admin if statement of update login button");
+//           const eventsButton = document.querySelector("#events");
 
-          // If the login button doesn't exist, it means it's already been changed
-          if (!eventsButton) return;
+//           // If the login button doesn't exist, it means it's already been changed
+//           if (!eventsButton) return;
 
-          eventsButton.addEventListener("click", function (event) {
-            event.preventDefault();
-            window.location.href = "../html/unapproved-events.html";
-          });
-        }
-        console.log("past the super_admin portion of update login");
-        // Select the login button
-        const loginButton = document.querySelector("#login");
+//           eventsButton.addEventListener("click", function (event) {
+//             event.preventDefault();
+//             window.location.href = "../html/unapproved-events.html";
+//           });
+//         }
+//         console.log("past the super_admin portion of update login");
+//         // Select the login button
+//         const loginButton = document.querySelector("#login");
 
-        // If the login button doesn't exist, it means it's already been changed
-        if (!loginButton) return;
+//         // If the login button doesn't exist, it means it's already been changed
+//         if (!loginButton) return;
 
-        // Change the button text
-        loginButton.textContent = "ACCOUNT";
+//         // Change the button text
+//         loginButton.textContent = "ACCOUNT";
 
-        // Change the button id
-        loginButton.id = "account";
+//         // Change the button id
+//         loginButton.id = "account";
 
-        // Select the join button
-        const joinButton = document.querySelector("#signup");
+//         // Select the join button
+//         const joinButton = document.querySelector("#signup");
 
-        // If the join button doesn't exist, it means it's already been changed
-        if (joinButton) {
-          // Change the button text
-          joinButton.textContent = "SIGN OUT";
+//         // If the join button doesn't exist, it means it's already been changed
+//         if (joinButton) {
+//           // Change the button text
+//           joinButton.textContent = "SIGN OUT";
 
-          // Change the button id
-          joinButton.id = "signout";
+//           // Change the button id
+//           joinButton.id = "signout";
 
-          // Add a click event to the sign out button
-          joinButton.addEventListener("click", function (event) {
-            event.preventDefault();
-            // Add sign out functionality here
-            fetch("/sign-out", {
-              method: "DELETE",
-            })
-              .then((response) => response.json())
-              .then((data) => {
-                if (data.success) {
-                  // Sign out was successful
-                  // You can redirect the user to the login page or refresh the page
-                  console.log("signout successful");
-                  setTimeout(function () {
-                    location.reload();
-                  }, 1000); //1 second is 1000
-                } else {
-                  // Sign out failed
-                  // You can show an error message to the user
-                  console.log("sign out failed");
-                }
-              })
-              .catch((error) => console.error("Error:", error));
-          });
-        }
+//           // Add a click event to the sign out button
+//           joinButton.addEventListener("click", function (event) {
+//             event.preventDefault();
+//             // Add sign out functionality here
+//             fetch("/sign-out", {
+//               method: "DELETE",
+//             })
+//               .then((response) => response.json())
+//               .then((data) => {
+//                 if (data.success) {
+//                   // Sign out was successful
+//                   // You can redirect the user to the login page or refresh the page
+//                   console.log("signout successful");
+//                   setTimeout(function () {
+//                     location.reload();
+//                   }, 1000); //1 second is 1000
+//                 } else {
+//                   // Sign out failed
+//                   // You can show an error message to the user
+//                   console.log("sign out failed");
+//                 }
+//               })
+//               .catch((error) => console.error("Error:", error));
+//           });
+//         }
 
-        let isAccountBoxGenerated = false;
+//         let isAccountBoxGenerated = false;
 
-        // Change the button's click event to go to the account details page
-        loginButton.addEventListener("click", function (event) {
-          event.preventDefault();
+//         // Change the button's click event to go to the account details page
+//         loginButton.addEventListener("click", function (event) {
+//           event.preventDefault();
 
-          // Select the box
-          const box = document.getElementById("account-box");
+//           // Select the box
+//           const box = document.getElementById("account-box");
 
-          // Unhide the box
-          if (box.offsetHeight == 0) {
-            box.style.display = "block";
-          }
+//           // Unhide the box
+//           if (box.offsetHeight == 0) {
+//             box.style.display = "block";
+//           }
 
-          // If the account box has already been generated, skip the rest of the code
-          if (isAccountBoxGenerated) {
-            return;
-          }
+//           // If the account box has already been generated, skip the rest of the code
+//           if (isAccountBoxGenerated) {
+//             return;
+//           }
 
-          // Use the data from the first fetch request
-          if (data.username && data.email) {
-            // Create elements for user details
-            const form = box.firstElementChild;
-            const usernameLabel = document.createElement("label");
-            usernameLabel.textContent = `Username: ${data.username}`;
-            form.appendChild(usernameLabel);
+//           // Use the data from the first fetch request
+//           if (data.username && data.email) {
+//             // Create elements for user details
+//             const form = box.firstElementChild;
+//             const usernameLabel = document.createElement("label");
+//             usernameLabel.textContent = `Username: ${data.username}`;
+//             form.appendChild(usernameLabel);
 
-            const emailLabel = document.createElement("label");
-            emailLabel.textContent = `Email: ${data.email}`;
-            form.appendChild(emailLabel);
+//             const emailLabel = document.createElement("label");
+//             emailLabel.textContent = `Email: ${data.email}`;
+//             form.appendChild(emailLabel);
 
-            //put the list of rsos joined
-            //put the list of events? it might get kind of crazy looking,
-            // should i put just the name of the event?
-            //fuck its gonna have to be another .html i gotta put everything
-            //email and username,
-            //lists would include: rsos joined, (public, private, and rso)-events joined
+//             //put the list of rsos joined
+//             //put the list of events? it might get kind of crazy looking,
+//             // should i put just the name of the event?
+//             //fuck its gonna have to be another .html i gotta put everything
+//             //email and username,
+//             //lists would include: rsos joined, (public, private, and rso)-events joined
 
-            // Set the flag to true so the account box won't be generated again
-            window.location.href = "/html/account-page.html";
-            isAccountBoxGenerated = true;
-          }
-        });
-      }
-    });
-}
+//             // Set the flag to true so the account box won't be generated again
+//             window.location.href = "/html/account-page.html";
+//             isAccountBoxGenerated = true;
+//           }
+//         });
+//       }
+//     });
+// }
 
 // Login form validation
 document.addEventListener("DOMContentLoaded", function () {

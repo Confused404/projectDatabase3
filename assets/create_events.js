@@ -1,4 +1,10 @@
+<<<<<<< HEAD
+// const { json } = require("express");
+
+const serverAddress = "http://localhost:3000";
+=======
 const serverAddress = "http://127.0.0.1:3000";
+>>>>>>> 2294d7767f66022c01ee69e351bc24731942e6a2
 let map;
 let marker;
 let longitude;
@@ -39,29 +45,27 @@ document.addEventListener("DOMContentLoaded", function () {
       formInfo.lat = latitude;
       formInfo.long = longitude;
       // Send form data to the server
-      const urlEncodedFormData = new URLSearchParams(formInfo).toString();
 
       fetch(`${serverAddress}/create-Event`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
         },
-        body: urlEncodedFormData,
+        body: JSON.stringify(formInfo),
       })
         .then((response) => {
-          if (response.ok) {
-            return response.json();
-          }
-          throw new Error("Network response was not ok.");
+          return response.json();
         })
         .then((data) => {
           console.log("Event creation successful:", data);
+          showErrorModal(data.error);
         })
         .catch((error) => {
+          showErrorModal(error.error);
           console.error("Error during event creation:", error);
         });
     } else {
-      alert("Please fill in all required inputs");
+      showErrorModal("Please fill in all required inputs!");
       return;
     }
   });
@@ -72,6 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const rsoCreationForm = document.querySelector('form[action="create-RSO"]');
 
   rsoCreationForm.addEventListener("submit", function (event) {
+    event.preventDefault();
     const inputs = rsoCreationForm.querySelectorAll("input");
 
     let allInputsValid = true;
@@ -88,27 +93,24 @@ document.addEventListener("DOMContentLoaded", function () {
         let value = pair[1];
         formInfo[key] = value;
       }
-      console.log(formInfo);
       // Send form data to the server
-      const urlEncodedFormData = new URLSearchParams(formInfo).toString();
       fetch(`${serverAddress}/create-RSO`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
         },
-        body: urlEncodedFormData,
+        body: JSON.stringify(formInfo), // Stringify the form data as JSON
       })
         .then((response) => {
-          if (response.ok) {
-            return response.json();
-          }
-          throw new Error("Network response was not ok.");
+          return response.json();
         })
         .then((data) => {
+          showErrorModal(data);
           console.log("RSO creation successful:", data);
         })
         .catch((error) => {
-          console.error("Error during RSO creation:", error);
+          showErrorModal(error);
+          // console.error("Error during RSO creation:", error);
         });
     } else {
       showErrorModal("Please fill in all inputs!");
