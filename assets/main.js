@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   let log = console.log;
   let buttons = document.querySelectorAll(".user");
-  const serverAddress = "http://localhost:3000";
+  const mainServerAddress = "http://127.0.0.1:3000";
 
   updateLoginButton();
 
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       console.log(formInfo);
       // Send form data to the server
-      fetch(`${serverAddress}/signup`, {
+      fetch(`${mainServerAddress}/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -270,13 +270,14 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       console.log(formInfo);
       // Send form data to the server
-      const urlEncodedFormData = new URLSearchParams(formInfo).toString();
-      fetch(`${serverAddress}/login`, {
+      let mainServerAddress = 'http://127.0.0.1:3000'
+      console.log("serverAddress before fetch: " + mainServerAddress);
+      fetch(`${mainServerAddress}/login`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
         },
-        body: urlEncodedFormData,
+        body: JSON.stringify(formInfo),
       })
         .then((response) => {
           console.log("main.js response ", response);
