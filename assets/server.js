@@ -284,7 +284,9 @@ app.post("/signup", (req, res) => {
     if (err) {
       return res.status(500).send(err);
     } else if (!isValid) {
-      return res.status(401).send("Invalid signup");
+      return res
+        .status(400)
+        .json({ error: "Account already taken try another one!" });
     } else {
       const db = new sqlite3.Database(
         "./assets/sqlite.db",
@@ -306,7 +308,7 @@ app.post("/signup", (req, res) => {
           const value8 = userInfo.name;
           const value9 = userInfo.username;
           let sql;
-          console.log(userInfo);
+
           if (userInfo.role === "user") {
             sql = `INSERT INTO users (usr_id, name, password, email, username) VALUES (?, ?, ?, ?, ?)`;
           } else if (userInfo.role === "rso") {
@@ -320,7 +322,6 @@ app.post("/signup", (req, res) => {
               function (err) {
                 if (err) {
                   console.log("here is thee error");
-                  console.error(err);
                 } else {
                   console.log("University added to db");
                 }
@@ -329,35 +330,34 @@ app.post("/signup", (req, res) => {
 
             sql = `INSERT INTO super_admins (usr_id, username, password, email) VALUES (?, ?, ?, ?)`;
           }
-          console.log("sql ", sql);
-          let para = [value1, value2, value3, value9];
+
+          let para = [value1, value9, value2, value3];
           if (userInfo.role == "user") para.splice(1, 0, value8);
-          console.log("para ", para);
           db.run(sql, para, function (err) {
             if (err) {
               console.error(err);
-              return res.status(500).send(err.message);
+              return res.status(400).json({ error: "Invalid signup" });
             }
 
             console.log("Account added to db");
             db.close();
 
-            // // After signup, attempt login
-            // axios
-            //   .post("http://localhost:3000/login", userInfo)
-            //   .then((response) => {
-            //     if (response.data === "OK") {
-            //       // Login successful, redirect to index.html
-            //       return res.send(userInfo);
-            //     } else {
-            //       // Login failed
-            //       return res.status(401).send("Invalid login");
-            //     }
-            //   })
-            //   .catch((error) => {
-            //     console.error("Error during login:", error);
-            //     return res.status(500).send("Internal Server Error");
-            //   });
+            // After signup, attempt login
+            axios
+              .post("http://localhost:3000/login", userInfo)
+              .then((response) => {
+                if (response.data === "OK") {
+                  // Login successful, redirect to index.html
+                  return res.send(userInfo);
+                } else {
+                  // Login failed
+                  // return res.status(401).send("Invalid login");
+                }
+              })
+              .catch((error) => {
+                // console.error("Error during login:", error);
+                return res.status(500).send("Internal Server Error");
+              });
           });
         }
       );
@@ -372,11 +372,12 @@ app.post("/login", (req, res) => {
   // Extract form data from request body
   let userInfo = req.body;
 
-  userInfo.password = String(setUniquePassword(userInfo.password, hashKey)); ///for the love of god dont forget hashkey
+  // userInfo.password = String(setUniquePassword(userInfo.password, hashKey)); ///for the love of god dont forget hashkey
   authenticateUser(userInfo, "login", (err, isValid) => {
     if (err) {
       res.status(500).send(err);
     } else if (!isValid) {
+      console.log("CHECKING ISVALID ", isValid);
       insertIntoSessionTable(
         true,
         userInfo.username,
@@ -420,7 +421,6 @@ app.delete("/sign-out", (req, res) => {
 
 // Reusable function to authenticate user
 const authenticateUser = (userInfo, type, callback) => {
-  console.log(userInfo);
   let db = new sqlite3.Database(
     "./assets/sqlite.db",
     sqlite3.OPEN_READWRITE,
@@ -430,80 +430,68 @@ const authenticateUser = (userInfo, type, callback) => {
         callback("Internal server error");
         return;
       }
-
-      // Define tables to check
-      const tablesToCheck = ["super_admins", "admins", "users"];
-      userInfo.username = userInfo.username;
-
-      if (type === "login") {
-        userInfo.password = String(
-          getUniquePassword(userInfo.password, hashKey)
-        );
-      }
-
-      // Function to perform a single database query
-      const performQuery = (table) => {
-        return new Promise((resolve, reject) => {
-          db.get(
-            `SELECT * FROM ${table} WHERE username = ? AND password = ?`,
-            [userInfo.username, userInfo.password],
-            (error, row) => {
-              if (error) {
-                reject(error);
-              } else {
-                resolve({ row, table }); //made it an object
-              }
-            }
-          );
-        });
-      };
-
-      // Array of promises for each table query
-      const tableQueries = tablesToCheck.map((table) => performQuery(table));
-
-      // Execute all promises concurrently
-      Promise.all(tableQueries)
-        .then((results) => {
-          const validResult = results.find(
-            (result) => result.row !== undefined
-          );
-
-          //console.log("validResult: " + validResult.table);
-          if (type == "login" && validResult) {
-            // Use the table name to determine the user's role
-            if (validResult.table == "users") {
-              userInfo.role = "user";
-            } else if (validResult.table == "admins") {
-              userInfo.role = "admin";
-            } else {
-              userInfo.role = "super_admin";
-            }
-            userInfo.userId = validResult.row.usr_id;
-          }
-          if (validResult) {
-            callback(null, false);
-            //signup is checking for a true to be true
-          } else {
-            // If the user is not found in any table, it's a valid login or signup
-            //signup is checking for a false ot be true
-            callback(null, true);
-          }
-        })
-        .catch((error) => {
-          console.error("Error querying tables:", error);
-          callback("Internal server error");
-        })
-        .finally(() => {
-          // Close the database connection after all queries are completed
-          db.close();
-        });
     }
   );
+  // Define tables to check
+  const tablesToCheck = ["super_admins", "admins", "users"];
+  userInfo.username = userInfo.username;
+
+  // Function to perform a single database query
+  const performQuery = (table) => {
+    return new Promise((resolve, reject) => {
+      db.get(
+        `SELECT * FROM ${table} WHERE username = ? AND password = ?`,
+        [userInfo.username, userInfo.password],
+        (error, row) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve({ row, table }); //made it an object
+          }
+        }
+      );
+    });
+  };
+
+  // Array of promises for each table query
+  const tableQueries = tablesToCheck.map((table) => performQuery(table));
+
+  // Execute all promises concurrently
+  Promise.all(tableQueries)
+    .then((results) => {
+      const validResult = results.find((result) => result.row !== undefined);
+      if (type == "login" && validResult) {
+        // Use the table name to determine the user's role
+        if (validResult.table == "users") {
+          userInfo.role = "user";
+        } else if (validResult.table == "admins") {
+          userInfo.role = "rso";
+        } else {
+          userInfo.role = "super_admin";
+        }
+        userInfo.userId = validResult.row.usr_id;
+      }
+      if (validResult) {
+        callback(null, false);
+        //signup is checking for a true to be true
+      } else {
+        // If the user is not found in any table, it's a valid login or signup
+        //signup is checking for a false ot be true
+        callback(null, true);
+      }
+    })
+    .catch((error) => {
+      console.error("Error querying tables:", error);
+      // callback("Internal server error");
+    })
+    .finally(() => {
+      // Close the database connection after all queries are completed
+      db.close();
+    });
 };
 
 app.post("/create-Event", (req, res) => {
   // Data from req.body
-
   const {
     event_month,
     event_day,
@@ -537,10 +525,8 @@ app.post("/create-Event", (req, res) => {
 
   console.log("location check ", req.body);
   // Validate form data
-
   if (event_title === "" || event_time === "" || event_desc === "") {
-    res.status(400).send("All fields are required");
-    return;
+    return res.status(400).json({ error: "All fields are required" });
   }
 
   // Check the event type and set the table name
@@ -570,33 +556,29 @@ app.post("/create-Event", (req, res) => {
     (err) => {
       if (err) {
         console.error(err.message);
+        return res.status(500).json({ error: err.message });
       }
     }
   );
   db.get(`SELECT usr_id FROM session_table LIMIT 1`, [], (err, row) => {
     if (err) {
       console.error(err);
-      res.status(500).send("Error querying session_table");
-      return;
+      return res.status(500).json({ error: "Error querying session_table" });
     }
 
     if (!row) {
-      res.status(403).send("No session found");
-      return;
+      return res.status(403).json({ error: "No session found" });
     }
-    console.log(row);
     let userId = row.usr_id;
 
     db.get(`SELECT * FROM admins WHERE usr_id = ?`, [userId], (err, row) => {
       if (err) {
         console.error(err);
-        res.status(500).send("Error querying database");
-        return;
+        return res.status(500).json({ error: "Error querying database" });
       }
 
       if (!row) {
-        res.status(403).send("Only admins can create events");
-        return;
+        return res.status(403).json({ error: "Only admins can create events" });
       }
 
       // Insert into 'events' table
@@ -612,11 +594,9 @@ app.post("/create-Event", (req, res) => {
           function (err) {
             if (err) {
               console.error(err);
-              //res.status(500).send("Error inserting event into database");
               return;
             }
             console.log(`New event inserted into events`);
-            //res.status(200).send("Event successfully created");
           }
         );
       };
@@ -633,11 +613,14 @@ app.post("/create-Event", (req, res) => {
           function (err) {
             if (err) {
               console.error(err);
-              res.status(500).send("Error inserting event into database");
-              return;
+              return res
+                .status(500)
+                .json({ error: "Error inserting event into database" });
             } else {
               console.log(`New event inserted into ${tableName}`);
-              res.status(200).send("Event successfully created");
+              return res
+                .status(200)
+                .json({ message: "Event successfully created" });
             }
           }
         );
@@ -682,8 +665,9 @@ app.post("/create-Event", (req, res) => {
         db.run(sql, [userId, eventId], function (err) {
           if (err) {
             console.error(err);
-            res.status(500).send("Error inserting into creates table");
-            return;
+            return res
+              .status(500)
+              .json({ error: "Error inserting into creates table" });
           }
           console.log(`New record inserted into creates`);
         });
@@ -708,8 +692,7 @@ app.post("/html/create-RSO", (req, res) => {
 
   // Validate form data
   if (RSO_title === "" || RSO_members === "") {
-    res.status(400).send("All fields are required");
-    return;
+    return res.status(400).json({ error: "All fields are required" });
   }
 
   // Generate a UUID for RSO_id
@@ -722,6 +705,7 @@ app.post("/html/create-RSO", (req, res) => {
     (err) => {
       if (err) {
         console.error(err.message);
+        return res.status(500).json({ error: err.message });
       }
     }
   );
@@ -730,7 +714,7 @@ app.post("/html/create-RSO", (req, res) => {
   db.get(sql, (err, row1) => {
     if (err) {
       console.error(err.message);
-      return res.status(500).send(err.message);
+      return res.status(500).json({ error: err.message });
     }
 
     db.get(
@@ -739,20 +723,19 @@ app.post("/html/create-RSO", (req, res) => {
       (err, row2) => {
         if (err) {
           console.error(err);
-          res.status(500).send("Error querying database");
-          return;
+          return res.status(500).json({ error: "Error querying database" });
         }
         //console.log("row is:" + row.role);
         if (row1.role != "admin") {
-          res.status(403).send("Only admins can create RSOs");
-          return;
+          return res.status(403).json({ error: "Only admins can create RSOs" });
         }
 
         // Validate RSO_members
         const members = RSO_members.split(",");
         if (members.length < 4) {
-          res.status(400).send("At least 4 members are required");
-          return;
+          return res
+            .status(400)
+            .json({ error: "At least 4 members are required" });
         }
 
         // Check if all members exist in the database
@@ -790,17 +773,20 @@ app.post("/html/create-RSO", (req, res) => {
             db.run(sql, [RSO_id, RSO_title, RSO_members], function (err) {
               if (err) {
                 console.error(err);
-                res.status(500).send("Error inserting RSO into database");
-                return;
+                return res
+                  .status(500)
+                  .json({ error: "Error inserting RSO into database" });
               }
 
               console.log(`New RSO inserted into database`);
-              res.status(200).send("RSO successfully created");
+              return res
+                .status(200)
+                .json({ message: "RSO successfully created" });
             });
           })
           .catch((err) => {
             console.error(err);
-            res.status(400).send(err.message);
+            return res.status(400).json({ error: err.message });
           })
           .finally(() => {
             // Close the database connection
@@ -860,9 +846,14 @@ app.post("/insert_comment", (req, res) => {
     .get(`http://localhost:${PORT}/get_session_info`)
     .then((response) => {
       // Handle the response from the GET request
-      // You can access the response data using response.data
-      console.log("response session info: " + JSON.stringify(response.data));
-      session_info = response.data;
+
+      let session_info = response.data;
+
+      if (!session_info.exists) {
+        return res
+          .status(401)
+          .json({ error: "You have to be logged in to comment" });
+      }
       const commentInfo = req.body;
       const commentText = commentInfo.commentText;
       const ratingNum = commentInfo.ratingNum;
@@ -997,7 +988,7 @@ function insertIntoSessionTable(loggedIn, username, email, userId, role) {
       [loggedIn, username, email, userId, role],
       function (err) {
         if (err) {
-          return console.log(err.message);
+          // return console.log(err.message);
         }
       }
     );

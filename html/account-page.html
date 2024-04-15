@@ -35,97 +35,19 @@
         </button>
       </div>
     </div>
-    <div class="form-div">
-      <form action="signup" method="POST">
-        <a href="../index.html">
-          <button
-            type="button"
-            class="button exit button"
-            id="exit-button1"
-          ></button>
-        </a>
-        <h3>SIGN UP</h3>
-        <label for="username">Username</label><br />
-        <input type="text" class="username" name="username" /><br />
-        <label for="password">Password</label><br />
-        <input type="password" class="password" name="password" /><br /><br />
-
-        <div class="radio-text">
-          <label for="user">User</label>
-          <label for="rso">Admin</label>
-          <label for="university">Super Admin</label>
-          <input type="radio" id="user" name="role" value="user" />
-          <input type="radio" id="rso" name="role" value="rso" />
-          <input type="radio" id="university" name="role" value="university" />
-        </div>
-        <div id="userFields">
-          <label for="name">Full Name:</label>
-          <input type="text" id="name" name="name" /><br />
-        </div>
-        <div id="universityFields">
-          <label for="loc_name">Location Name:</label><br />
-          <input type="text" id="loc_name" name="loc_name" /><br />
-
-          <label for="university_name">University Name:</label><br />
-          <input
-            type="text"
-            id="university_name"
-            name="university_name"
-          /><br />
-
-          <label for="university_desc">University Description:</label><br />
-          <textarea id="university_desc" name="university_desc"></textarea
-          ><br />
-
-          <label for="num_students">Number of Students:</label><br />
-          <input
-            type="number"
-            id="num_students"
-            name="num_students"
-            min="0"
-          /><br />
-        </div>
-        <label for="school_email">School Email:</label><br />
-        <input
-          type="email"
-          id="school_email"
-          name="school_email"
-          required
-        /><br />
-        <input type="submit" value="SIGN UP" />
-      </form>
+    <div>
+      <h2>Account Info</h2>
     </div>
-
-    <div class="form-div">
-      <form action="login" method="POST">
-        <a href="../index.html">
-          <button
-            type="button"
-            class="button exit button"
-            id="exit-button2"
-          ></button>
-        </a>
-        <h3>LOGIN</h3>
-        <label for="username">Username</label><br />
-        <input type="text" class="username" name="username" /><br />
-        <label for="school_email">School Email</label><br />
-        <input type="text" class="school_email" name="school_email" /><br />
-        <label for="password">Password</label><br />
-        <input type="password" class="password" name="password" /><br /><br />
-        <input type="submit" value="LOGIN" />
-      </form>
-    </div>
-    <div class="form-div" id="account-box">
-      <form action="account" method="GET">
-        <h3>Account Details</h3>
-        <br />
-      </form>
-    </div>
+    <div id="session-details"></div>
+    <div id="rso-details"></div>
+    <div id="event-details"></div>
     <div id="errorModal" class="modal">
       <div class="modal-content">
         <p id="errorMessage"></p>
       </div>
     </div>
+    <script src="../assets/js/accounts.js"></script>
+    <script src="../assets/js/loginui.js"></script>
     <script src="../assets/js/modal.js"></script>
     <script src="../assets/main.js"></script>
   </body>

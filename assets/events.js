@@ -434,11 +434,9 @@ async function submitComment(eventId, commentText, ratingVal, commentDiv) {
       },
       body: JSON.stringify(newCommentInfo),
     });
-
     if (!response.ok) {
-      throw new Error("Network response was not ok.");
+      throw new Error("Have to be logged in to comment");
     }
-
     // Log success message
     console.log("Comment submitted successfully!");
 
@@ -447,7 +445,7 @@ async function submitComment(eventId, commentText, ratingVal, commentDiv) {
     updateCommentsSection(updatedComments, commentDiv);
     console.log(commentDiv);
   } catch (error) {
-    alert("MUST SIGN UP TO COMMENT");
+    showErrorModal(error);
   }
 }
 function createDeleteButton(comment_id) {
