@@ -855,7 +855,17 @@ app.post("/html/create-RSO", (req, res) => {
                     )
                   );
                 } else {
-                  resolve();
+                  db.run(
+                    `INSERT INTO join_table (usr_id, rso_id) VALUES (?, ?)`,
+                    [row3.usr_id, RSO_id],
+                    (err) => {
+                      if (err) {
+                        reject(err);
+                      } else {
+                        resolve();
+                      }
+                    }
+                  );
                 }
               }
             );
