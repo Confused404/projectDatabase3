@@ -1,10 +1,4 @@
-<<<<<<< HEAD
-// const { json } = require("express");
-
-const serverAddress = "http://localhost:3000";
-=======
 const serverAddress = "http://127.0.0.1:3000";
->>>>>>> 2294d7767f66022c01ee69e351bc24731942e6a2
 let map;
 let marker;
 let longitude;

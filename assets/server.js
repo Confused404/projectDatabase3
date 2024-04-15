@@ -375,13 +375,8 @@ app.post("/signup", (req, res) => {
 
             sql = `INSERT INTO super_admins (usr_id, password, username, email) VALUES (?, ?, ?, ?)`;
           }
-<<<<<<< HEAD
-
-          let para = [value1, value9, value2, value3];
-=======
           console.log("sql ", sql);
           let para = [value1, value2, value9, value3];
->>>>>>> 2294d7767f66022c01ee69e351bc24731942e6a2
           if (userInfo.role == "user") para.splice(1, 0, value8);
           db.run(sql, para, function (err) {
             if (err) {
@@ -663,7 +658,6 @@ app.post("/create-Event", (req, res) => {
           function (err) {
             if (err) {
               console.error(err);
-<<<<<<< HEAD
               return res
                 .status(500)
                 .json({ error: "Error inserting event into database" });
@@ -672,13 +666,6 @@ app.post("/create-Event", (req, res) => {
               return res
                 .status(200)
                 .json({ message: "Event successfully created" });
-=======
-              //res.status(500).send("Error inserting event into database");
-              return;
-            } else {
-              console.log(`New event inserted into ${tableName}`);
-              //res.status(200).send("Event successfully created");
->>>>>>> 2294d7767f66022c01ee69e351bc24731942e6a2
             }
           }
         );
@@ -757,14 +744,8 @@ app.post("/create-Event", (req, res) => {
         db.run(sql, [userId, eventId], function (err) {
           if (err) {
             console.error(err);
-<<<<<<< HEAD
-            return res
-              .status(500)
-              .json({ error: "Error inserting into creates table" });
-=======
             res.status(500).send("Error inserting into creates table");
             return false;
->>>>>>> 2294d7767f66022c01ee69e351bc24731942e6a2
           }
           console.log(`New record inserted into creates`);
         });
