@@ -7,6 +7,11 @@ async function fetchAndDisplayApprovedEvents() {
     const data = await response.json();
     console.log("data: ", data);
     const processedTables = new Set();
+
+    // Fetch session data
+    const sessionResponse = await fetch(`${eventServerAddress}/getSessionData`);
+    const sessionData = await sessionResponse.json();
+
     for (const table in data) {
       if (!processedTables.has(table)) {
         const tableTitle = document.createElement("h1");
@@ -34,28 +39,29 @@ async function fetchAndDisplayApprovedEvents() {
         eventDesc.innerHTML = record.evnt_desc;
         eventDiv.appendChild(eventDesc);
 
-        // Check if the user has joined the event
-        checkIfUserJoinedEvent(record.evnt_id)
-          .then((hasJoined) => {
-            if (!hasJoined) {
-              //joinEventButton for comment section
-              const joinEventButton = document.createElement("button");
-              joinEventButton.textContent = "Join Event";
-              joinEventButton.addEventListener("click", function (event) {
-                console.log("join event button clicked");
-                // Replace 'event_id' with the actual event id you want to use
-                joinEvent(record.evnt_id);
-                setTimeout(function () {
-                  joinEventButton.remove();
-                }, 1000);
-              });
-              eventDiv.appendChild(joinEventButton);
-            }
-          })
-          .catch((error) => {
-            console.error("Error checking if user joined event:", error);
-          });
-
+        if(sessionData.role === 'user'){
+          // Check if the user has joined the event
+          checkIfUserJoinedEvent(record.evnt_id)
+            .then((hasJoined) => {
+              if (!hasJoined) {
+                //joinEventButton for comment section
+                const joinEventButton = document.createElement("button");
+                joinEventButton.textContent = "Join Event";
+                joinEventButton.addEventListener("click", function (event) {
+                  console.log("join event button clicked");
+                  // Replace 'event_id' with the actual event id you want to use
+                  joinEvent(record.evnt_id);
+                  setTimeout(function () {
+                    joinEventButton.remove();
+                  }, 1000);
+                });
+                eventDiv.appendChild(joinEventButton);
+              }
+            })
+            .catch((error) => {
+              console.error("Error checking if user joined event:", error);
+            });
+        }
         const commentDiv = document.createElement("div");
         commentDiv.className = "comments-section";
         const commentAreaTitle = document.createElement("h2");

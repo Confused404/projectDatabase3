@@ -231,28 +231,56 @@ app.get("/getApprovedEvents", (req, res) => {
                           if (err) {
                             reject(err);
                           }
-                        
-                          let tableName = sessionRow.role === 'user' ? 'users' : 'admins';
-                        
-                          // Get the user's name from the users or admins table using the usr_id
-                          db.get(`SELECT name FROM ${tableName} WHERE usr_id = ?`, [sessionRow.usr_id], (err, userRow) => {
-                            if (err) {
-                              reject(err);
-                            }
-                          
-                            // Check each name in the rso_members column against the user's name
-                            const rsoMembers = rsoRow.rso_members.split(",").map(name => name.trim());
-                            console.log("name: " + userRow.name);
-                            if (rsoMembers.includes(userRow.name)) {
-                              // If there's a match, add the event to the results
-                              if (!results[table]) {
-                                results[table] = [];
+
+                          if(sessionRow.role === 'user'){
+                            // Get the user's name from the users or admins table using the usr_id
+                            db.get(`SELECT name FROM users WHERE usr_id = ?`, [sessionRow.usr_id], (err, userRow) => {
+                              if (err) {
+                                reject(err);
                               }
                             
-                              results[table].push(row);
-                            }
-                            resolve();
-                          });
+                              // Check each name in the rso_members column against the user's name
+                              const rsoMembers = rsoRow.rso_members.split(",").map(name => name.trim());
+                              console.log("name: " + userRow.name);
+                              if (rsoMembers.includes(userRow.name)) {
+                                // If there's a match, add the event to the results
+                                if (!results[table]) {
+                                  results[table] = [];
+                                }
+                              
+                                results[table].push(row);
+                              }
+                              resolve();
+                            });
+                          }
+                          else if (sessionRow.role === 'rso') {
+                            db.all(`SELECT * FROM Creates WHERE usr_id = ?`, [sessionRow.usr_id], (err, createsRows) => {
+                              if (err) {
+                                reject(err);
+                              }
+                          
+                              const eventPromises = createsRows.map((createsRow) => {
+                                return new Promise((resolve, reject) => {
+                                  db.get(`SELECT * FROM events WHERE evnt_id = ?`, [createsRow.evnt_id], (err, eventRow) => {
+                                    if (err) {
+                                      reject(err);
+                                    }
+                          
+                                    if (!results[table]) {
+                                      results[table] = [];
+                                    }
+                          
+                                    results[table].push(eventRow);
+                                    resolve();
+                                  });
+                                });
+                              });
+                          
+                              Promise.all(eventPromises)
+                                .then(() => resolve())
+                                .catch((err) => reject(err));
+                            });
+                          }
                         });
                       });
                     });
@@ -1700,4 +1728,27 @@ app.get("/getUnapprovedEvents", (req, res) => {
 // Route to serve HTML with API key injected
 app.get("/create-event-page", (req, res) => {
   res.render("create-event-page", { apiKey });
+});
+
+app.get('/getSessionData', (req, res) => {
+
+  let db = new sqlite3.Database("./assets/sqlite.db", (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log("Connected to the database.");
+  });
+  
+  db.get(`SELECT role, usr_id FROM session_table`, [], (err, sessionRow) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+
+    if (sessionRow) {
+      res.json(sessionRow);
+    } else {
+      res.status(404).json({ message: 'No session data found' });
+    }
+  });
 });
