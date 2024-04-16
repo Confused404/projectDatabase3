@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   let log = console.log;
   let buttons = document.querySelectorAll(".user");
-  const mainServerAddress = "http://127.0.0.1:3000";
+  const mainServerAddress = "http://localhost:3000";
 
   updateLoginButton();
 
@@ -270,7 +270,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       console.log(formInfo);
       // Send form data to the server
-      let mainServerAddress = 'http://127.0.0.1:3000'
+      let mainServerAddress = "http://localhost:3000";
       console.log("serverAddress before fetch: " + mainServerAddress);
       fetch(`${mainServerAddress}/login`, {
         method: "POST",

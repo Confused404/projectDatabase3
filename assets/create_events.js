@@ -1,10 +1,6 @@
-<<<<<<< HEAD
 // const { json } = require("express");
 
 const serverAddress = "http://localhost:3000";
-=======
-const serverAddress = "http://127.0.0.1:3000";
->>>>>>> 2294d7767f66022c01ee69e351bc24731942e6a2
 let map;
 let marker;
 let longitude;
@@ -16,10 +12,10 @@ document.addEventListener("DOMContentLoaded", function () {
   );
 
   // Add event listener for rso_event radio button
-  document.getElementsByName('event_type').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-      document.getElementById('rso_name_div').style.display = 
-        (this.id === 'rso_event' && this.checked) ? 'block' : 'none';
+  document.getElementsByName("event_type").forEach(function (radio) {
+    radio.addEventListener("change", function () {
+      document.getElementById("rso_name_div").style.display =
+        this.id === "rso_event" && this.checked ? "block" : "none";
     });
   });
 
@@ -89,10 +85,10 @@ document.addEventListener("DOMContentLoaded", function () {
       let formData = new FormData(this);
       let formInfo = {};
       for (const pair of formData.entries()) {
-        let key = pair[0];
-        let value = pair[1];
-        formInfo[key] = value;
+        formInfo[pair[0]] = pair[1];
       }
+
+      console.log(JSON.stringify(formInfo));
       // Send form data to the server
       fetch(`${serverAddress}/create-RSO`, {
         method: "POST",
@@ -110,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch((error) => {
           showErrorModal(error);
-          // console.error("Error during RSO creation:", error);
+          console.error("Error during RSO creation:", error);
         });
     } else {
       showErrorModal("Please fill in all inputs!");
