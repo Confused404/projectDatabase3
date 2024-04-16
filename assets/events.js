@@ -12,6 +12,7 @@ async function fetchAndDisplayApprovedEvents() {
     const sessionResponse = await fetch(`${eventServerAddress}/getSessionData`);
     const sessionData = await sessionResponse.json();
 
+
     for (const table in data) {
       if (!processedTables.has(table)) {
         const tableTitle = document.createElement("h1");

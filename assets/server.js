@@ -137,6 +137,18 @@ app.get("/getApprovedEvents", (req, res) => {
     }
   );
 
+  // First, check if the session table is empty
+  db.get(`SELECT COUNT(*) as count FROM session_table`, [], (err, sessionrow) => {
+    if (err) {
+      throw err;
+    }
+
+    // If session table is empty, send an empty response and return
+    if (sessionrow.count === 0) {
+      res.json({});
+      return;
+    }
+
   const tables = ["public_events", "private_events", "rso_events"];
   const results = {};
 
@@ -312,6 +324,8 @@ app.get("/getApprovedEvents", (req, res) => {
       });
     }
   );
+
+  });
 });
 
 const getRowFromTable = (db, table, evnt_id) => {
