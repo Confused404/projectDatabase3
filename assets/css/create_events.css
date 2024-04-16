@@ -4,7 +4,11 @@
 }
 #RSO_creation_box {
   position: absolute;
-  top: 175%;
+  top: 200%;
+}
+
+body {
+  padding-bottom: 150%
 }
 
 .event-time-container {
