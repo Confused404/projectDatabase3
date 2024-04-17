@@ -239,36 +239,72 @@ app.get("/getApprovedEvents", (req, res) => {
                                   reject(err);
                                 }
 
-                                let tableName =
-                                  sessionRow.role === "user"
-                                    ? "users"
-                                    : "admins";
-
-                                // Get the user's name from the users or admins table using the usr_id
-                                db.get(
-                                  `SELECT name FROM ${tableName} WHERE usr_id = ?`,
-                                  [sessionRow.usr_id],
-                                  (err, userRow) => {
-                                    if (err) {
-                                      reject(err);
-                                    }
-
-                                    // Check each name in the rso_members column against the user's name
-                                    const rsoMembers = rsoRow.rso_members
-                                      .split(",")
-                                      .map((name) => name.trim());
-                                    console.log("name: " + userRow.name);
-                                    if (rsoMembers.includes(userRow.name)) {
-                                      // If there's a match, add the event to the results
-                                      if (!results[table]) {
-                                        results[table] = [];
+                                if (sessionRow.role === "user") {
+                                  // Get the user's name from the users or admins table using the usr_id
+                                  db.get(
+                                    `SELECT name FROM users WHERE usr_id = ?`,
+                                    [sessionRow.usr_id],
+                                    (err, userRow) => {
+                                      if (err) {
+                                        reject(err);
                                       }
 
-                                      results[table].push(row);
+                                      // Check each name in the rso_members column against the user's name
+                                      const rsoMembers = rsoRow.rso_members
+                                        .split(",")
+                                        .map((name) => name.trim());
+                                      console.log("name: " + userRow.name);
+                                      if (rsoMembers.includes(userRow.name)) {
+                                        // If there's a match, add the event to the results
+                                        if (!results[table]) {
+                                          results[table] = [];
+                                        }
+
+                                        results[table].push(row);
+                                      }
+                                      resolve();
                                     }
-                                    resolve();
-                                  }
-                                );
+                                  );
+                                } else if (sessionRow.role === "rso") {
+                                  db.all(
+                                    `SELECT * FROM Creates WHERE usr_id = ?`,
+                                    [sessionRow.usr_id],
+                                    (err, createsRows) => {
+                                      if (err) {
+                                        reject(err);
+                                      }
+
+                                      const eventPromises = createsRows.map(
+                                        (createsRow) => {
+                                          return new Promise(
+                                            (resolve, reject) => {
+                                              db.get(
+                                                `SELECT * FROM events WHERE evnt_id = ?`,
+                                                [createsRow.evnt_id],
+                                                (err, eventRow) => {
+                                                  if (err) {
+                                                    reject(err);
+                                                  }
+
+                                                  if (!results[table]) {
+                                                    results[table] = [];
+                                                  }
+
+                                                  results[table].push(eventRow);
+                                                  resolve();
+                                                }
+                                              );
+                                            }
+                                          );
+                                        }
+                                      );
+
+                                      Promise.all(eventPromises)
+                                        .then(() => resolve())
+                                        .catch((err) => reject(err));
+                                    }
+                                  );
+                                }
                               }
                             );
                           }
@@ -393,7 +429,6 @@ app.post("/signup", (req, res) => {
 
             sql = `INSERT INTO super_admins (usr_id, password, username, email) VALUES (?, ?, ?, ?)`;
           }
-
           let para = [value1, value2, value9, value3];
           if (userInfo.role == "user") para.splice(1, 0, value8);
           db.run(sql, para, function (err) {
@@ -449,7 +484,7 @@ app.post("/login", (req, res) => {
         userInfo.role
       );
 
-      res.send("OK");
+      res.json({ username: userInfo.username });
     } else {
       //its not valid
       res.status(401).send("Invalid Login");
@@ -676,11 +711,14 @@ app.post("/create-Event", (req, res) => {
           function (err) {
             if (err) {
               console.error(err);
-              //res.status(500).send("Error inserting event into database");
-              return;
+              return res
+                .status(500)
+                .json({ error: "Error inserting event into database" });
             } else {
               console.log(`New event inserted into ${tableName}`);
-              //res.status(200).send("Event successfully created");
+              return res
+                .status(200)
+                .json({ message: "Event successfully created" });
             }
           }
         );
@@ -784,7 +822,7 @@ app.post("/create-Event", (req, res) => {
 
 app.post("/create-RSO", (req, res) => {
   // Access form data from req.body
-
+  console.log("INSIDE CREATE RSO");
   const { RSO_title, RSO_members } = req.body;
   // Validate form data
   if (RSO_title === "" || RSO_members === "") {
@@ -852,7 +890,17 @@ app.post("/create-RSO", (req, res) => {
                     )
                   );
                 } else {
-                  resolve();
+                  db.run(
+                    `INSERT INTO join_table (usr_id, rso_id) VALUES (?, ?)`,
+                    [row3.usr_id, RSO_id],
+                    (err) => {
+                      if (err) {
+                        reject(err);
+                      } else {
+                        resolve();
+                      }
+                    }
+                  );
                 }
               }
             );
@@ -1708,7 +1756,6 @@ app.get("/create-event-page", (req, res) => {
 });
 
 app.get("/get_combined_info", (req, res) => {
-  // Initialize SQLite3 database
   let db = new sqlite3.Database("./assets/sqlite.db", (err) => {
     if (err) {
       console.error(err.message);
@@ -1716,62 +1763,110 @@ app.get("/get_combined_info", (req, res) => {
     }
     console.log("Connected to the database.");
 
-    // Query to fetch session information
     const sessionSql = `SELECT username, email, usr_id, role FROM session_table LIMIT 1`;
     db.get(sessionSql, (err, sessionRow) => {
       if (err) {
         console.error("Error querying session database:", err);
         return res.status(500).send("Internal server error");
       }
-
       if (!sessionRow) {
         return res.status(404).json({ error: "Session not found" });
       }
 
-      // Query to fetch RSO details
-      const rsoSql = `SELECT rso_id FROM join_table WHERE usr_id = ?`;
-      console.log("session user id ", sessionRow.usr_id);
-      db.all(rsoSql, [sessionRow.usr_id], (err, rows) => {
-        if (err) {
-          console.error("Error querying RSO database:", err);
-          return res.status(500).send("Internal server error");
-        }
-
-        const rsoIds = rows.map((row) => row.rso_id);
-        console.log("RSOIDS ", rsoIds);
-        // Fetch details for each RSO
-        const rsoDetailsPromises = rsoIds.map((rsoId) => {
-          return new Promise((resolve, reject) => {
-            const rsoInfoSql = `SELECT rso_title, rso_members FROM rsos WHERE rso_id = ?`;
-            db.get(rsoInfoSql, [rsoId], (err, rsoRow) => {
-              if (err) {
-                console.error("Error querying RSO database:", err);
-                return reject(err);
-              }
-              resolve(rsoRow);
-            });
+      if (sessionRow.role === "rso") {
+        const rsoSql = `SELECT rso_id, rso_title, rso_members FROM rsos WHERE usr_id = ?`;
+        db.all(rsoSql, [sessionRow.usr_id], (err, rows) => {
+          if (err) {
+            console.error("Error querying RSO database:", err);
+            return res.status(500).send("Internal server error");
+          }
+          res.json({
+            session: sessionRow,
+            data: rows.map((row) => ({
+              ...row,
+              is_rso: true,
+              is_event: false,
+            })),
           });
         });
+      } else if (sessionRow.role === "user") {
+        const joinSql = `SELECT rso_id, evnt_id FROM join_table WHERE usr_id = ?`;
+        db.all(joinSql, [sessionRow.usr_id], (err, rows) => {
+          if (err) {
+            console.error("Error querying join_table:", err);
+            return res.status(500).send("Internal server error");
+          }
 
-        Promise.all(rsoDetailsPromises)
-          .then((rsoDetails) => {
-            // Combine session and RSO details
-            const combinedInfo = {
-              session: {
-                username: sessionRow.username,
-                email: sessionRow.email,
-                usr_id: sessionRow.usr_id,
-                role: sessionRow.role,
-              },
-              rso_details: rsoDetails,
-            };
-            res.json(combinedInfo);
-          })
-          .catch((error) => {
-            console.error("Error fetching RSO details:", error);
-            res.status(500).send("Internal server error");
+          const combinedData = rows.map((row) => {
+            if (row.rso_id !== null) {
+              return { id: row.rso_id, is_rso: true, is_event: false };
+            } else if (row.evnt_id !== null) {
+              return { id: row.evnt_id, is_rso: false, is_event: true };
+            }
           });
-      });
+
+          // Fetch details for each RSO or event using its ID
+          const detailPromises = combinedData.map((data) => {
+            return new Promise((resolve, reject) => {
+              if (data.is_rso) {
+                const rsoSql = `SELECT * FROM rsos WHERE rso_id = ?`;
+                db.get(rsoSql, [data.id], (err, detailRow) => {
+                  if (err) {
+                    console.error("Error querying RSO database:", err);
+                    return reject(err);
+                  }
+                  resolve({ ...data, details: detailRow });
+                });
+              } else if (data.is_event) {
+                const eventSql = `SELECT * FROM events WHERE evnt_id = ?`;
+                db.get(eventSql, [data.id], (err, detailRow) => {
+                  if (err) {
+                    console.error("Error querying event database:", err);
+                    return reject(err);
+                  }
+                  resolve({ ...data, details: detailRow });
+                });
+              }
+            });
+          });
+
+          Promise.all(detailPromises)
+            .then((details) => {
+              res.json({
+                session: sessionRow,
+                data: details,
+              });
+            })
+            .catch((error) => {
+              console.error("Error fetching details:", error);
+              res.status(500).send("Internal server error");
+            });
+        });
+      } else {
+        res.status(400).json({ error: "Unknown role" });
+      }
     });
+  });
+});
+
+app.get("/getSessionData", (req, res) => {
+  let db = new sqlite3.Database("./assets/sqlite.db", (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log("Connected to the database.");
+  });
+
+  db.get(`SELECT role, usr_id FROM session_table`, [], (err, sessionRow) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+
+    if (sessionRow) {
+      res.json(sessionRow);
+    } else {
+      res.status(404).json({ message: "No session data found" });
+    }
   });
 });

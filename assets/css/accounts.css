@@ -1,0 +1,60 @@
+/* Styles for RSO details container */
+#rso-details {
+  margin-top: 20px;
+}
+
+.rso-container {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 15px; /* Increased padding for better spacing */
+  margin-bottom: 15px; /* Increased margin-bottom for better separation */
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+.rso-container p {
+  margin: 0;
+}
+body{
+  text-align: center; /
+}
+/* Styles for account details container */
+#session-details {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  text-align: center; /* Center align the content */
+}
+
+#account-details h2 {
+  font-size: 20px; /* Increased font size */
+  font-weight: bold; /* Added bold font weight */
+  text-align: center; /* Center align the heading */
+  margin-bottom: 10px; /* Increased margin-bottom for better spacing */
+}
+
+#account-details p {
+  margin: 5px 0;
+}
+
+#account-details p:first-child {
+  margin-top: 0;
+}
+
+#account-details p:last-child {
+  margin-bottom: 0;
+}
+/* Styles for RSO INFO */
+ h2 {
+  text-align: center; /* Center the content */
+  font-weight: bold; /* Make the title bold */
+  text-decoration: underline; /* Underline the title */
+}
+
+.rso-container h2 {
+  font-weight: bold; /* Make the title bold */
+  text-decoration: underline; /* Underline the title */
+  color: black;
+}

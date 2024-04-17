@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let allInputsValid = true;
     inputs.forEach((input) => {
+      if (input.id == "rso_name") return;
       if (!input.value.trim()) {
         allInputsValid = false;
       }
@@ -50,11 +51,12 @@ document.addEventListener("DOMContentLoaded", function () {
         body: JSON.stringify(formInfo),
       })
         .then((response) => {
+          console.log(response);
           return response.json();
         })
         .then((data) => {
           console.log("Event creation successful:", data);
-          showErrorModal(data.error);
+          showErrorModal(data.message);
         })
         .catch((error) => {
           showErrorModal(error.error);
@@ -90,6 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       console.log(JSON.stringify(formInfo));
       // Send form data to the server
+
       fetch(`${serverAddress}/create-RSO`, {
         method: "POST",
         headers: {
@@ -101,11 +104,11 @@ document.addEventListener("DOMContentLoaded", function () {
           return response.json();
         })
         .then((data) => {
-          showErrorModal(data);
+          showErrorModal(data.error);
           console.log("RSO creation successful:", data);
         })
         .catch((error) => {
-          showErrorModal(error);
+          showErrorModal(error.error);
           console.error("Error during RSO creation:", error);
         });
     } else {
