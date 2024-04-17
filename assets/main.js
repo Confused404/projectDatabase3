@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   let log = console.log;
   let buttons = document.querySelectorAll(".user");
-  const mainServerAddress = "http://127.0.0.1:3000";
+  const mainServerAddress = "http://localhost:3000";
 
   updateLoginButton();
 
@@ -251,6 +251,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const loginForm = document.querySelector('form[action="login"]');
 
   loginForm.addEventListener("submit", function (event) {
+    event.preventDefault();
     const inputs = loginForm.querySelectorAll("input");
     console.log("inside submit event listener");
     let allInputsValid = true;
@@ -270,7 +271,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       console.log(formInfo);
       // Send form data to the server
-      let mainServerAddress = 'http://127.0.0.1:3000'
+      let mainServerAddress = "http://localhost:3000";
       console.log("serverAddress before fetch: " + mainServerAddress);
       fetch(`${mainServerAddress}/login`, {
         method: "POST",
@@ -281,23 +282,29 @@ document.addEventListener("DOMContentLoaded", function () {
       })
         .then((response) => {
           console.log("main.js response ", response);
-          if (response.ok) {
+          if (response) {
             console.log("Login successful:");
-            //updateLoginButton();
+            return response.json();
+          } else {
+            throw new Error("Network failure");
           }
-          throw new Error("Network response was not ok.");
         })
         .then((data) => {
           updateLoginButton();
           console.log("Login successful:", data);
+          showErrorModal("Welcome " + data.username + "!");
+          setTimeout(() => {
+            location.reload();
+          }, 1000);
           // Optionally, you can redirect the user to another page or show a success message here
         })
         .catch((error) => {
           console.error("Error during Login:", error);
+          showErrorModal("Invalid Login Check For Correct Input");
           // Optionally, you can show an error message to the user here
         });
     } else {
-      alert("please fill in all required inputs");
+      showErrorModal("Please fill in all inputs");
       return;
     }
   });

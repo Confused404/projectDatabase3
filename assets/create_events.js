@@ -1,4 +1,6 @@
-const serverAddress = "http://127.0.0.1:3000";
+// const { json } = require("express");
+
+const serverAddress = "http://localhost:3000";
 let map;
 let marker;
 let longitude;
@@ -10,10 +12,10 @@ document.addEventListener("DOMContentLoaded", function () {
   );
 
   // Add event listener for rso_event radio button
-  document.getElementsByName('event_type').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-      document.getElementById('rso_name_div').style.display = 
-        (this.id === 'rso_event' && this.checked) ? 'block' : 'none';
+  document.getElementsByName("event_type").forEach(function (radio) {
+    radio.addEventListener("change", function () {
+      document.getElementById("rso_name_div").style.display =
+        this.id === "rso_event" && this.checked ? "block" : "none";
     });
   });
 
@@ -24,9 +26,13 @@ document.addEventListener("DOMContentLoaded", function () {
     let allInputsValid = true;
     inputs.forEach((input) => {
       // Skip validation for rso_name if event_type is not 'rso'
-      if (input.name === 'rso_name' && document.querySelector('input[name="event_type"]:checked').value !== 'rso') {
+      if (
+        input.name === "rso_name" &&
+        document.querySelector('input[name="event_type"]:checked').value !==
+          "rso"
+      ) {
         return;
-      } 
+      }
 
       if (!input.value.trim()) {
         allInputsValid = false;
@@ -53,11 +59,12 @@ document.addEventListener("DOMContentLoaded", function () {
         body: JSON.stringify(formInfo),
       })
         .then((response) => {
+          console.log(response);
           return response.json();
         })
         .then((data) => {
           console.log("Event creation successful:", data);
-          showErrorModal(data.error);
+          showErrorModal(data.message);
         })
         .catch((error) => {
           showErrorModal(error.error);
@@ -88,11 +95,12 @@ document.addEventListener("DOMContentLoaded", function () {
       let formData = new FormData(this);
       let formInfo = {};
       for (const pair of formData.entries()) {
-        let key = pair[0];
-        let value = pair[1];
-        formInfo[key] = value;
+        formInfo[pair[0]] = pair[1];
       }
+
+      console.log(JSON.stringify(formInfo));
       // Send form data to the server
+
       fetch(`${serverAddress}/create-RSO`, {
         method: "POST",
         headers: {
@@ -104,12 +112,12 @@ document.addEventListener("DOMContentLoaded", function () {
           return response.json();
         })
         .then((data) => {
-          showErrorModal(data);
+          showErrorModal(data.error);
           console.log("RSO creation successful:", data);
         })
         .catch((error) => {
-          showErrorModal(error);
-          // console.error("Error during RSO creation:", error);
+          showErrorModal(error.error);
+          console.error("Error during RSO creation:", error);
         });
     } else {
       showErrorModal("Please fill in all inputs!");

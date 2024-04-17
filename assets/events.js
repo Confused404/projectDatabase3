@@ -1,4 +1,4 @@
-const eventServerAddress = "http://127.0.0.1:3000";
+const eventServerAddress = "http://localhost:3000";
 fetchAndDisplayApprovedEvents();
 
 async function fetchAndDisplayApprovedEvents() {
@@ -16,7 +16,7 @@ async function fetchAndDisplayApprovedEvents() {
     for (const table in data) {
       if (!processedTables.has(table)) {
         const tableTitle = document.createElement("h1");
-        tableTitle.textContent = table.replace(/_/g, ' ').toUpperCase();
+        tableTitle.textContent = table.replace(/_/g, " ").toUpperCase();
         tableTitle.style.fontSize = "400%"; // Adjust the size as needed
         tableTitle.style.color = "white";
         tableTitle.style.textAlign = "center";
@@ -40,7 +40,7 @@ async function fetchAndDisplayApprovedEvents() {
         eventDesc.innerHTML = record.evnt_desc;
         eventDiv.appendChild(eventDesc);
 
-        if(sessionData.role === 'user'){
+        if (sessionData.role === "user") {
           // Check if the user has joined the event
           checkIfUserJoinedEvent(record.evnt_id)
             .then((hasJoined) => {
