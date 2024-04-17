@@ -136,6 +136,18 @@ app.get("/getApprovedEvents", (req, res) => {
     }
   );
 
+  // First, check if the session table is empty
+  db.get(`SELECT COUNT(*) as count FROM session_table`, [], (err, sessionrow) => {
+    if (err) {
+      throw err;
+    }
+
+    // If session table is empty, send an empty response and return
+    if (sessionrow.count === 0) {
+      res.json({});
+      return;
+    }
+
   const tables = ["public_events", "private_events", "rso_events"];
   const results = {};
 
@@ -338,6 +350,8 @@ app.get("/getApprovedEvents", (req, res) => {
       });
     }
   );
+
+  });
 });
 
 const getRowFromTable = (db, table, evnt_id) => {
@@ -370,7 +384,49 @@ app.get("/getRSOData", (req, res) => {
     if (err) {
       throw err;
     }
-    res.json(rows);
+
+    let approvedRSOs = [];
+    let promises = [];
+
+    rows.forEach((row) => {
+      let promise = new Promise((resolve, reject) => {
+        db.get(
+          `SELECT SUBSTR(email, INSTR(email, '@') + 1) AS domain FROM admins WHERE usr_id = ?`,
+          [row.usr_id],
+          (err, adminRow) => {
+            if (err) {
+              reject(err);
+            }
+
+            db.get(
+              `SELECT SUBSTR(email, INSTR(email, '@') + 1) AS domain FROM session_table`,
+              [],
+              (err, sessionRow) => {
+                if (err) {
+                  reject(err);
+                }
+
+                if (adminRow && sessionRow && adminRow.domain === sessionRow.domain) {
+                  approvedRSOs.push(row);
+                }
+                resolve();
+              }
+            );
+          }
+        );
+      });
+      promises.push(promise);
+    });
+
+    Promise.all(promises)
+      .then(() => {
+        console.log(approvedRSOs);
+        res.json(approvedRSOs);
+      })
+      .catch((error) => {
+        console.error(error);
+        res.status(500).send(error);
+      });
   });
 
   db.close();

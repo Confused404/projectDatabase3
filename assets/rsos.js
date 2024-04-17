@@ -4,16 +4,26 @@ fetch(`${rsoServerAddress}/getRSOData`)
   .then((response) => response.json())
   .then((data) => {
 
-    // Create a heading for the records
-    const heading1 = document.createElement("h1");
-    heading1.innerHTML = "____________________________<br><br>";
-    document.body.appendChild(heading1);
-    const heading2 = document.createElement("h1");
-    heading2.innerHTML = "&emsp;&emsp;&emsp;&emsp;JOIN A RSO!!";
-    document.body.appendChild(heading2);
-    const heading3 = document.createElement("h1");
-    heading3.textContent = "____________________________";
-    document.body.appendChild(heading3);
+    // Fetch session data
+    fetch(`${rsoServerAddress}/getSessionData`)
+      .then((sessionResponse) => sessionResponse.json())
+      .then((sessionData) => {
+
+        // Create a heading for the records
+        const heading1 = document.createElement("h1");
+        heading1.innerHTML = "____________________________<br><br>";
+        document.body.appendChild(heading1);
+        const heading2 = document.createElement("h1");
+        if(sessionData.role === 'user'){
+          heading2.innerHTML = "&emsp;&emsp;&emsp;&emsp;JOIN A RSO!!";
+        } else{
+          heading2.innerHTML = "&emsp;&emsp;&emsp;View RSO's Here"
+        }
+        document.body.appendChild(heading2);
+        const heading3 = document.createElement("h1");
+        heading3.textContent = "____________________________";
+        document.body.appendChild(heading3);
+
         // Loop through each event record
         data.forEach((record) => {
             // Create a container div for the rso
@@ -34,7 +44,7 @@ fetch(`${rsoServerAddress}/getRSOData`)
                 checkIfUserJoinedRso(record.rso_id, usr_id)
                   .then((hasJoined) => {    
                     // Rest of the code...
-                    if (!hasJoined) {
+                    if (sessionData.role === 'user' && !hasJoined) {
                         // joinRsoButton for comment section
                         const joinRsoButton = document.createElement("button");
                         joinRsoButton.textContent = "Join RSO";
@@ -52,7 +62,7 @@ fetch(`${rsoServerAddress}/getRSOData`)
                         // Append the joinRsoButton to the rsoDiv
                         rsoDiv.appendChild(joinRsoButton);
                     }
-                    if(hasJoined) {
+                    if(sessionData.role === 'user' && hasJoined) {
                         // leaveRsoButton for comment section
                         const leaveRsoButton = document.createElement("button");
                         leaveRsoButton.textContent = "Leave RSO";
@@ -77,6 +87,10 @@ fetch(`${rsoServerAddress}/getRSOData`)
             });
             document.body.appendChild(rsoDiv);            
         });
+      })
+      .catch((error) => {
+        console.error("Error fetching session data:", error);
+      });
   });
           
   function joinRso(rso_id) {

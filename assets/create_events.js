@@ -25,7 +25,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let allInputsValid = true;
     inputs.forEach((input) => {
-      if (input.id == "rso_name") return;
+      // Skip validation for rso_name if event_type is not 'rso'
+      if (
+        input.name === "rso_name" &&
+        document.querySelector('input[name="event_type"]:checked').value !==
+          "rso"
+      ) {
+        return;
+      }
+
       if (!input.value.trim()) {
         allInputsValid = false;
       }
