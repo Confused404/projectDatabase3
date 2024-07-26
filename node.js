@@ -5,6 +5,11 @@ const xml2js = require('xml2js');
 const sqlite3 = require('sqlite3').verbose();
 
 const server = http.createServer((req, res) => {
+    if (path.normalize(decodeURI(req.url)) !== decodeURI(req.url)) {
+        res.statusCode = 403;
+        res.end();
+        return;
+    }
   let filePath = '';
 
   // Determine the file path based on the requested URL
